@@ -3,7 +3,7 @@
 
 # ArangoDB VelocyPack Java
 
-Java implementation for [VelocyPack].(https://github.com/arangodb/velocypack)
+Java implementation for [VelocyPack](https://github.com/arangodb/velocypack).
 
 ## Maven
 
