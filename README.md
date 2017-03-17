@@ -37,7 +37,7 @@ mvn clean install -DskipTests=true -Dgpg.skip=true -Dmaven.javadoc.skip=true -B
 ```
 
 
-# Basic usage
+# Usage
 
 ## build VelocyPack - Object
 
