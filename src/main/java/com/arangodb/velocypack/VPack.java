@@ -74,7 +74,7 @@ public class VPack {
 	private final VPackDeserializationContext deserializationContext;
 	private final boolean serializeNullValues;
 
-	public static class Builder {
+	public static class Builder implements VPackSetupContext<Builder> {
 		private final Map<Type, VPackSerializer<?>> serializers;
 		private final Map<Type, VPackSerializer<?>> enclosingSerializers;
 		private final Map<Type, VPackDeserializer<?>> deserializers;
@@ -176,21 +176,25 @@ public class VPack {
 			});
 		}
 
+		@Override
 		public <T> VPack.Builder registerSerializer(final Type type, final VPackSerializer<T> serializer) {
 			serializers.put(type, serializer);
 			return this;
 		}
 
+		@Override
 		public <T> VPack.Builder registerEnclosingSerializer(final Type type, final VPackSerializer<T> serializer) {
 			enclosingSerializers.put(type, serializer);
 			return this;
 		}
 
+		@Override
 		public <T> VPack.Builder registerDeserializer(final Type type, final VPackDeserializer<T> deserializer) {
 			deserializers.put(type, deserializer);
 			return this;
 		}
 
+		@Override
 		public <T> VPack.Builder registerDeserializer(
 			final String fieldName,
 			final Type type,
@@ -204,31 +208,37 @@ public class VPack {
 			return this;
 		}
 
+		@Override
 		public <T> VPack.Builder registerInstanceCreator(final Type type, final VPackInstanceCreator<T> creator) {
 			instanceCreators.put(type, creator);
 			return this;
 		}
 
+		@Override
 		public VPack.Builder buildUnindexedArrays(final boolean buildUnindexedArrays) {
 			builderOptions.setBuildUnindexedArrays(buildUnindexedArrays);
 			return this;
 		}
 
+		@Override
 		public VPack.Builder buildUnindexedObjects(final boolean buildUnindexedObjects) {
 			builderOptions.setBuildUnindexedObjects(buildUnindexedObjects);
 			return this;
 		}
 
+		@Override
 		public VPack.Builder serializeNullValues(final boolean serializeNullValues) {
 			this.serializeNullValues = serializeNullValues;
 			return this;
 		}
 
+		@Override
 		public VPack.Builder fieldNamingStrategy(final VPackFieldNamingStrategy fieldNamingStrategy) {
 			this.fieldNamingStrategy = fieldNamingStrategy;
 			return this;
 		}
 
+		@Override
 		public <A extends Annotation> VPack.Builder annotationFieldFilter(
 			final Class<A> type,
 			final VPackAnnotationFieldFilter<A> fieldFilter) {
@@ -236,10 +246,25 @@ public class VPack {
 			return this;
 		}
 
+		@Override
 		public <A extends Annotation> VPack.Builder annotationFieldNaming(
 			final Class<A> type,
 			final VPackAnnotationFieldNaming<A> fieldNaming) {
 			annotationFieldNaming.put(type, fieldNaming);
+			return this;
+		}
+
+		@Override
+		public Builder registerModule(final VPackModule module) {
+			module.setup(VPack.Builder.this);
+			return this;
+		}
+
+		@Override
+		public Builder registerModules(final VPackModule... modules) {
+			for (final VPackModule module : modules) {
+				registerModule(module);
+			}
 			return this;
 		}
 

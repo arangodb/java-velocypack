@@ -775,7 +775,7 @@ public class VPackSlice implements Serializable {
 	@Override
 	public String toString() {
 		try {
-			return new VPackParser().toJson(this, true);
+			return new VPackParser.Builder().build().toJson(this, true);
 		} catch (final VPackException e) {
 			return super.toString();
 		}

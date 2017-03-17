@@ -54,24 +54,114 @@ public class VPackParser {
 	private final Map<Class<?>, VPackJsonSerializer<?>> serializers;
 	private final Map<String, Map<Class<?>, VPackJsonSerializer<?>>> serializersByName;
 
+	public static class Builder implements VPackParserSetupContext<Builder> {
+		private final Map<ValueType, VPackJsonDeserializer> deserializers;
+		private final Map<String, Map<ValueType, VPackJsonDeserializer>> deserializersByName;
+		private final Map<Class<?>, VPackJsonSerializer<?>> serializers;
+		private final Map<String, Map<Class<?>, VPackJsonSerializer<?>>> serializersByName;
+
+		public Builder() {
+			super();
+			deserializers = new HashMap<ValueType, VPackJsonDeserializer>();
+			deserializersByName = new HashMap<String, Map<ValueType, VPackJsonDeserializer>>();
+			serializers = new HashMap<Class<?>, VPackJsonSerializer<?>>();
+			serializersByName = new HashMap<String, Map<Class<?>, VPackJsonSerializer<?>>>();
+		}
+
+		@Override
+		public VPackParser.Builder registerDeserializer(
+			final String attribute,
+			final ValueType type,
+			final VPackJsonDeserializer deserializer) {
+			Map<ValueType, VPackJsonDeserializer> byName = deserializersByName.get(attribute);
+			if (byName == null) {
+				byName = new HashMap<ValueType, VPackJsonDeserializer>();
+				deserializersByName.put(attribute, byName);
+			}
+			byName.put(type, deserializer);
+			return this;
+		}
+
+		@Override
+		public VPackParser.Builder registerDeserializer(
+			final ValueType type,
+			final VPackJsonDeserializer deserializer) {
+			deserializers.put(type, deserializer);
+			return this;
+		}
+
+		@Override
+		public <T> VPackParser.Builder registerSerializer(
+			final String attribute,
+			final Class<T> type,
+			final VPackJsonSerializer<T> serializer) {
+			Map<Class<?>, VPackJsonSerializer<?>> byName = serializersByName.get(attribute);
+			if (byName == null) {
+				byName = new HashMap<Class<?>, VPackJsonSerializer<?>>();
+				serializersByName.put(attribute, byName);
+			}
+			byName.put(type, serializer);
+			return this;
+		}
+
+		@Override
+		public <T> VPackParser.Builder registerSerializer(
+			final Class<T> type,
+			final VPackJsonSerializer<T> serializer) {
+			serializers.put(type, serializer);
+			return this;
+		}
+
+		@Override
+		public Builder registerModule(final VPackParserModule module) {
+			module.setup(VPackParser.Builder.this);
+			return this;
+		}
+
+		@Override
+		public Builder registerModules(final VPackParserModule... modules) {
+			for (final VPackParserModule module : modules) {
+				registerModule(module);
+			}
+			return this;
+		}
+
+		public VPackParser build() {
+			return new VPackParser(serializers, serializersByName, deserializers, deserializersByName);
+		}
+	}
+
+	/**
+	 * @deprecated use {@link VPack.Builder#build()} instead
+	 */
+	@Deprecated
 	public VPackParser() {
+		this(new HashMap<Class<?>, VPackJsonSerializer<?>>(),
+				new HashMap<String, Map<Class<?>, VPackJsonSerializer<?>>>(),
+				new HashMap<ValueType, VPackJsonDeserializer>(),
+				new HashMap<String, Map<ValueType, VPackJsonDeserializer>>());
+	}
+
+	private VPackParser(final Map<Class<?>, VPackJsonSerializer<?>> serializers,
+		final Map<String, Map<Class<?>, VPackJsonSerializer<?>>> serializersByName,
+		final Map<ValueType, VPackJsonDeserializer> deserializers,
+		final Map<String, Map<ValueType, VPackJsonDeserializer>> deserializersByName) {
 		super();
-		deserializers = new HashMap<ValueType, VPackJsonDeserializer>();
-		deserializersByName = new HashMap<String, Map<ValueType, VPackJsonDeserializer>>();
-		serializers = new HashMap<Class<?>, VPackJsonSerializer<?>>();
-		serializersByName = new HashMap<String, Map<Class<?>, VPackJsonSerializer<?>>>();
+		this.serializers = serializers;
+		this.serializersByName = serializersByName;
+		this.deserializers = deserializers;
+		this.deserializersByName = deserializersByName;
 	}
 
-	public String toJson(final VPackSlice vpack) throws VPackException {
-		return toJson(vpack, false);
-	}
-
-	public String toJson(final VPackSlice vpack, final boolean includeNullValues) throws VPackException {
-		final StringBuilder json = new StringBuilder();
-		parse(null, null, vpack, json, includeNullValues);
-		return json.toString();
-	}
-
+	/**
+	 * @deprecated use {@link VPackParser.Builder#registerDeserializer(String, ValueType, VPackJsonDeserializer)}
+	 *             instead
+	 * @param attribute
+	 * @param type
+	 * @param deserializer
+	 * @return
+	 */
+	@Deprecated
 	public VPackParser registerDeserializer(
 		final String attribute,
 		final ValueType type,
@@ -85,23 +175,26 @@ public class VPackParser {
 		return this;
 	}
 
+	/**
+	 * @deprecated use {@link VPackParser.Builder#registerDeserializer(ValueType, VPackJsonDeserializer)} instead
+	 * @param type
+	 * @param deserializer
+	 * @return
+	 */
+	@Deprecated
 	public VPackParser registerDeserializer(final ValueType type, final VPackJsonDeserializer deserializer) {
 		deserializers.put(type, deserializer);
 		return this;
 	}
 
-	private VPackJsonDeserializer getDeserializer(final String attribute, final ValueType type) {
-		VPackJsonDeserializer deserializer = null;
-		final Map<ValueType, VPackJsonDeserializer> byName = deserializersByName.get(attribute);
-		if (byName != null) {
-			deserializer = byName.get(type);
-		}
-		if (deserializer == null) {
-			deserializer = deserializers.get(type);
-		}
-		return deserializer;
-	}
-
+	/**
+	 * @deprecated use {@link VPackParser.Builder#registerSerializer(String, Class, VPackJsonSerializer)} instead
+	 * @param attribute
+	 * @param type
+	 * @param serializer
+	 * @return
+	 */
+	@Deprecated
 	public <T> VPackParser registerSerializer(
 		final String attribute,
 		final Class<T> type,
@@ -115,9 +208,38 @@ public class VPackParser {
 		return this;
 	}
 
+	/**
+	 * @deprecated use {@link VPackParser.Builder#registerSerializer(Class, VPackJsonSerializer)} instead
+	 * @param type
+	 * @param serializer
+	 * @return
+	 */
+	@Deprecated
 	public <T> VPackParser registerSerializer(final Class<T> type, final VPackJsonSerializer<T> serializer) {
 		serializers.put(type, serializer);
 		return this;
+	}
+
+	public String toJson(final VPackSlice vpack) throws VPackException {
+		return toJson(vpack, false);
+	}
+
+	public String toJson(final VPackSlice vpack, final boolean includeNullValues) throws VPackException {
+		final StringBuilder json = new StringBuilder();
+		parse(null, null, vpack, json, includeNullValues);
+		return json.toString();
+	}
+
+	private VPackJsonDeserializer getDeserializer(final String attribute, final ValueType type) {
+		VPackJsonDeserializer deserializer = null;
+		final Map<ValueType, VPackJsonDeserializer> byName = deserializersByName.get(attribute);
+		if (byName != null) {
+			deserializer = byName.get(type);
+		}
+		if (deserializer == null) {
+			deserializer = deserializers.get(type);
+		}
+		return deserializer;
 	}
 
 	private VPackJsonSerializer<?> getSerializer(final String attribute, final Class<?> type) {

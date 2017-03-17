@@ -43,7 +43,7 @@ public class VPackParserTest {
 		builder.add(ValueType.OBJECT);
 		builder.add("a", "test");
 		builder.close();
-		final String json = new VPackParser().toJson(builder.slice());
+		final String json = new VPackParser.Builder().build().toJson(builder.slice());
 		assertThat(json, is("{\"a\":\"test\"}"));
 	}
 
@@ -54,7 +54,7 @@ public class VPackParserTest {
 		builder.add("a", "test");
 		builder.add("b", true);
 		builder.close();
-		final String json = new VPackParser().toJson(builder.slice());
+		final String json = new VPackParser.Builder().build().toJson(builder.slice());
 		assertThat(json, is("{\"a\":\"test\",\"b\":true}"));
 	}
 
@@ -65,7 +65,7 @@ public class VPackParserTest {
 		builder.add("a", "test");
 		builder.add("b", "test");
 		builder.close();
-		final String json = new VPackParser().toJson(builder.slice());
+		final String json = new VPackParser.Builder().build().toJson(builder.slice());
 		assertThat(json, is("{\"a\":\"test\",\"b\":\"test\"}"));
 	}
 
@@ -76,7 +76,7 @@ public class VPackParserTest {
 		builder.add("a", true);
 		builder.add("b", false);
 		builder.close();
-		final String json = new VPackParser().toJson(builder.slice());
+		final String json = new VPackParser.Builder().build().toJson(builder.slice());
 		assertThat(json, is("{\"a\":true,\"b\":false}"));
 	}
 
@@ -87,7 +87,7 @@ public class VPackParserTest {
 		builder.add("a", 5);
 		builder.add("b", 5.5);
 		builder.close();
-		final String json = new VPackParser().toJson(builder.slice());
+		final String json = new VPackParser.Builder().build().toJson(builder.slice());
 		assertThat(json, is("{\"a\":5,\"b\":5.5}"));
 	}
 
@@ -106,7 +106,7 @@ public class VPackParserTest {
 		builder.add("c");
 		builder.close();
 		builder.close();
-		final String json = new VPackParser().toJson(builder.slice());
+		final String json = new VPackParser.Builder().build().toJson(builder.slice());
 		assertThat(json, is("{\"a\":[1,2,3],\"b\":[\"a\",\"b\",\"c\"]}"));
 	}
 
@@ -123,7 +123,7 @@ public class VPackParserTest {
 		builder.add("bb", 5.5);
 		builder.close();
 		builder.close();
-		final String json = new VPackParser().toJson(builder.slice());
+		final String json = new VPackParser.Builder().build().toJson(builder.slice());
 		assertThat(json, is("{\"a\":{\"aa\":\"test\",\"ab\":true},\"b\":{\"ba\":\"test\",\"bb\":5.5}}"));
 	}
 
@@ -138,7 +138,7 @@ public class VPackParserTest {
 		builder.add("a", "test");
 		builder.close();
 		builder.close();
-		final String json = new VPackParser().toJson(builder.slice());
+		final String json = new VPackParser.Builder().build().toJson(builder.slice());
 		assertThat(json, is("[{\"a\":\"test\"},{\"a\":\"test\"}]"));
 	}
 
@@ -157,7 +157,7 @@ public class VPackParserTest {
 		builder.add("c");
 		builder.close();
 		builder.close();
-		final String json = new VPackParser().toJson(builder.slice());
+		final String json = new VPackParser.Builder().build().toJson(builder.slice());
 		assertThat(json, is("[[1,2,3],[\"a\",\"b\",\"c\"]]"));
 	}
 
@@ -170,7 +170,7 @@ public class VPackParserTest {
 		builder.add("b", b);
 		builder.add("c", "test");
 		builder.close();
-		final String json = new VPackParser().toJson(builder.slice(), false);
+		final String json = new VPackParser.Builder().build().toJson(builder.slice(), false);
 		assertThat(json, is("{\"c\":\"test\"}"));
 	}
 
@@ -183,7 +183,7 @@ public class VPackParserTest {
 		builder.add("b", b);
 		builder.add("c", "test");
 		builder.close();
-		final String json = new VPackParser().toJson(builder.slice(), true);
+		final String json = new VPackParser.Builder().build().toJson(builder.slice(), true);
 		assertThat(json, is("{\"a\":null,\"b\":null,\"c\":\"test\"}"));
 	}
 
@@ -196,7 +196,7 @@ public class VPackParserTest {
 		builder.add(s);
 		builder.add("test");
 		builder.close();
-		final String json = new VPackParser().toJson(builder.slice(), false);
+		final String json = new VPackParser.Builder().build().toJson(builder.slice(), false);
 		assertThat(json, is("[\"test\"]"));
 	}
 
@@ -209,13 +209,13 @@ public class VPackParserTest {
 		builder.add(s);
 		builder.add("test");
 		builder.close();
-		final String json = new VPackParser().toJson(builder.slice(), true);
+		final String json = new VPackParser.Builder().build().toJson(builder.slice(), true);
 		assertThat(json, is("[null,null,\"test\"]"));
 	}
 
 	@Test
 	public void fromJsonObject1Field() throws VPackException {
-		final VPackSlice vpack = new VPackParser().fromJson("{\"a\":\"test\"}");
+		final VPackSlice vpack = new VPackParser.Builder().build().fromJson("{\"a\":\"test\"}");
 		assertThat(vpack.isObject(), is(true));
 		final VPackSlice a = vpack.get("a");
 		assertThat(a.isString(), is(true));
@@ -224,7 +224,7 @@ public class VPackParserTest {
 
 	@Test
 	public void fromJsonObject2Fields() throws VPackException {
-		final VPackSlice vpack = new VPackParser().fromJson("{\"a\":\"test\",\"b\":true}");
+		final VPackSlice vpack = new VPackParser.Builder().build().fromJson("{\"a\":\"test\",\"b\":true}");
 		assertThat(vpack.isObject(), is(true));
 		final VPackSlice a = vpack.get("a");
 		assertThat(a.isString(), is(true));
@@ -236,7 +236,7 @@ public class VPackParserTest {
 
 	@Test
 	public void fromJsonObjectStringField() throws VPackException {
-		final VPackSlice vpack = new VPackParser().fromJson("{\"a\":\"test1\",\"b\":\"test2\"}");
+		final VPackSlice vpack = new VPackParser.Builder().build().fromJson("{\"a\":\"test1\",\"b\":\"test2\"}");
 		assertThat(vpack.isObject(), is(true));
 		final VPackSlice a = vpack.get("a");
 		assertThat(a.isString(), is(true));
@@ -248,7 +248,7 @@ public class VPackParserTest {
 
 	@Test
 	public void fromJsonObjectBooleanField() throws VPackException {
-		final VPackSlice vpack = new VPackParser().fromJson("{\"a\":true,\"b\":false}");
+		final VPackSlice vpack = new VPackParser.Builder().build().fromJson("{\"a\":true,\"b\":false}");
 		assertThat(vpack.isObject(), is(true));
 		final VPackSlice a = vpack.get("a");
 		assertThat(a.isBoolean(), is(true));
@@ -260,7 +260,7 @@ public class VPackParserTest {
 
 	@Test
 	public void fromJsonObjectNumberField() throws VPackException {
-		final VPackSlice vpack = new VPackParser().fromJson("{\"a\":5,\"b\":5.5}");
+		final VPackSlice vpack = new VPackParser.Builder().build().fromJson("{\"a\":5,\"b\":5.5}");
 		assertThat(vpack.isObject(), is(true));
 		final VPackSlice a = vpack.get("a");
 		assertThat(a.isInteger(), is(true));
@@ -272,7 +272,8 @@ public class VPackParserTest {
 
 	@Test
 	public void fromJsonArrayInObject() throws VPackException {
-		final VPackSlice vpack = new VPackParser().fromJson("{\"a\":[1,2,3],\"b\":[\"a\",\"b\",\"c\"]}");
+		final VPackSlice vpack = new VPackParser.Builder().build()
+				.fromJson("{\"a\":[1,2,3],\"b\":[\"a\",\"b\",\"c\"]}");
 		assertThat(vpack.isObject(), is(true));
 		final VPackSlice a = vpack.get("a");
 		assertThat(a.isArray(), is(true));
@@ -296,7 +297,7 @@ public class VPackParserTest {
 
 	@Test
 	public void fromJsonObjectInObject() throws VPackException {
-		final VPackSlice vpack = new VPackParser()
+		final VPackSlice vpack = new VPackParser.Builder().build()
 				.fromJson("{\"a\":{\"aa\":\"test\",\"ab\":true},\"b\":{\"ba\":\"test\",\"bb\":5.5}}");
 		assertThat(vpack.isObject(), is(true));
 		assertThat(vpack.size(), is(2));
@@ -322,7 +323,7 @@ public class VPackParserTest {
 
 	@Test
 	public void fromJsonObjectInArray() throws VPackException {
-		final VPackSlice vpack = new VPackParser().fromJson("[{\"a\":\"test\"},{\"a\":\"test\"}]");
+		final VPackSlice vpack = new VPackParser.Builder().build().fromJson("[{\"a\":\"test\"},{\"a\":\"test\"}]");
 		assertThat(vpack.isArray(), is(true));
 		assertThat(vpack.size(), is(2));
 		final VPackSlice z = vpack.get(0);
@@ -341,7 +342,7 @@ public class VPackParserTest {
 
 	@Test
 	public void fromJsonArrayInArray() throws VPackException {
-		final VPackSlice vpack = new VPackParser().fromJson("[[1,2,3],[\"a\",\"b\",\"c\"]]");
+		final VPackSlice vpack = new VPackParser.Builder().build().fromJson("[[1,2,3],[\"a\",\"b\",\"c\"]]");
 		assertThat(vpack.isArray(), is(true));
 		assertThat(vpack.size(), is(2));
 		final VPackSlice z = vpack.get(0);
@@ -366,7 +367,8 @@ public class VPackParserTest {
 
 	@Test
 	public void fromJsonExcludeNullValueInObject() throws VPackException {
-		final VPackSlice vpack = new VPackParser().fromJson("{\"a\":null,\"b\":null,\"c\":\"test\"}", false);
+		final VPackSlice vpack = new VPackParser.Builder().build().fromJson("{\"a\":null,\"b\":null,\"c\":\"test\"}",
+			false);
 		assertThat(vpack.isObject(), is(true));
 		assertThat(vpack.size(), is(1));
 		assertThat(vpack.get("a").isNone(), is(true));
@@ -377,7 +379,8 @@ public class VPackParserTest {
 
 	@Test
 	public void fromJsonIncludeNullValueInObject() throws VPackException {
-		final VPackSlice vpack = new VPackParser().fromJson("{\"a\":null,\"b\":null,\"c\":\"test\"}", true);
+		final VPackSlice vpack = new VPackParser.Builder().build().fromJson("{\"a\":null,\"b\":null,\"c\":\"test\"}",
+			true);
 		assertThat(vpack.isObject(), is(true));
 		assertThat(vpack.size(), is(3));
 		assertThat(vpack.get("a").isNull(), is(true));
@@ -388,7 +391,7 @@ public class VPackParserTest {
 
 	@Test
 	public void fromJsonExcludeNullValueInArray() throws VPackException {
-		final VPackSlice vpack = new VPackParser().fromJson("[null,null,\"test\"]", false);
+		final VPackSlice vpack = new VPackParser.Builder().build().fromJson("[null,null,\"test\"]", false);
 		assertThat(vpack.isArray(), is(true));
 		assertThat(vpack.size(), is(1));
 		assertThat(vpack.get(0).isString(), is(true));
@@ -397,7 +400,7 @@ public class VPackParserTest {
 
 	@Test
 	public void fromJsonIncludeNullValueInArray() throws VPackException {
-		final VPackSlice vpack = new VPackParser().fromJson("[null,null,\"test\"]", true);
+		final VPackSlice vpack = new VPackParser.Builder().build().fromJson("[null,null,\"test\"]", true);
 		assertThat(vpack.isArray(), is(true));
 		assertThat(vpack.size(), is(3));
 		assertThat(vpack.get(0).isNull(), is(true));
@@ -423,7 +426,7 @@ public class VPackParserTest {
 				json.append(JSONValue.toJSONString(vpack.getAsString() + "1"));
 			}
 		};
-		final String json = new VPackParser().registerDeserializer(ValueType.STRING, deserializer)
+		final String json = new VPackParser.Builder().registerDeserializer(ValueType.STRING, deserializer).build()
 				.toJson(builder.slice());
 		assertThat(json, is("{\"a\":\"a1\",\"b\":\"b1\"}"));
 	}
@@ -435,28 +438,30 @@ public class VPackParserTest {
 		builder.add("a", "a");
 		builder.add("b", "b");
 		builder.close();
-		final String json = new VPackParser().registerDeserializer("a", ValueType.STRING, new VPackJsonDeserializer() {
-			@Override
-			public void deserialize(
-				final VPackSlice parent,
-				final String attribute,
-				final VPackSlice vpack,
-				final StringBuilder json) throws VPackException {
-				json.append(JSONValue.toJSONString(vpack.getAsString() + "1"));
-			}
-		}).toJson(builder.slice());
+		final String json = new VPackParser.Builder()
+				.registerDeserializer("a", ValueType.STRING, new VPackJsonDeserializer() {
+					@Override
+					public void deserialize(
+						final VPackSlice parent,
+						final String attribute,
+						final VPackSlice vpack,
+						final StringBuilder json) throws VPackException {
+						json.append(JSONValue.toJSONString(vpack.getAsString() + "1"));
+					}
+				}).build().toJson(builder.slice());
 		assertThat(json, is("{\"a\":\"a1\",\"b\":\"b\"}"));
 	}
 
 	@Test
 	public void customSerializer() throws VPackException {
-		final VPackSlice vpack = new VPackParser().registerSerializer(String.class, new VPackJsonSerializer<String>() {
-			@Override
-			public void serialize(final VPackBuilder builder, final String attribute, final String value)
-					throws VPackException {
-				builder.add(attribute, value + "1");
-			}
-		}).fromJson("{\"a\":\"a\"}");
+		final VPackSlice vpack = new VPackParser.Builder()
+				.registerSerializer(String.class, new VPackJsonSerializer<String>() {
+					@Override
+					public void serialize(final VPackBuilder builder, final String attribute, final String value)
+							throws VPackException {
+						builder.add(attribute, value + "1");
+					}
+				}).build().fromJson("{\"a\":\"a\"}");
 		assertThat(vpack.isObject(), is(true));
 		assertThat(vpack.get("a").isString(), is(true));
 		assertThat(vpack.get("a").getAsString(), is("a1"));
@@ -465,14 +470,14 @@ public class VPackParserTest {
 	@Test
 	public void customSerializerByName() {
 		final String json = "{\"a\":\"a\",\"b\":\"b\"}";
-		final VPackSlice vpack = new VPackParser()
+		final VPackSlice vpack = new VPackParser.Builder()
 				.registerSerializer("a", String.class, new VPackJsonSerializer<String>() {
 					@Override
 					public void serialize(final VPackBuilder builder, final String attribute, final String value)
 							throws VPackException {
 						builder.add(attribute, value + "1");
 					}
-				}).fromJson(json);
+				}).build().fromJson(json);
 		assertThat(vpack.isObject(), is(true));
 		assertThat(vpack.get("a").isString(), is(true));
 		assertThat(vpack.get("a").getAsString(), is("a1"));
@@ -483,7 +488,7 @@ public class VPackParserTest {
 	@Test
 	public void dateToJson() {
 		final VPackSlice vpack = new VPackBuilder().add(new Date(1478766992059L)).slice();
-		final VPackParser parser = new VPackParser();
+		final VPackParser parser = new VPackParser.Builder().build();
 		assertThat(parser.toJson(vpack), containsString("2016-11-10T"));
 		assertThat(parser.toJson(vpack), containsString(":36:32.059Z"));
 	}
@@ -493,7 +498,7 @@ public class VPackParserTest {
 		final String name1 = "{\"name1\":\"job_04_detail_1\",\"seven__\":\"123456789\",\"_key\":\"191d936d-1eb9-4094-9c1c-9e0ba1d01867\",\"lang\":\"it\",\"value\":\"[CTO]\\n Ha supervisionato e gestito il reparto di R&D per il software, 1234567 formulando una visione di lungo periodo con la Direzione dell'Azienda.\"}";
 		final String name = "{\"name\":\"job_04_detail_1\",\"seven__\":\"123456789\",\"_key\":\"191d936d-1eb9-4094-9c1c-9e0ba1d01867\",\"lang\":\"it\",\"value\":\"[CTO]\\n Ha supervisionato e gestito il reparto di R&D per il software, 1234567 formulando una visione di lungo periodo con la Direzione dell'Azienda.\"}";
 
-		final VPackParser vpacker = new VPackParser();
+		final VPackParser vpacker = new VPackParser.Builder().build();
 		{
 			final VPackSlice vpack = vpacker.fromJson(name1);
 			assertThat(vpack.isObject(), is(true));

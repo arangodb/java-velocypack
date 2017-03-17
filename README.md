@@ -130,7 +130,7 @@ mvn clean install -DskipTests=true -Dgpg.skip=true -Dmaven.javadoc.skip=true -B
 
 ``` Java
   String json = ...
-  VPackParser parser = new VPackParser();
+  VPackParser parser = new VPackParser.Builder().build();
   VPackSlice slice = parser.fromJson(json);
 ```
 
@@ -138,8 +138,26 @@ mvn clean install -DskipTests=true -Dgpg.skip=true -Dmaven.javadoc.skip=true -B
 
 ``` Java
   VPackSlice slice = ...
-  VPackParser parser = new VPackParser();
+  VPackParser parser = new VPackParser.Builder().build();
   String json = parser.toJson(slice);
+```
+
+# Registering modules
+
+Both `VPack` and `VPackParser` allow registering of modules which can offer custom serializers/deserializers for additional types.
+
+## VPackModule
+
+``` Java
+  VPackModule module = ...
+  VPack vpack = new VPack.Builder().registerModule(module).build();
+```
+
+## VPackParserModule
+
+``` Java
+  VPackParserModule module = ...
+  VPackParser parser = VPackParser.Builder().registerModule(module).build();
 ```
 
 # Configure serialization / deserialization
