@@ -110,7 +110,7 @@ mvn clean install -DskipTests=true -Dgpg.skip=true -Dmaven.javadoc.skip=true -B
   VPackSlice slice = builder.slice(); // create slice
 ```
 
-## serialize JavaBean
+## serialize POJO
 
 ```Java
   MyBean entity = new MyBean();
@@ -144,8 +144,8 @@ mvn clean install -DskipTests=true -Dgpg.skip=true -Dmaven.javadoc.skip=true -B
 
 # Configure serialization / deserialization
 
-## JavaBeans
-The class `VPack` can serialize/deserialize JavaBeans. They need at least a constructor without parameter.
+## POJOs
+The class `VPack` can serialize/deserialize POJOs. They need at least a constructor without parameter.
 
 ``` Java
   public class MyObject {
