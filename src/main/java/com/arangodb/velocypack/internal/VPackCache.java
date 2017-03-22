@@ -25,7 +25,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -184,12 +183,7 @@ public class VPackCache {
 			}
 		}
 		final Class<?> clazz = field.getType();
-		final Type type;
-		if (Collection.class.isAssignableFrom(clazz) || Map.class.isAssignableFrom(clazz)) {
-			type = field.getGenericType();
-		} else {
-			type = clazz;
-		}
+		final Type type = (clazz == Object.class) ? Object.class : field.getGenericType();
 		return new FieldInfo(type, fieldName, serialize, deserialize) {
 			@Override
 			public void set(final Object obj, final Object value) throws IllegalAccessException {

@@ -1,3 +1,7 @@
-v1.0.1 (2017-03-xx)
+v1.0.2 (2017-03-22)
+---------------------------
+* added support for deserializing parameterized types
+
+v1.0.1 (2017-03-17)
 ---------------------------
 * added support for registering modules on VPack,VPackParser

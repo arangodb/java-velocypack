@@ -298,7 +298,7 @@ public class VPack {
 			@Override
 			public void serialize(final VPackBuilder builder, final String attribute, final Object entity)
 					throws VPackParserException {
-				VPack.this.serialize(attribute, entity, entity.getClass(), builder,
+				VPack.this.serialize(attribute, entity, entity != null ? entity.getClass() : null, builder,
 					Collections.<String, Object> emptyMap());
 			}
 		};
@@ -343,6 +343,9 @@ public class VPack {
 		if (deserializer == null) {
 			deserializer = deserializers.get(type);
 		}
+		if (deserializer == null && ParameterizedType.class.isAssignableFrom(type.getClass())) {
+			deserializer = getDeserializer(fieldName, ParameterizedType.class.cast(type).getRawType());
+		}
 		return deserializer;
 	}
 
@@ -355,7 +358,13 @@ public class VPack {
 		final T entity;
 		final VPackDeserializer<?> deserializer = getDeserializer(fieldName, type);
 		if (deserializer != null) {
-			entity = ((VPackDeserializer<T>) deserializer).deserialize(parent, vpack, deserializationContext);
+			if (VPackDeserializerParameterizedType.class.isAssignableFrom(deserializer.getClass())
+					&& ParameterizedType.class.isAssignableFrom(type.getClass())) {
+				entity = ((VPackDeserializerParameterizedType<T>) deserializer).deserialize(parent, vpack,
+					deserializationContext, ParameterizedType.class.cast(type));
+			} else {
+				entity = ((VPackDeserializer<T>) deserializer).deserialize(parent, vpack, deserializationContext);
+			}
 		} else if (type == Object.class) {
 			entity = (T) getValue(parent, vpack, getType(vpack), fieldName);
 		} else {
@@ -438,7 +447,14 @@ public class VPack {
 		} else {
 			final VPackDeserializer<?> deserializer = getDeserializer(fieldName, type);
 			if (deserializer != null) {
-				value = ((VPackDeserializer<Object>) deserializer).deserialize(parent, vpack, deserializationContext);
+				if (VPackDeserializerParameterizedType.class.isAssignableFrom(deserializer.getClass())
+						&& ParameterizedType.class.isAssignableFrom(type.getClass())) {
+					value = ((VPackDeserializerParameterizedType<Object>) deserializer).deserialize(parent, vpack,
+						deserializationContext, ParameterizedType.class.cast(type));
+				} else {
+					value = ((VPackDeserializer<Object>) deserializer).deserialize(parent, vpack,
+						deserializationContext);
+				}
 			} else if (type instanceof ParameterizedType) {
 				final ParameterizedType pType = ParameterizedType.class.cast(type);
 				final Type rawType = pType.getRawType();
