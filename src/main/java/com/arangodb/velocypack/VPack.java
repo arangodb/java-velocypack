@@ -762,6 +762,9 @@ public class VPack {
 				serializer = enclosingSerializers.get(((Class<?>) type).getEnclosingClass());
 			}
 		}
+		if (serializer == null && ParameterizedType.class.isAssignableFrom(type.getClass())) {
+			serializer = getSerializer(ParameterizedType.class.cast(type).getRawType());
+		}
 		return serializer;
 	}
 }
