@@ -3,7 +3,7 @@
 
 # ArangoDB VelocyPack Java
 
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.arangodb/java-velocypack/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.arangodb/java-velocypack)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.arangodb/velocypack/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.arangodb/velocypack)
 
 Java implementation for [VelocyPack](https://github.com/arangodb/velocypack).
 
