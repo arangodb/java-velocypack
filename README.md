@@ -246,3 +246,8 @@ To ignore fields at serialization/deserialization, use the annotation `Expose`
       }
     }).build();
 ``` 
+
+# Learn more
+* [ArangoDB](https://www.arangodb.com/)
+* [ChangeLog](ChangeLog)
+* [JavaDoc](http://arangodb.github.io/java-velocypack/javadoc-1_0/index.html)
