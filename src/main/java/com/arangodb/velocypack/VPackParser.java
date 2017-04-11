@@ -126,8 +126,11 @@ public class VPackParser {
 			return this;
 		}
 
-		public VPackParser build() {
-			return new VPackParser(serializers, serializersByName, deserializers, deserializersByName);
+		public synchronized VPackParser build() {
+			return new VPackParser(new HashMap<Class<?>, VPackJsonSerializer<?>>(serializers),
+					new HashMap<String, Map<Class<?>, VPackJsonSerializer<?>>>(serializersByName),
+					new HashMap<ValueType, VPackJsonDeserializer>(deserializers),
+					new HashMap<String, Map<ValueType, VPackJsonDeserializer>>(deserializersByName));
 		}
 	}
 

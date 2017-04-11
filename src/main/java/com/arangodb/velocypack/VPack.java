@@ -268,10 +268,16 @@ public class VPack {
 			return this;
 		}
 
-		public VPack build() {
-			return new VPack(serializers, enclosingSerializers, deserializers, instanceCreators, builderOptions,
-					serializeNullValues, fieldNamingStrategy, deserializersByName, annotationFieldFilter,
-					annotationFieldNaming);
+		public synchronized VPack build() {
+			return new VPack(new HashMap<Type, VPackSerializer<?>>(serializers),
+					new HashMap<Type, VPackSerializer<?>>(enclosingSerializers),
+					new HashMap<Type, VPackDeserializer<?>>(deserializers),
+					new HashMap<Type, VPackInstanceCreator<?>>(instanceCreators), builderOptions, serializeNullValues,
+					fieldNamingStrategy, new HashMap<String, Map<Type, VPackDeserializer<?>>>(deserializersByName),
+					new HashMap<Class<? extends Annotation>, VPackAnnotationFieldFilter<? extends Annotation>>(
+							annotationFieldFilter),
+					new HashMap<Class<? extends Annotation>, VPackAnnotationFieldNaming<? extends Annotation>>(
+							annotationFieldNaming));
 		}
 
 	}

@@ -1,3 +1,7 @@
+v1.0.4 (2017-04-11)
+---------------------------
+* optimize VPack.Builder and VPackParser.Builder (thread-safe)
+
 v1.0.3 (2017-03-23)
 ---------------------------
 * fixed serialization for parameterized types 
