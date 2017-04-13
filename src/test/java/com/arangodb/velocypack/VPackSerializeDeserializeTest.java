@@ -3696,4 +3696,11 @@ public class VPackSerializeDeserializeTest {
 		assertThat(entity.foo, is("bar".getBytes()));
 	}
 
+	@Test
+	public void asFloatingNumber() {
+		final VPackSlice vpack = new VPackBuilder().add(ValueType.OBJECT).add("value", 12000).close().slice();
+		assertThat(vpack.get("value").getAsInt(), is(12000));
+		assertThat(vpack.get("value").getAsFloat(), is(12000F));
+		assertThat(vpack.get("value").getAsDouble(), is(12000.));
+	}
 }

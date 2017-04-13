@@ -188,10 +188,7 @@ public class VPackSlice implements Serializable {
 	}
 
 	public double getAsDouble() {
-		if (!isDouble()) {
-			throw new VPackValueTypeException(ValueType.DOUBLE);
-		}
-		return getAsDoubleUnchecked();
+		return getAsNumber().doubleValue();
 	}
 
 	private double getAsDoubleUnchecked() {
@@ -230,7 +227,7 @@ public class VPackSlice implements Serializable {
 		} else if (isUInt()) {
 			result = getUInt();
 		} else if (isDouble()) {
-			result = getAsDouble();
+			result = getAsDoubleUnchecked();
 		} else {
 			throw new VPackValueTypeException(ValueType.INT, ValueType.UINT, ValueType.SMALLINT);
 		}
@@ -246,7 +243,7 @@ public class VPackSlice implements Serializable {
 	}
 
 	public float getAsFloat() {
-		return (float) getAsDoubleUnchecked();
+		return getAsNumber().floatValue();
 	}
 
 	public short getAsShort() {
