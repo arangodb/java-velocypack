@@ -85,6 +85,7 @@ public class VPack {
 		private VPackFieldNamingStrategy fieldNamingStrategy;
 		private final Map<Class<? extends Annotation>, VPackAnnotationFieldFilter<? extends Annotation>> annotationFieldFilter;
 		private final Map<Class<? extends Annotation>, VPackAnnotationFieldNaming<? extends Annotation>> annotationFieldNaming;
+		private final Map<Type, VPackKeyMapAdapter<?>> keyMapAdapters;
 
 		public Builder() {
 			super();
@@ -97,6 +98,7 @@ public class VPack {
 			serializeNullValues = false;
 			annotationFieldFilter = new HashMap<Class<? extends Annotation>, VPackAnnotationFieldFilter<? extends Annotation>>();
 			annotationFieldNaming = new HashMap<Class<? extends Annotation>, VPackAnnotationFieldNaming<? extends Annotation>>();
+			keyMapAdapters = new HashMap<Type, VPackKeyMapAdapter<?>>();
 
 			instanceCreators.put(Collection.class, VPackInstanceCreators.COLLECTION);
 			instanceCreators.put(List.class, VPackInstanceCreators.LIST);
@@ -268,6 +270,21 @@ public class VPack {
 			return this;
 		}
 
+		/**
+		 * Register an adapter to convert keys in {@link java.util.Map} which are not from type
+		 * {@link java.lang.String}.
+		 * 
+		 * @param type
+		 *            the type the adapter should used for
+		 * @param adapter
+		 *            the adapter
+		 * @return {@link VPack.Builder}
+		 */
+		public Builder registerKeyMapAdapter(final Type type, final VPackKeyMapAdapter<?> adapter) {
+			keyMapAdapters.put(type, adapter);
+			return this;
+		}
+
 		public synchronized VPack build() {
 			return new VPack(new HashMap<Type, VPackSerializer<?>>(serializers),
 					new HashMap<Type, VPackSerializer<?>>(enclosingSerializers),
@@ -277,7 +294,8 @@ public class VPack {
 					new HashMap<Class<? extends Annotation>, VPackAnnotationFieldFilter<? extends Annotation>>(
 							annotationFieldFilter),
 					new HashMap<Class<? extends Annotation>, VPackAnnotationFieldNaming<? extends Annotation>>(
-							annotationFieldNaming));
+							annotationFieldNaming),
+					keyMapAdapters);
 		}
 
 	}
@@ -288,7 +306,8 @@ public class VPack {
 		final boolean serializeNullValues, final VPackFieldNamingStrategy fieldNamingStrategy,
 		final Map<String, Map<Type, VPackDeserializer<?>>> deserializersByName,
 		final Map<Class<? extends Annotation>, VPackAnnotationFieldFilter<? extends Annotation>> annotationFieldFilter,
-		final Map<Class<? extends Annotation>, VPackAnnotationFieldNaming<? extends Annotation>> annotationFieldNaming) {
+		final Map<Class<? extends Annotation>, VPackAnnotationFieldNaming<? extends Annotation>> annotationFieldNaming,
+		final Map<Type, VPackKeyMapAdapter<?>> keyMapAdapters) {
 		super();
 		this.serializers = serializers;
 		this.enclosingSerializers = enclosingSerializers;
@@ -297,7 +316,7 @@ public class VPack {
 		this.builderOptions = builderOptions;
 		this.serializeNullValues = serializeNullValues;
 		this.deserializersByName = deserializersByName;
-		keyMapAdapters = new HashMap<Type, VPackKeyMapAdapter<?>>();
+		this.keyMapAdapters = keyMapAdapters;
 
 		cache = new VPackCache(fieldNamingStrategy, annotationFieldFilter, annotationFieldNaming);
 		serializationContext = new VPackSerializationContext() {

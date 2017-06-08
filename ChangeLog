@@ -1,3 +1,7 @@
+v1.0.6 (2017-xx-xx)
+---------------------------
+* added VPack.Builder.registerKeyMapAdapter(type, adapter)
+
 v1.0.5 (2017-04-13)
 ---------------------------
 * fixed VPackSlice float/double bug

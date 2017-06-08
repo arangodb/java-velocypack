@@ -3703,4 +3703,48 @@ public class VPackSerializeDeserializeTest {
 		assertThat(vpack.get("value").getAsFloat(), is(12000F));
 		assertThat(vpack.get("value").getAsDouble(), is(12000.));
 	}
+
+	private static class TestEntityObjectKeyMap {
+		private Map<TestEntityA, Object> map;
+
+		public TestEntityObjectKeyMap() {
+			super();
+		}
+	}
+
+	@Test
+	public void keyMapAdapter() {
+		final VPack vpack = new VPack.Builder()
+				.registerKeyMapAdapter(TestEntityA.class, new VPackKeyMapAdapter<TestEntityA>() {
+					@Override
+					public String serialize(final TestEntityA key) {
+						return key.getA();
+					}
+
+					@Override
+					public TestEntityA deserialize(final String key) {
+						final TestEntityA e = new TestEntityA();
+						e.setA(key);
+						return e;
+					}
+				}).build();
+
+		final TestEntityObjectKeyMap entityIn = new TestEntityObjectKeyMap();
+		entityIn.map = new HashMap<TestEntityA, Object>();
+		final TestEntityA key = new TestEntityA();
+		key.setA("b");
+		entityIn.map.put(key, "test");
+
+		final VPackSlice slice = vpack.serialize(entityIn);
+		assertThat(slice.isObject(), is(true));
+		assertThat(slice.get("map").isObject(), is(true));
+		assertThat(slice.get("map").size(), is(1));
+		assertThat(slice.get("map").get("b").getAsString(), is("test"));
+
+		final TestEntityObjectKeyMap entityOut = vpack.deserialize(slice, TestEntityObjectKeyMap.class);
+		assertThat(entityOut.map.size(), is(1));
+		final Entry<TestEntityA, Object> entry = entityOut.map.entrySet().iterator().next();
+		assertThat(entry.getKey().a, is("b"));
+		assertThat(entry.getValue().toString(), is("test"));
+	}
 }
