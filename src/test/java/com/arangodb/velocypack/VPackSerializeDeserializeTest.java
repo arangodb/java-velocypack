@@ -54,6 +54,7 @@ import javax.xml.bind.DatatypeConverter;
 
 import org.junit.Test;
 
+import com.arangodb.velocypack.VPack.SerializeOptions;
 import com.arangodb.velocypack.annotations.Expose;
 import com.arangodb.velocypack.annotations.SerializedName;
 import com.arangodb.velocypack.exception.VPackException;
@@ -3056,8 +3057,9 @@ public class VPackSerializeDeserializeTest {
 		list.add(new TestEntityString());
 		list.add(new TestEntityString());
 
-		final VPackSlice vpack = new VPack.Builder().build().serialize(list, new Type<Collection<TestEntityString>>() {
-		}.getType());
+		final VPackSlice vpack = new VPack.Builder().build().serialize(list,
+			new SerializeOptions().type(new Type<Collection<TestEntityString>>() {
+			}.getType()));
 		assertThat(vpack, is(notNullValue()));
 		assertThat(vpack.isArray(), is(true));
 		assertThat(vpack.getLength(), is(list.size()));
@@ -3094,8 +3096,9 @@ public class VPackSerializeDeserializeTest {
 		map.put("a", new TestEntityString());
 		map.put("b", new TestEntityString());
 
-		final VPackSlice vpack = new VPack.Builder().build().serialize(map, new Type<Map<String, TestEntityString>>() {
-		}.getType());
+		final VPackSlice vpack = new VPack.Builder().build().serialize(map,
+			new SerializeOptions().type(new Type<Map<String, TestEntityString>>() {
+			}.getType()));
 		assertThat(vpack, is(notNullValue()));
 		assertThat(vpack.isObject(), is(true));
 		assertThat(vpack.getLength(), is(2));
@@ -3128,8 +3131,8 @@ public class VPackSerializeDeserializeTest {
 		map.put(new TestEntityString(), new TestEntityString());
 
 		final VPackSlice vpack = new VPack.Builder().build().serialize(map,
-			new Type<Map<TestEntityString, TestEntityString>>() {
-			}.getType());
+			new SerializeOptions().type(new Type<Map<TestEntityString, TestEntityString>>() {
+			}.getType()));
 		assertThat(vpack, is(notNullValue()));
 		assertThat(vpack.isArray(), is(true));
 		assertThat(vpack.getLength(), is(map.size()));
@@ -3300,7 +3303,8 @@ public class VPackSerializeDeserializeTest {
 		final TestEntityString entity = new TestEntityString();
 		final Map<String, Object> additionalFields = new HashMap<String, Object>();
 		additionalFields.put("a", "test");
-		final VPackSlice vpack = new VPack.Builder().build().serialize(entity, additionalFields);
+		final VPackSlice vpack = new VPack.Builder().build().serialize(entity,
+			new SerializeOptions().additionalFields(additionalFields));
 		assertThat(vpack, is(notNullValue()));
 		assertThat(vpack.getLength(), is(4));
 		final VPackSlice s = vpack.get("s");
@@ -3315,7 +3319,8 @@ public class VPackSerializeDeserializeTest {
 	public void additionalFieldsNestedPojo() {
 		final Map<String, Object> value = new HashMap<String, Object>();
 		value.put("foo", "bar");
-		final VPackSlice vpack = new VPack.Builder().build().serialize(new TestEntityObject(), value);
+		final VPackSlice vpack = new VPack.Builder().build().serialize(new TestEntityObject(),
+			new SerializeOptions().additionalFields(value));
 		assertThat(vpack, is(notNullValue()));
 		assertThat(vpack.isObject(), is(true));
 		assertThat(vpack.size(), is(3));
@@ -3334,7 +3339,8 @@ public class VPackSerializeDeserializeTest {
 		value.put("n", new HashMap<String, Object>());
 		final Map<String, Object> additionalFields = new HashMap<String, Object>();
 		additionalFields.put("foo", "bar");
-		final VPackSlice vpack = new VPack.Builder().build().serialize(value, additionalFields);
+		final VPackSlice vpack = new VPack.Builder().build().serialize(value,
+			new SerializeOptions().additionalFields(additionalFields));
 		assertThat(vpack, is(notNullValue()));
 		assertThat(vpack.isObject(), is(true));
 		assertThat(vpack.size(), is(2));
@@ -3350,7 +3356,8 @@ public class VPackSerializeDeserializeTest {
 		final TestEntityString entity = new TestEntityString();
 		final Map<String, Object> additionalFields = new HashMap<String, Object>();
 		additionalFields.put("s", "test1");
-		final VPackSlice vpack = new VPack.Builder().build().serialize(entity, additionalFields);
+		final VPackSlice vpack = new VPack.Builder().build().serialize(entity,
+			new SerializeOptions().additionalFields(additionalFields));
 		assertThat(vpack, is(notNullValue()));
 		assertThat(vpack.getLength(), is(3));
 		final VPackSlice s = vpack.get("s");
@@ -3363,7 +3370,8 @@ public class VPackSerializeDeserializeTest {
 		final TestEntityString entity = new TestEntityString();
 		final Map<String, Object> additionalFields = new HashMap<String, Object>();
 		additionalFields.put("a", null);
-		final VPackSlice vpack = new VPack.Builder().build().serialize(entity, additionalFields);
+		final VPackSlice vpack = new VPack.Builder().build().serialize(entity,
+			new SerializeOptions().additionalFields(additionalFields));
 		assertThat(vpack, is(notNullValue()));
 		assertThat(vpack.getLength(), is(3));
 		final VPackSlice s = vpack.get("s");
@@ -3377,7 +3385,8 @@ public class VPackSerializeDeserializeTest {
 		final Map<String, Object> additionalFields = new HashMap<String, Object>();
 		additionalFields.put("a", null);
 		final VPack serializer = new VPack.Builder().serializeNullValues(true).build();
-		final VPackSlice vpack = serializer.serialize(entity, additionalFields);
+		final VPackSlice vpack = serializer.serialize(entity,
+			new SerializeOptions().additionalFields(additionalFields));
 		assertThat(vpack, is(notNullValue()));
 		assertThat(vpack.getLength(), is(4));
 		final VPackSlice s = vpack.get("s");
@@ -3444,8 +3453,8 @@ public class VPackSerializeDeserializeTest {
 		entity.e = new TestEntityTyped<String>();
 		entity.e.e = "test";
 		final VPackSlice vpack = new VPack.Builder().build().serialize(entity,
-			new Type<TestEntityTyped<TestEntityTyped<String>>>() {
-			}.getType());
+			new SerializeOptions().type(new Type<TestEntityTyped<TestEntityTyped<String>>>() {
+			}.getType()));
 		assertThat(vpack, is(notNullValue()));
 		assertThat(vpack.isObject(), is(true));
 		final VPackSlice e = vpack.get("e");

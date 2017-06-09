@@ -563,26 +563,129 @@ public class VPack {
 		return value;
 	}
 
-	public VPackSlice serialize(final Object entity) throws VPackParserException {
-		return serialize(entity, entity.getClass(), Collections.<String, Object> emptyMap());
+	public static class SerializeOptions {
+		private Type type;
+		private Map<String, Object> additionalFields;
+
+		public SerializeOptions() {
+			super();
+			type = null;
+			additionalFields = Collections.<String, Object> emptyMap();
+		}
+
+		public Type getType() {
+			return type;
+		}
+
+		/**
+		 * @param type
+		 *            The source type of the Object.
+		 * @return options
+		 */
+		public SerializeOptions type(final Type type) {
+			this.type = type;
+			return this;
+		}
+
+		public Map<String, Object> getAdditionalFields() {
+			return additionalFields;
+		}
+
+		/**
+		 * @param additionalFields
+		 *            Additional Key/Value pairs to include in the created VelocyPack.
+		 * @return options
+		 */
+		public SerializeOptions additionalFields(final Map<String, Object> additionalFields) {
+			this.additionalFields = additionalFields;
+			return this;
+		}
 	}
 
+	/**
+	 * Serialize a given Object to VelocyPack
+	 * 
+	 * @param entity
+	 *            The Object to serialize.
+	 * @return the serialized VelocyPack
+	 * @throws VPackParserException
+	 */
+	public VPackSlice serialize(final Object entity) throws VPackParserException {
+		return serialize(entity, new SerializeOptions().type(entity.getClass()));
+	}
+
+	/**
+	 * Serialize a given Object to VelocyPack
+	 *
+	 * @deprecated use {@link #serialize(Object, SerializeOptions)} instead
+	 * @param entity
+	 *            The Object to serialize.
+	 * @param additionalFields
+	 *            Additional Key/Value pairs to include in the created VelocyPack.
+	 * @return the serialized VelocyPack
+	 * @throws VPackParserException
+	 */
+	@Deprecated
 	public VPackSlice serialize(final Object entity, final Map<String, Object> additionalFields)
 			throws VPackParserException {
-		return serialize(entity, entity.getClass(), additionalFields);
+		return serialize(entity, new SerializeOptions().type(entity.getClass()).additionalFields(additionalFields));
 	}
 
+	/**
+	 * Serialize a given Object to VelocyPack
+	 *
+	 * @deprecated use {@link #serialize(Object, SerializeOptions)} instead
+	 * @param entity
+	 *            The Object to serialize.
+	 * @param type
+	 *            The source type of the Object.
+	 * @return the serialized VelocyPack
+	 * @throws VPackParserException
+	 */
+	@Deprecated
 	public VPackSlice serialize(final Object entity, final Type type) throws VPackParserException {
-		return serialize(entity, type, Collections.<String, Object> emptyMap());
+		return serialize(entity, new SerializeOptions().type(type));
 	}
 
+	/**
+	 * Serialize a given Object to VelocyPack
+	 *
+	 * @deprecated use {@link #serialize(Object, SerializeOptions)} instead
+	 * @param entity
+	 *            The Object to serialize.
+	 * @param type
+	 *            The source type of the Object.
+	 * @param additionalFields
+	 *            Additional Key/Value pairs to include in the created VelocyPack.
+	 * @return the serialized VelocyPack
+	 * @throws VPackParserException
+	 */
+	@Deprecated
 	public VPackSlice serialize(final Object entity, final Type type, final Map<String, Object> additionalFields)
 			throws VPackParserException {
+		return serialize(entity, new SerializeOptions().type(type).additionalFields(additionalFields));
+	}
+
+	/**
+	 * Serialize a given Object to VelocyPack
+	 *
+	 * @param entity
+	 *            The Object to serialize.
+	 * @param options
+	 *            Additional options
+	 * @return the serialized VelocyPack
+	 * @throws VPackParserException
+	 */
+	public VPackSlice serialize(final Object entity, final SerializeOptions options) throws VPackParserException {
+		Type type = options.getType();
+		if (type == null) {
+			type = entity.getClass();
+		}
 		if (type == VPackSlice.class) {
 			return (VPackSlice) entity;
 		}
 		final VPackBuilder builder = new VPackBuilder(builderOptions);
-		serialize(null, entity, type, builder, new HashMap<String, Object>(additionalFields));
+		serialize(null, entity, type, builder, new HashMap<String, Object>(options.getAdditionalFields()));
 		return builder.slice();
 	}
 
