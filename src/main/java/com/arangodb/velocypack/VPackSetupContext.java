@@ -55,6 +55,8 @@ public interface VPackSetupContext<C extends VPackSetupContext<C>> {
 		final Class<A> type,
 		final VPackAnnotationFieldNaming<A> fieldNaming);
 
+	C registerKeyMapAdapter(final Type type, final VPackKeyMapAdapter<?> adapter);
+
 	C registerModule(VPackModule module);
 
 	C registerModules(VPackModule... modules);

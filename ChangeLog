@@ -1,4 +1,8 @@
-v1.0.6 (2017-xx-xx)
+v1.0.7 (2017-06-09)
+---------------------------
+* added VPackSetupContext.registerKeyMapAdapter(type, adapter)
+
+v1.0.6 (2017-06-09)
 ---------------------------
 * added VPack.Builder.registerKeyMapAdapter(type, adapter)
 * added VPack.serialize(Object, SerializeOptions)
