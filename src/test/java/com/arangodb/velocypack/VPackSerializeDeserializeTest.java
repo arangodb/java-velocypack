@@ -2948,7 +2948,9 @@ public class VPackSerializeDeserializeTest {
 	@Retention(RetentionPolicy.RUNTIME)
 	@Target(ElementType.FIELD)
 	private static @interface CustomFilterAnnotation {
-		boolean serialize() default true;
+		boolean serialize()
+
+		default true;
 
 		boolean deserialize() default true;
 	}
@@ -3755,5 +3757,60 @@ public class VPackSerializeDeserializeTest {
 		final Entry<TestEntityA, Object> entry = entityOut.map.entrySet().iterator().next();
 		assertThat(entry.getKey().a, is("b"));
 		assertThat(entry.getValue().toString(), is("test"));
+	}
+
+	private static class TestEntityNullHandle1 {
+		private TestEntityNullHandle2 e;
+
+		public TestEntityNullHandle1() {
+			super();
+		}
+
+	}
+
+	private static class TestEntityNullHandle2 {
+
+		public TestEntityNullHandle2() {
+			super();
+		}
+
+	}
+
+	@Test
+	public void customDeserializerWithSelfNullHandle() {
+		final VPack vpack = new VPack.Builder()
+				.registerDeserializer(TestEntityNullHandle2.class, new VPackDeserializer<TestEntityNullHandle2>() {
+					@Override
+					public TestEntityNullHandle2 deserialize(
+						final VPackSlice parent,
+						final VPackSlice vpack,
+						final VPackDeserializationContext context) throws VPackException {
+						return new TestEntityNullHandle2();
+					}
+				}, true).serializeNullValues(true).build();
+		final TestEntityNullHandle1 entityIn = new TestEntityNullHandle1();
+		entityIn.e = null;
+		final VPackSlice slice = vpack.serialize(entityIn);
+		final TestEntityNullHandle1 entityOut = vpack.deserialize(slice, TestEntityNullHandle1.class);
+		assertThat(entityOut.e, is(notNullValue()));
+	}
+
+	@Test
+	public void customDeserializerWithoutSelfNullHandle() {
+		final VPack vpack = new VPack.Builder()
+				.registerDeserializer(TestEntityNullHandle2.class, new VPackDeserializer<TestEntityNullHandle2>() {
+					@Override
+					public TestEntityNullHandle2 deserialize(
+						final VPackSlice parent,
+						final VPackSlice vpack,
+						final VPackDeserializationContext context) throws VPackException {
+						return new TestEntityNullHandle2();
+					}
+				}, false).serializeNullValues(true).build();
+		final TestEntityNullHandle1 entityIn = new TestEntityNullHandle1();
+		entityIn.e = null;
+		final VPackSlice slice = vpack.serialize(entityIn);
+		final TestEntityNullHandle1 entityOut = vpack.deserialize(slice, TestEntityNullHandle1.class);
+		assertThat(entityOut.e, is(nullValue()));
 	}
 }

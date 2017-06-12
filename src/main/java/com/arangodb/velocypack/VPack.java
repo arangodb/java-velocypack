@@ -64,7 +64,9 @@ public class VPack {
 	private final Map<Type, VPackSerializer<?>> serializers;
 	private final Map<Type, VPackSerializer<?>> enclosingSerializers;
 	private final Map<Type, VPackDeserializer<?>> deserializers;
+	private final Map<Type, VPackDeserializer<?>> deserializersWithSelfNullHandle;
 	private final Map<String, Map<Type, VPackDeserializer<?>>> deserializersByName;
+	private final Map<String, Map<Type, VPackDeserializer<?>>> deserializersByNameWithSelfNullHandle;
 	private final Map<Type, VPackInstanceCreator<?>> instanceCreators;
 	private final Map<Type, VPackKeyMapAdapter<?>> keyMapAdapters;
 
@@ -78,7 +80,9 @@ public class VPack {
 		private final Map<Type, VPackSerializer<?>> serializers;
 		private final Map<Type, VPackSerializer<?>> enclosingSerializers;
 		private final Map<Type, VPackDeserializer<?>> deserializers;
+		private final Map<Type, VPackDeserializer<?>> deserializersWithSelfNullHandle;
 		private final Map<String, Map<Type, VPackDeserializer<?>>> deserializersByName;
+		private final Map<String, Map<Type, VPackDeserializer<?>>> deserializersByNameWithSelfNullHandle;
 		private final Map<Type, VPackInstanceCreator<?>> instanceCreators;
 		private final BuilderOptions builderOptions;
 		private boolean serializeNullValues;
@@ -92,7 +96,9 @@ public class VPack {
 			serializers = new HashMap<Type, VPackSerializer<?>>();
 			enclosingSerializers = new HashMap<Type, VPackSerializer<?>>();
 			deserializers = new HashMap<Type, VPackDeserializer<?>>();
+			deserializersWithSelfNullHandle = new HashMap<Type, VPackDeserializer<?>>();
 			deserializersByName = new HashMap<String, Map<Type, VPackDeserializer<?>>>();
+			deserializersByNameWithSelfNullHandle = new HashMap<String, Map<Type, VPackDeserializer<?>>>();
 			instanceCreators = new HashMap<Type, VPackInstanceCreator<?>>();
 			builderOptions = new DefaultVPackBuilderOptions();
 			serializeNullValues = false;
@@ -192,6 +198,17 @@ public class VPack {
 
 		@Override
 		public <T> VPack.Builder registerDeserializer(final Type type, final VPackDeserializer<T> deserializer) {
+			return registerDeserializer(type, deserializer, false);
+		}
+
+		@Override
+		public <T> Builder registerDeserializer(
+			final Type type,
+			final VPackDeserializer<T> deserializer,
+			final boolean includeNullValues) {
+			if (includeNullValues) {
+				deserializersWithSelfNullHandle.put(type, deserializer);
+			}
 			deserializers.put(type, deserializer);
 			return this;
 		}
@@ -201,6 +218,23 @@ public class VPack {
 			final String fieldName,
 			final Type type,
 			final VPackDeserializer<T> deserializer) {
+			return registerDeserializer(fieldName, type, deserializer, false);
+		}
+
+		@Override
+		public <T> Builder registerDeserializer(
+			final String fieldName,
+			final Type type,
+			final VPackDeserializer<T> deserializer,
+			final boolean includeNullValues) {
+			if (includeNullValues) {
+				Map<Type, VPackDeserializer<?>> byName = deserializersByNameWithSelfNullHandle.get(fieldName);
+				if (byName == null) {
+					byName = new HashMap<Type, VPackDeserializer<?>>();
+					deserializersByNameWithSelfNullHandle.put(fieldName, byName);
+				}
+				byName.put(type, deserializer);
+			}
 			Map<Type, VPackDeserializer<?>> byName = deserializersByName.get(fieldName);
 			if (byName == null) {
 				byName = new HashMap<Type, VPackDeserializer<?>>();
@@ -280,6 +314,7 @@ public class VPack {
 		 *            the adapter
 		 * @return {@link VPack.Builder}
 		 */
+		@Override
 		public Builder registerKeyMapAdapter(final Type type, final VPackKeyMapAdapter<?> adapter) {
 			keyMapAdapters.put(type, adapter);
 			return this;
@@ -289,8 +324,10 @@ public class VPack {
 			return new VPack(new HashMap<Type, VPackSerializer<?>>(serializers),
 					new HashMap<Type, VPackSerializer<?>>(enclosingSerializers),
 					new HashMap<Type, VPackDeserializer<?>>(deserializers),
+					new HashMap<Type, VPackDeserializer<?>>(deserializersWithSelfNullHandle),
 					new HashMap<Type, VPackInstanceCreator<?>>(instanceCreators), builderOptions, serializeNullValues,
 					fieldNamingStrategy, new HashMap<String, Map<Type, VPackDeserializer<?>>>(deserializersByName),
+					new HashMap<String, Map<Type, VPackDeserializer<?>>>(deserializersByNameWithSelfNullHandle),
 					new HashMap<Class<? extends Annotation>, VPackAnnotationFieldFilter<? extends Annotation>>(
 							annotationFieldFilter),
 					new HashMap<Class<? extends Annotation>, VPackAnnotationFieldNaming<? extends Annotation>>(
@@ -302,9 +339,11 @@ public class VPack {
 
 	private VPack(final Map<Type, VPackSerializer<?>> serializers,
 		final Map<Type, VPackSerializer<?>> enclosingSerializers, final Map<Type, VPackDeserializer<?>> deserializers,
+		final Map<Type, VPackDeserializer<?>> deserializersWithSelfNullHandle,
 		final Map<Type, VPackInstanceCreator<?>> instanceCreators, final BuilderOptions builderOptions,
 		final boolean serializeNullValues, final VPackFieldNamingStrategy fieldNamingStrategy,
 		final Map<String, Map<Type, VPackDeserializer<?>>> deserializersByName,
+		final Map<String, Map<Type, VPackDeserializer<?>>> deserializersByNameWithSelfNullHandle,
 		final Map<Class<? extends Annotation>, VPackAnnotationFieldFilter<? extends Annotation>> annotationFieldFilter,
 		final Map<Class<? extends Annotation>, VPackAnnotationFieldNaming<? extends Annotation>> annotationFieldNaming,
 		final Map<Type, VPackKeyMapAdapter<?>> keyMapAdapters) {
@@ -312,10 +351,12 @@ public class VPack {
 		this.serializers = serializers;
 		this.enclosingSerializers = enclosingSerializers;
 		this.deserializers = deserializers;
+		this.deserializersWithSelfNullHandle = deserializersWithSelfNullHandle;
 		this.instanceCreators = instanceCreators;
 		this.builderOptions = builderOptions;
 		this.serializeNullValues = serializeNullValues;
 		this.deserializersByName = deserializersByName;
+		this.deserializersByNameWithSelfNullHandle = deserializersByNameWithSelfNullHandle;
 		this.keyMapAdapters = keyMapAdapters;
 
 		cache = new VPackCache(fieldNamingStrategy, annotationFieldFilter, annotationFieldNaming);
@@ -360,6 +401,18 @@ public class VPack {
 	}
 
 	private VPackDeserializer<?> getDeserializer(final String fieldName, final Type type) {
+		return getDeserializer(fieldName, type, deserializers, deserializersByName);
+	}
+
+	private VPackDeserializer<?> getDeserializerWithSelfNullHandle(final String fieldName, final Type type) {
+		return getDeserializer(fieldName, type, deserializersWithSelfNullHandle, deserializersByNameWithSelfNullHandle);
+	}
+
+	private VPackDeserializer<?> getDeserializer(
+		final String fieldName,
+		final Type type,
+		final Map<Type, VPackDeserializer<?>> deserializers,
+		final Map<String, Map<Type, VPackDeserializer<?>>> deserializersByName) {
 		VPackDeserializer<?> deserializer = null;
 		final Map<Type, VPackDeserializer<?>> byName = deserializersByName.get(fieldName);
 		if (byName != null) {
@@ -369,7 +422,8 @@ public class VPack {
 			deserializer = deserializers.get(type);
 		}
 		if (deserializer == null && ParameterizedType.class.isAssignableFrom(type.getClass())) {
-			deserializer = getDeserializer(fieldName, ParameterizedType.class.cast(type).getRawType());
+			deserializer = getDeserializer(fieldName, ParameterizedType.class.cast(type).getRawType(), deserializers,
+				deserializersByName);
 		}
 		return deserializer;
 	}
@@ -468,7 +522,19 @@ public class VPack {
 			InvocationTargetException, VPackException {
 		final Object value;
 		if (vpack.isNull()) {
-			value = null;
+			final VPackDeserializer<?> deserializer = getDeserializerWithSelfNullHandle(fieldName, type);
+			if (deserializer != null) {
+				if (VPackDeserializerParameterizedType.class.isAssignableFrom(deserializer.getClass())
+						&& ParameterizedType.class.isAssignableFrom(type.getClass())) {
+					value = ((VPackDeserializerParameterizedType<Object>) deserializer).deserialize(parent, vpack,
+						deserializationContext, ParameterizedType.class.cast(type));
+				} else {
+					value = ((VPackDeserializer<Object>) deserializer).deserialize(parent, vpack,
+						deserializationContext);
+				}
+			} else {
+				value = null;
+			}
 		} else {
 			final VPackDeserializer<?> deserializer = getDeserializer(fieldName, type);
 			if (deserializer != null) {
