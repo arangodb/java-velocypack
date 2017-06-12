@@ -1,3 +1,8 @@
+v1.0.8 (2017-06-xx)
+---------------------------
+* added VPackSetupContext.registerDeserializer(Type, VPackDeserializer, boolean)
+* added VPackSetupContext.registerDeserializer(String, Type, VPackDeserializer, boolean)
+
 v1.0.7 (2017-06-09)
 ---------------------------
 * added VPackSetupContext.registerKeyMapAdapter(type, adapter)

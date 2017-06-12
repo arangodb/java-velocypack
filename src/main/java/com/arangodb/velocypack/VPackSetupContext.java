@@ -35,7 +35,15 @@ public interface VPackSetupContext<C extends VPackSetupContext<C>> {
 
 	<T> C registerDeserializer(final Type type, final VPackDeserializer<T> deserializer);
 
+	<T> C registerDeserializer(final Type type, final VPackDeserializer<T> deserializer, boolean includeNullValues);
+
 	<T> C registerDeserializer(final String fieldName, final Type type, final VPackDeserializer<T> deserializer);
+
+	<T> C registerDeserializer(
+		final String fieldName,
+		final Type type,
+		final VPackDeserializer<T> deserializer,
+		boolean includeNullValues);
 
 	<T> C registerInstanceCreator(final Type type, final VPackInstanceCreator<T> creator);
 
