@@ -1,4 +1,4 @@
-v1.0.8 (2017-06-xx)
+v1.0.8 (2017-06-13)
 ---------------------------
 * added VPackSetupContext.registerDeserializer(Type, VPackDeserializer, boolean)
 * added VPackSetupContext.registerDeserializer(String, Type, VPackDeserializer, boolean)
