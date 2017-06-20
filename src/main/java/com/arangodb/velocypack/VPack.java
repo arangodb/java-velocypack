@@ -240,6 +240,7 @@ public class VPack {
 				byName = new HashMap<Type, VPackDeserializer<?>>();
 				deserializersByName.put(fieldName, byName);
 			}
+			byName.put(type, deserializer);
 			return this;
 		}
 

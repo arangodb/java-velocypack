@@ -1,3 +1,7 @@
+v1.0.9 (2017-06-20)
+---------------------------
+* fixed deserializing of internal field _id
+
 v1.0.8 (2017-06-13)
 ---------------------------
 * added VPackSetupContext.registerDeserializer(Type, VPackDeserializer, boolean)
