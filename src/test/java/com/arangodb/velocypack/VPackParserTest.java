@@ -514,4 +514,20 @@ public class VPackParserTest {
 		}
 	}
 
+	@Test
+	public void arrayWithObjectsIncludingNull() {
+		final String json = "{\"values\": [ {\"a\": null}, {\"b\": null}]}";
+		final VPackParser parser = new VPackParser.Builder().build();
+		final VPackSlice slice = parser.fromJson(json, true);
+		assertThat(slice.toString(), is("{\"values\":[{\"a\":null},{\"b\":null}]}"));
+	}
+
+	@Test
+	public void arrayWithObjectsExcludingNull() {
+		final String json = "{\"values\": [ {\"a\": null}, {\"b\": null}]}";
+		final VPackParser parser = new VPackParser.Builder().build();
+		final VPackSlice slice = parser.fromJson(json);
+		assertThat(slice.toString(), is("{\"values\":[{},{}]}"));
+	}
+
 }

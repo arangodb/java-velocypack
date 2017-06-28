@@ -483,6 +483,8 @@ public class VPackParser {
 			if (value == null) {
 				if (includeNullValues) {
 					add(ValueType.NULL);
+				} else {
+					attribute = null;
 				}
 			} else {
 				final VPackJsonSerializer<?> serializer = parser.getSerializer(attribute, value.getClass());
