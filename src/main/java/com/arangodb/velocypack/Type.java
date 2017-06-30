@@ -23,7 +23,7 @@ package com.arangodb.velocypack;
 import java.lang.reflect.ParameterizedType;
 
 /**
- * @author Mark - mark at arangodb.com
+ * @author Mark Vollmary
  *
  */
 public class Type<T> {

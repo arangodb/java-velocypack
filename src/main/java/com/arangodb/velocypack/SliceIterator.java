@@ -25,7 +25,7 @@ import java.util.Iterator;
 import com.arangodb.velocypack.exception.VPackValueTypeException;
 
 /**
- * @author Mark - mark at arangodb.com
+ * @author Mark Vollmary
  *
  */
 public abstract class SliceIterator<E> implements Iterator<E> {

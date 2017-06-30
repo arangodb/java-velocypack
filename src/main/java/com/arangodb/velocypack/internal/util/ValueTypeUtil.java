@@ -26,7 +26,7 @@ import java.util.Map;
 import com.arangodb.velocypack.ValueType;
 
 /**
- * @author Mark - mark at arangodb.com
+ * @author Mark Vollmary
  *
  */
 public class ValueTypeUtil {

@@ -48,7 +48,7 @@ import com.arangodb.velocypack.internal.Value;
 import com.arangodb.velocypack.internal.util.NumberUtil;
 
 /**
- * @author Mark - mark at arangodb.com
+ * @author Mark Vollmary
  *
  */
 public class VPackBuilder {

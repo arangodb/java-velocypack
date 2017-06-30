@@ -23,7 +23,7 @@ package com.arangodb.velocypack.internal;
 import com.arangodb.velocypack.VPackBuilder.BuilderOptions;
 
 /**
- * @author Mark - mark at arangodb.com
+ * @author Mark Vollmary
  *
  */
 public class DefaultVPackBuilderOptions implements BuilderOptions {

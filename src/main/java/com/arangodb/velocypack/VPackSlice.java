@@ -42,7 +42,7 @@ import com.arangodb.velocypack.internal.util.ValueLengthUtil;
 import com.arangodb.velocypack.internal.util.ValueTypeUtil;
 
 /**
- * @author Mark - mark at arangodb.com
+ * @author Mark Vollmary
  *
  */
 public class VPackSlice implements Serializable {

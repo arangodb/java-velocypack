@@ -25,7 +25,7 @@ import java.lang.reflect.ParameterizedType;
 import com.arangodb.velocypack.exception.VPackException;
 
 /**
- * @author Mark - mark at arangodb.com
+ * @author Mark Vollmary
  *
  */
 public interface VPackDeserializerParameterizedType<T> extends VPackDeserializer<T> {

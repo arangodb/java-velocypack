@@ -21,7 +21,7 @@
 package com.arangodb.velocypack;
 
 /**
- * @author Mark - mark at arangodb.com
+ * @author Mark Vollmary
  *
  */
 public interface VPackParserSetupContext<C extends VPackParserSetupContext<C>> {

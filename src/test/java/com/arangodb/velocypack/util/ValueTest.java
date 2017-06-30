@@ -29,7 +29,7 @@ import com.arangodb.velocypack.exception.VPackValueTypeException;
 import com.arangodb.velocypack.internal.Value;
 
 /**
- * @author Mark - mark at arangodb.com
+ * @author Mark Vollmary
  *
  */
 public class ValueTest {

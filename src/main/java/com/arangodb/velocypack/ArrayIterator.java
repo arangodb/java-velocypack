@@ -25,7 +25,7 @@ import java.util.NoSuchElementException;
 import com.arangodb.velocypack.exception.VPackValueTypeException;
 
 /**
- * @author Mark - mark at arangodb.com
+ * @author Mark Vollmary
  *
  */
 public class ArrayIterator extends SliceIterator<VPackSlice> {

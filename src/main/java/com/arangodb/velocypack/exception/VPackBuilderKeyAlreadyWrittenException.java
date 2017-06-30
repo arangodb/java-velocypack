@@ -21,7 +21,7 @@
 package com.arangodb.velocypack.exception;
 
 /**
- * @author Mark - mark at arangodb.com
+ * @author Mark Vollmary
  *
  */
 public class VPackBuilderKeyAlreadyWrittenException extends VPackBuilderException {

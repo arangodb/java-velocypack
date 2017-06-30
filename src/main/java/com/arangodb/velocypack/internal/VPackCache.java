@@ -43,7 +43,7 @@ import com.arangodb.velocypack.VPackAnnotationFieldNaming;
 import com.arangodb.velocypack.VPackFieldNamingStrategy;
 
 /**
- * @author Mark - mark at arangodb.com
+ * @author Mark Vollmary
  *
  */
 public class VPackCache {

@@ -27,7 +27,7 @@ import java.math.BigInteger;
 import com.arangodb.velocypack.VPackKeyMapAdapter;
 
 /**
- * @author Mark - mark at arangodb.com
+ * @author Mark Vollmary
  *
  */
 public class VPackKeyMapAdapters {

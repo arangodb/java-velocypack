@@ -23,7 +23,7 @@ package com.arangodb.velocypack.exception;
 import com.arangodb.velocypack.ValueType;
 
 /**
- * @author Mark - mark at arangodb.com
+ * @author Mark Vollmary
  *
  */
 public class VPackValueTypeException extends VPackException {

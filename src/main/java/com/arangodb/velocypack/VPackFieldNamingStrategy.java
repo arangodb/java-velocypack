@@ -23,7 +23,7 @@ package com.arangodb.velocypack;
 import java.lang.reflect.Field;
 
 /**
- * @author Mark - mark at arangodb.com
+ * @author Mark Vollmary
  *
  */
 public interface VPackFieldNamingStrategy {
