@@ -1,4 +1,4 @@
-v1.0.10 (2017-xx-xx)
+v1.0.10 (2017-07-20)
 ---------------------------
 * fixed issue #2: Json parsing of null within Objects
 
