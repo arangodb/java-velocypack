@@ -30,7 +30,12 @@ import java.text.SimpleDateFormat;
  */
 public class DateUtil {
 
-	private static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");// ISO 8601
+	private static final ThreadLocal<DateFormat> DATE_FORMAT = new ThreadLocal<DateFormat>() {
+		@Override
+		protected DateFormat initialValue() {
+			return new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");// ISO 8601
+		}
+	};
 
 	private DateUtil() {
 		super();
@@ -52,11 +57,11 @@ public class DateUtil {
 	}
 
 	public static java.util.Date parse(final String source) throws ParseException {
-		return DATE_FORMAT.parse(source);
+		return DATE_FORMAT.get().parse(source);
 	}
 
 	public static String format(final java.util.Date date) {
-		return DATE_FORMAT.format(date);
+		return DATE_FORMAT.get().format(date);
 	}
 
 }
