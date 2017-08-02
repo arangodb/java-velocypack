@@ -1,3 +1,7 @@
+v1.0.12 (xxxx-xx-xx)
+---------------------------
+* fixed VPack to JSON parsing of negative int
+
 v1.0.11 (2017-07-31)
 ---------------------------
 * fixed DateUtil (thread-safe)

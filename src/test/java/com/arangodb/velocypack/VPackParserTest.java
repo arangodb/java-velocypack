@@ -530,4 +530,11 @@ public class VPackParserTest {
 		assertThat(slice.toString(), is("{\"values\":[{},{}]}"));
 	}
 
+	@Test
+	public void negativeInt() {
+		final VPackParser parser = new VPackParser.Builder().build();
+		final String json = parser.toJson(new VPackBuilder().add(-32).slice());
+		assertThat(json, is("-32"));
+	}
+
 }

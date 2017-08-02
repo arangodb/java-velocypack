@@ -280,6 +280,10 @@ public class VPackParser {
 				json.append(value.getAsBoolean());
 			} else if (value.isString()) {
 				json.append(JSONValue.toJSONString(value.getAsString()));
+			} else if (value.isDouble()) {
+				json.append(value.getAsDouble());
+			} else if (value.isInt()) {
+				json.append(value.getAsInt());
 			} else if (value.isNumber()) {
 				json.append(value.getAsNumber());
 			} else if (value.isDate()) {
