@@ -262,6 +262,26 @@ public class VPackSerializeDeserializeTest {
 	}
 
 	@Test
+	public void fromNegativeInteger() throws VPackException {
+		final TestEntityInteger entity = new TestEntityInteger();
+		entity.i1 = -50;
+		entity.i2 = -50;
+		final VPackSlice vpack = new VPack.Builder().build().serialize(entity);
+		assertThat(vpack, is(notNullValue()));
+		assertThat(vpack.isObject(), is(true));
+		{
+			final VPackSlice i1 = vpack.get("i1");
+			assertThat(i1.isInteger(), is(true));
+			assertThat(i1.getAsInt(), is(-50));
+		}
+		{
+			final VPackSlice i2 = vpack.get("i2");
+			assertThat(i2.isInteger(), is(true));
+			assertThat(i2.getAsInt(), is(-50));
+		}
+	}
+
+	@Test
 	public void toInteger() throws VPackException {
 		final VPackBuilder builder = new VPackBuilder();
 		{
@@ -275,6 +295,22 @@ public class VPackSerializeDeserializeTest {
 		assertThat(entity, is(notNullValue()));
 		assertThat(entity.i1, is(2));
 		assertThat(entity.i2, is(new Integer(3)));
+	}
+
+	@Test
+	public void toNegativeInteger() throws VPackException {
+		final VPackBuilder builder = new VPackBuilder();
+		{
+			builder.add(ValueType.OBJECT);
+			builder.add("i1", -50);
+			builder.add("i2", -50);
+			builder.close();
+		}
+		final VPackSlice vpack = builder.slice();
+		final TestEntityInteger entity = new VPack.Builder().build().deserialize(vpack, TestEntityInteger.class);
+		assertThat(entity, is(notNullValue()));
+		assertThat(entity.i1, is(-50));
+		assertThat(entity.i2, is(new Integer(-50)));
 	}
 
 	protected static class TestEntityLong {
