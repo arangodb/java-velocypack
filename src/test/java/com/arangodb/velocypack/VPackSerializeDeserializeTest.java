@@ -352,6 +352,26 @@ public class VPackSerializeDeserializeTest {
 	}
 
 	@Test
+	public void fromNegativeLong() throws VPackException {
+		final TestEntityLong entity = new TestEntityLong();
+		entity.l1 = -100L;
+		entity.l2 = new Long(-300);
+		final VPackSlice vpack = new VPack.Builder().build().serialize(entity);
+		assertThat(vpack, is(notNullValue()));
+		assertThat(vpack.isObject(), is(true));
+		{
+			final VPackSlice l1 = vpack.get("l1");
+			assertThat(l1.isInteger(), is(true));
+			assertThat(l1.getAsLong(), is(-100L));
+		}
+		{
+			final VPackSlice l2 = vpack.get("l2");
+			assertThat(l2.isInteger(), is(true));
+			assertThat(l2.getAsLong(), is(-300L));
+		}
+	}
+
+	@Test
 	public void toLong() throws VPackException {
 		final VPackBuilder builder = new VPackBuilder();
 		{
@@ -365,6 +385,65 @@ public class VPackSerializeDeserializeTest {
 		assertThat(entity, is(notNullValue()));
 		assertThat(entity.l1, is(2L));
 		assertThat(entity.l2, is(new Long(3)));
+	}
+
+	@Test
+	public void toNegativeLong() throws VPackException {
+		final VPackBuilder builder = new VPackBuilder();
+		{
+			builder.add(ValueType.OBJECT);
+			builder.add("l1", -100L);
+			builder.add("l2", -300L);
+			builder.close();
+		}
+		final VPackSlice vpack = builder.slice();
+		final TestEntityLong entity = new VPack.Builder().build().deserialize(vpack, TestEntityLong.class);
+		assertThat(entity, is(notNullValue()));
+		assertThat(entity.l1, is(-100L));
+		assertThat(entity.l2, is(new Long(-300)));
+	}
+
+	@Test
+	public void negativeLong() throws VPackException {
+		final TestEntityLong entity = new TestEntityLong();
+		entity.l1 = -100L;
+		entity.l2 = new Long(-300);
+		final VPack vp = new VPack.Builder().build();
+		final TestEntityLong out = vp.deserialize(vp.serialize(entity), TestEntityLong.class);
+		assertThat(out.l1, is(entity.l1));
+		assertThat(out.l2, is(entity.l2));
+	}
+
+	@Test
+	public void intToLong() throws VPackException {
+		final VPackBuilder builder = new VPackBuilder();
+		{
+			builder.add(ValueType.OBJECT);
+			builder.add("l1", 100);
+			builder.add("l2", 300);
+			builder.close();
+		}
+		final VPackSlice vpack = builder.slice();
+		final TestEntityLong entity = new VPack.Builder().build().deserialize(vpack, TestEntityLong.class);
+		assertThat(entity, is(notNullValue()));
+		assertThat(entity.l1, is(100L));
+		assertThat(entity.l2, is(new Long(300)));
+	}
+
+	@Test
+	public void negativeIntToLong() throws VPackException {
+		final VPackBuilder builder = new VPackBuilder();
+		{
+			builder.add(ValueType.OBJECT);
+			builder.add("l1", -100);
+			builder.add("l2", -300);
+			builder.close();
+		}
+		final VPackSlice vpack = builder.slice();
+		final TestEntityLong entity = new VPack.Builder().build().deserialize(vpack, TestEntityLong.class);
+		assertThat(entity, is(notNullValue()));
+		assertThat(entity.l1, is(-100L));
+		assertThat(entity.l2, is(new Long(-300)));
 	}
 
 	protected static class TestEntityFloat {
@@ -3849,4 +3928,5 @@ public class VPackSerializeDeserializeTest {
 		final TestEntityNullHandle1 entityOut = vpack.deserialize(slice, TestEntityNullHandle1.class);
 		assertThat(entityOut.e, is(nullValue()));
 	}
+
 }
