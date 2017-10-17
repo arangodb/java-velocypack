@@ -48,6 +48,7 @@ import com.arangodb.velocypack.internal.util.ValueTypeUtil;
 public class VPackSlice implements Serializable {
 
 	private static final long serialVersionUID = -3452953589283603980L;
+	private static final int LONG_BYTES = Long.SIZE / Byte.SIZE;
 
 	public static final VPackAttributeTranslator attributeTranslator = new VPackAttributeTranslatorImpl();
 
@@ -210,8 +211,9 @@ public class VPackSlice implements Serializable {
 		return smallInt;
 	}
 
-	private long getInt() {
-		return NumberUtil.toLong(vpack, start + 1, length());
+	private Number getInt() {
+		final Number value = NumberUtil.toLong(vpack, start + 1, length());
+		return length() == LONG_BYTES ? value : value.intValue();
 	}
 
 	private long getUInt() {

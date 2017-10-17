@@ -1,6 +1,7 @@
-v1.0.12 (xxxx-xx-xx)
+v1.0.12 (2017-10-17)
 ---------------------------
 * fixed VPack to JSON parsing of negative int
+* fixed serialization of negative int/long value (issue #5)
 
 v1.0.11 (2017-07-31)
 ---------------------------
