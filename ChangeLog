@@ -1,7 +1,8 @@
-v1.0.12 (2017-10-17)
+v1.0.12 (2017-10-23)
 ---------------------------
 * fixed VPack to JSON parsing of negative int
 * fixed serialization of negative int/long value (issue #5)
+* exclude junit dependency of json-simple
 
 v1.0.11 (2017-07-31)
 ---------------------------
