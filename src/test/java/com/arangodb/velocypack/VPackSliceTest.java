@@ -1243,4 +1243,222 @@ public class VPackSliceTest {
 		final VPackSlice slice = new VPackSlice(new byte[] { 0x00 });
 		slice.valueAt(0);
 	}
+
+	@Test
+	public void shortByte() {
+		final VPackSlice slice = new VPackSlice(new byte[] { 0x20, 100 });
+		assertThat(slice.isInt(), is(true));
+		assertThat(slice.getAsShort(), is((short) 100));
+	}
+
+	@Test
+	public void int1Byte() {
+		final VPackSlice slice = new VPackSlice(new byte[] { 0x20, 100 });
+		assertThat(slice.isInt(), is(true));
+		assertThat(slice.getAsInt(), is(100));
+	}
+
+	@Test
+	public void long1Byte() {
+		final VPackSlice slice = new VPackSlice(new byte[] { 0x20, 100 });
+		assertThat(slice.isInt(), is(true));
+		assertThat(slice.getAsLong(), is(100L));
+	}
+
+	@Test
+	public void short2Byte() {
+		final VPackSlice slice = new VPackSlice(new byte[] { 0x21, 100, 0 });
+		assertThat(slice.isInt(), is(true));
+		assertThat(slice.getAsShort(), is((short) 100));
+	}
+
+	@Test
+	public void int2Byte() {
+		final VPackSlice slice = new VPackSlice(new byte[] { 0x21, 100, 0 });
+		assertThat(slice.isInt(), is(true));
+		assertThat(slice.getAsInt(), is(100));
+	}
+
+	@Test
+	public void long2Byte() {
+		final VPackSlice slice = new VPackSlice(new byte[] { 0x21, 100, 0 });
+		assertThat(slice.isInt(), is(true));
+		assertThat(slice.getAsLong(), is(100L));
+	}
+
+	@Test
+	public void int3Byte() {
+		final VPackSlice slice = new VPackSlice(new byte[] { 0x22, 100, 0, 0 });
+		assertThat(slice.isInt(), is(true));
+		assertThat(slice.getAsInt(), is(100));
+	}
+
+	@Test
+	public void long3Byte() {
+		final VPackSlice slice = new VPackSlice(new byte[] { 0x22, 100, 0, 0 });
+		assertThat(slice.isInt(), is(true));
+		assertThat(slice.getAsLong(), is(100L));
+	}
+
+	@Test
+	public void int4Byte() {
+		final VPackSlice slice = new VPackSlice(new byte[] { 0x23, 100, 0, 0, 0 });
+		assertThat(slice.isInt(), is(true));
+		assertThat(slice.getAsInt(), is(100));
+	}
+
+	@Test
+	public void long4Byte() {
+		final VPackSlice slice = new VPackSlice(new byte[] { 0x23, 100, 0, 0, 0 });
+		assertThat(slice.isInt(), is(true));
+		assertThat(slice.getAsLong(), is(100L));
+	}
+
+	@Test
+	public void long5Byte() {
+		final VPackSlice slice = new VPackSlice(new byte[] { 0x24, 100, 0, 0, 0, 0 });
+		assertThat(slice.isInt(), is(true));
+		assertThat(slice.getAsLong(), is(100L));
+	}
+
+	@Test
+	public void long6Byte() {
+		final VPackSlice slice = new VPackSlice(new byte[] { 0x25, 100, 0, 0, 0, 0, 0 });
+		assertThat(slice.isInt(), is(true));
+		assertThat(slice.getAsLong(), is(100L));
+	}
+
+	@Test
+	public void long7Byte() {
+		final VPackSlice slice = new VPackSlice(new byte[] { 0x26, 100, 0, 0, 0, 0, 0, 0 });
+		assertThat(slice.isInt(), is(true));
+		assertThat(slice.getAsLong(), is(100L));
+	}
+
+	@Test
+	public void long8Byte() {
+		final VPackSlice slice = new VPackSlice(new byte[] { 0x27, 100, 0, 0, 0, 0, 0, 0, 0 });
+		assertThat(slice.isInt(), is(true));
+		assertThat(slice.getAsLong(), is(100L));
+	}
+
+	@Test
+	public void negativeShort1Byte() {
+		final VPackSlice slice = new VPackSlice(new byte[] { 0x20, -100 });
+		assertThat(slice.isInt(), is(true));
+		assertThat(slice.getAsShort(), is((short) -100));
+	}
+
+	@Test
+	public void negativeInt1Byte() {
+		final VPackSlice slice = new VPackSlice(new byte[] { 0x20, -100 });
+		assertThat(slice.isInt(), is(true));
+		assertThat(slice.getAsInt(), is(-100));
+	}
+
+	@Test
+	public void negativeLong1Byte() {
+		final VPackSlice slice = new VPackSlice(new byte[] { 0x20, -100 });
+		assertThat(slice.isInt(), is(true));
+		assertThat(slice.getAsLong(), is(-100L));
+	}
+
+	@Test
+	public void negativeShort2Byte() {
+		final VPackSlice slice = new VPackSlice(new byte[] { 0x21, -100, -1 });
+		assertThat(slice.isInt(), is(true));
+		assertThat(slice.getAsShort(), is((short) -100));
+	}
+
+	@Test
+	public void negativeInt2Byte() {
+		final VPackSlice slice = new VPackSlice(new byte[] { 0x21, -100, -1 });
+		assertThat(slice.isInt(), is(true));
+		assertThat(slice.getAsInt(), is(-100));
+	}
+
+	@Test
+	public void negativeLong2Byte() {
+		final VPackSlice slice = new VPackSlice(new byte[] { 0x21, -100, -1 });
+		assertThat(slice.isInt(), is(true));
+		assertThat(slice.getAsLong(), is(-100L));
+	}
+
+	@Test
+	public void negativeInt3Byte() {
+		final VPackSlice slice = new VPackSlice(new byte[] { 0x22, -100, -1, -1 });
+		assertThat(slice.isInt(), is(true));
+		assertThat(slice.getAsInt(), is(-100));
+	}
+
+	@Test
+	public void negativeLong3Byte() {
+		final VPackSlice slice = new VPackSlice(new byte[] { 0x22, -100, -1, -1 });
+		assertThat(slice.isInt(), is(true));
+		assertThat(slice.getAsLong(), is(-100L));
+	}
+
+	@Test
+	public void negativeInt4Byte() {
+		final VPackSlice slice = new VPackSlice(new byte[] { 0x23, -100, -1, -1, -1 });
+		assertThat(slice.isInt(), is(true));
+		assertThat(slice.getAsInt(), is(-100));
+	}
+
+	@Test
+	public void negativeLong4Byte() {
+		final VPackSlice slice = new VPackSlice(new byte[] { 0x23, -100, -1, -1, -1 });
+		assertThat(slice.isInt(), is(true));
+		assertThat(slice.getAsLong(), is(-100L));
+	}
+
+	@Test
+	public void negativeLong5Byte() {
+		final VPackSlice slice = new VPackSlice(new byte[] { 0x24, -100, -1, -1, -1, -1 });
+		assertThat(slice.isInt(), is(true));
+		assertThat(slice.getAsLong(), is(-100L));
+	}
+
+	@Test
+	public void negativeLong6Byte() {
+		final VPackSlice slice = new VPackSlice(new byte[] { 0x25, -100, -1, -1, -1, -1, -1 });
+		assertThat(slice.isInt(), is(true));
+		assertThat(slice.getAsLong(), is(-100L));
+	}
+
+	@Test
+	public void negativeLong7Byte() {
+		final VPackSlice slice = new VPackSlice(new byte[] { 0x26, -100, -1, -1, -1, -1, -1, -1 });
+		assertThat(slice.isInt(), is(true));
+		assertThat(slice.getAsLong(), is(-100L));
+	}
+
+	@Test
+	public void negativeLong8Byte() {
+		final VPackSlice slice = new VPackSlice(new byte[] { 0x27, -100, -1, -1, -1, -1, -1, -1, -1 });
+		assertThat(slice.isInt(), is(true));
+		assertThat(slice.getAsLong(), is(-100L));
+	}
+
+	@Test
+	public void maxNegativeInt() {
+		final VPackSlice slice = new VPackSlice(new byte[] { 35, 1, 0, 0, -128 });
+		assertThat(slice.isInt(), is(true));
+		assertThat(slice.getAsInt(), is(-Integer.MAX_VALUE));
+	}
+
+	@Test
+	public void maxNegativeIntFromLong() {
+		final VPackSlice slice = new VPackSlice(new byte[] { 39, 1, 0, 0, -128, -1, -1, -1, -1 });
+		assertThat(slice.isInt(), is(true));
+		assertThat(slice.getAsLong(), is((long) -Integer.MAX_VALUE));
+	}
+
+	@Test
+	public void maxNegativeIntFromIntAsLong() {
+		final VPackSlice slice = new VPackSlice(new byte[] { 35, 1, 0, 0, -128 });
+		assertThat(slice.isInt(), is(true));
+		assertThat(slice.getAsLong(), is((long) -Integer.MAX_VALUE));
+	}
+
 }

@@ -462,6 +462,38 @@ public class VPackSerializeDeserializeTest {
 		assertThat(entity.i2, is(new Integer(-300)));
 	}
 
+	@Test
+	public void negativeLongToShort() throws VPackException {
+		final VPackBuilder builder = new VPackBuilder();
+		{
+			builder.add(ValueType.OBJECT);
+			builder.add("s1", -100L);
+			builder.add("s2", -300L);
+			builder.close();
+		}
+		final VPackSlice vpack = builder.slice();
+		final TestEntityShort entity = new VPack.Builder().build().deserialize(vpack, TestEntityShort.class);
+		assertThat(entity, is(notNullValue()));
+		assertThat(entity.s1, is((short) -100));
+		assertThat(entity.s2, is(new Short((short) -300)));
+	}
+
+	@Test
+	public void negativeShortToLong() throws VPackException {
+		final VPackBuilder builder = new VPackBuilder();
+		{
+			builder.add(ValueType.OBJECT);
+			builder.add("l1", (short) -100);
+			builder.add("l2", (short) -300);
+			builder.close();
+		}
+		final VPackSlice vpack = builder.slice();
+		final TestEntityLong entity = new VPack.Builder().build().deserialize(vpack, TestEntityLong.class);
+		assertThat(entity, is(notNullValue()));
+		assertThat(entity.l1, is(-100L));
+		assertThat(entity.l2, is(new Long(-300)));
+	}
+
 	protected static class TestEntityFloat {
 		private float f1 = 1;
 		private Float f2 = 1F;

@@ -28,7 +28,8 @@ import java.math.BigInteger;
  */
 public class NumberUtil {
 
-	private static final int DOUBLE_BYTES = 8;
+	private static final int DOUBLE_BYTES = Double.SIZE / Byte.SIZE;
+	private static final int LONG_BYTES = Long.SIZE / Byte.SIZE;
 
 	private NumberUtil() {
 		super();
@@ -39,9 +40,19 @@ public class NumberUtil {
 	}
 
 	public static long toLong(final byte[] array, final int offset, final int length) {
+		return toLong(array, offset, length, false);
+	}
+
+	public static long toLong(final byte[] array, final int offset, final int length, final boolean fillNegativeBytes) {
 		long result = 0;
+		if (fillNegativeBytes && length < LONG_BYTES && array[(offset + length - 1)] <= (byte) -1) {
+			for (int i = 0; i <= 8 - length; i++) {
+				result <<= LONG_BYTES;
+				result |= ((byte) -1 & 0xFF);
+			}
+		}
 		for (int i = (offset + length - 1); i >= offset; i--) {
-			result <<= 8;
+			result <<= LONG_BYTES;
 			result |= (array[i] & 0xFF);
 		}
 		return result;
@@ -50,7 +61,7 @@ public class NumberUtil {
 	public static BigInteger toBigInteger(final byte[] array, final int offset, final int length) {
 		BigInteger result = new BigInteger(1, new byte[] {});
 		for (int i = (offset + length - 1); i >= offset; i--) {
-			result = result.shiftLeft(8);
+			result = result.shiftLeft(LONG_BYTES);
 			result = result.or(BigInteger.valueOf(array[i] & 0xFF));
 		}
 		return result;
