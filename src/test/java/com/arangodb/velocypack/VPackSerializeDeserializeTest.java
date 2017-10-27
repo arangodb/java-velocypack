@@ -764,6 +764,15 @@ public class VPackSerializeDeserializeTest {
 		assertThat(entity.bd, is(BigDecimal.valueOf(3.75)));
 	}
 
+	@Test
+	public void bigDecimal() {
+		final BigDecimal fromDouble = BigDecimal.valueOf(-710.01);
+		final BigDecimal fromString = new BigDecimal("-710.01");
+		assertThat(fromDouble, is(fromString));
+		assertThat(new VPackBuilder().add(fromDouble).slice().getAsBigDecimal(), is(fromDouble));
+		assertThat(new VPackBuilder().add(fromString).slice().getAsBigDecimal(), is(fromDouble));
+	}
+
 	protected static class TestEntityArray {
 		private String[] a1 = { "a", "b", "cd" };
 		private int[] a2 = { 1, 2, 3, 4, 5 };

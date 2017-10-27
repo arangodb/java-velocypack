@@ -196,7 +196,7 @@ public class VPackSlice implements Serializable {
 	}
 
 	public BigDecimal getAsBigDecimal() {
-		return new BigDecimal(getAsDouble());
+		return BigDecimal.valueOf(getAsDouble());
 	}
 
 	private long getSmallInt() {
