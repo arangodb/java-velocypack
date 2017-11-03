@@ -16,7 +16,7 @@ To add the dependency to your project with maven, add the following code to your
   <dependency>
     <groupId>com.arangodb</groupId>
     <artifactId>velocypack</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.13</version>
   </dependency>
 </dependencies>
 ```
