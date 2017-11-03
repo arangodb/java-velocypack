@@ -4,7 +4,7 @@
 
 	<groupId>com.arangodb</groupId>
 	<artifactId>velocypack</artifactId>
-	<version>1.0.13-SNAPSHOT</version>
+	<version>1.0.13</version>
 	<inceptionYear>2017</inceptionYear>
 	<packaging>jar</packaging>
 
@@ -32,7 +32,7 @@
 	<developers>
 		<developer>
 			<id>mpv1989</id>
-			<name>Mark</name>
+			<name>Mark Vollmary</name>
 			<url>https://github.com/mpv1989</url>
 		</developer>
 	</developers>
