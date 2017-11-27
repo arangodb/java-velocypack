@@ -537,4 +537,39 @@ public class VPackParserTest {
 		assertThat(json, is("-32"));
 	}
 
+	@Test
+	public void negativeIntAsJson() throws VPackException {
+		final VPackParser parser = new VPackParser.Builder().build();
+		final String json = parser.toJson(new VPackBuilder().add(-100).slice());
+		assertThat(json, is("-100"));
+	}
+
+	@Test
+	public void negativeIntAsJson2() throws VPackException {
+		final VPackParser parser = new VPackParser.Builder().build();
+		final String json = parser.toJson(new VPackBuilder().add(-300).slice());
+		assertThat(json, is("-300"));
+	}
+
+	@Test
+	public void negativeLongAsJson() throws VPackException {
+		final VPackParser parser = new VPackParser.Builder().build();
+		final String json = parser.toJson(new VPackBuilder().add(-100L).slice());
+		assertThat(json, is("-100"));
+	}
+
+	@Test
+	public void negativeLongAsJson2() throws VPackException {
+		final VPackParser parser = new VPackParser.Builder().build();
+		final String json = parser.toJson(new VPackBuilder().add(-300L).slice());
+		assertThat(json, is("-300"));
+	}
+
+	@Test
+	public void negativeLongAsJson3() throws VPackException {
+		final VPackParser parser = new VPackParser.Builder().build();
+		final String json = parser.toJson(new VPackBuilder().add(-62135596800L).slice());
+		assertThat(json, is("-62135596800"));
+	}
+
 }

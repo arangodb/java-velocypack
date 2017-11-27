@@ -283,7 +283,7 @@ public class VPackParser {
 			} else if (value.isDouble()) {
 				json.append(value.getAsDouble());
 			} else if (value.isInt()) {
-				json.append(value.getAsInt());
+				json.append(value.getAsLong());
 			} else if (value.isNumber()) {
 				json.append(value.getAsNumber());
 			} else if (value.isDate()) {
