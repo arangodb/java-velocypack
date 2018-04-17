@@ -1,4 +1,4 @@
-v1.0.15 (2017-xx-xx)
+v1.0.15 (2017-04-17)
 ---------------------------
 * fixed DateUtil does incorrect conversion of UTC time (issue #6)
 
