@@ -23,6 +23,7 @@ package com.arangodb.velocypack.internal.util;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.TimeZone;
 
 /**
  * @author Mark Vollmary
@@ -33,7 +34,9 @@ public class DateUtil {
 	private static final ThreadLocal<DateFormat> DATE_FORMAT = new ThreadLocal<DateFormat>() {
 		@Override
 		protected DateFormat initialValue() {
-			return new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");// ISO 8601
+			final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+			formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
+			return formatter;
 		}
 	};
 

@@ -48,6 +48,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.TimeZone;
 import java.util.UUID;
 
 import javax.xml.bind.DatatypeConverter;
@@ -66,6 +67,9 @@ import com.arangodb.velocypack.exception.VPackException;
 public class VPackSerializeDeserializeTest {
 
 	private static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");// ISO 8601
+	static {
+		DATE_FORMAT.setTimeZone(TimeZone.getTimeZone("UTC"));
+	}
 
 	protected static class TestEntityBoolean {
 		private boolean a = true;
