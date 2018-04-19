@@ -116,7 +116,7 @@ public class VPackBuilder {
 	private static final Appender<BigDecimal> BIG_DECIMAL = new Appender<BigDecimal>() {
 		@Override
 		public void append(final VPackBuilder builder, final BigDecimal value) throws VPackBuilderException {
-			builder.appendDouble(value.doubleValue());
+			builder.appendString(value.toString());
 		}
 	};
 	private static final Appender<Long> LONG = new Appender<Long>() {
@@ -166,12 +166,7 @@ public class VPackBuilder {
 	private static final Appender<BigInteger> BIG_INTEGER = new Appender<BigInteger>() {
 		@Override
 		public void append(final VPackBuilder builder, final BigInteger value) throws VPackBuilderException {
-			if (value.longValue() <= 9 && value.longValue() >= -6) {
-				builder.appendSmallInt(value.longValue());
-			} else {
-				builder.add((byte) 0x27);
-				builder.append(value, LONG_BYTES);
-			}
+			builder.appendString(value.toString());
 		}
 	};
 	private static final Appender<Date> DATE = new Appender<Date>() {

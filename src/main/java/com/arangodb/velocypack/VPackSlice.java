@@ -196,7 +196,13 @@ public class VPackSlice implements Serializable {
 	}
 
 	public BigDecimal getAsBigDecimal() {
-		return BigDecimal.valueOf(getAsDouble());
+		if (isString()) {
+			return new BigDecimal(getAsString());
+		} else if (isDouble()) {
+			return BigDecimal.valueOf(getAsDouble());
+		} else {
+			throw new VPackValueTypeException(ValueType.STRING, ValueType.DOUBLE);
+		}
 	}
 
 	private long getSmallInt() {
@@ -255,12 +261,14 @@ public class VPackSlice implements Serializable {
 	}
 
 	public BigInteger getAsBigInteger() {
-		if (isSmallInt() || isInt()) {
+		if (isString()) {
+			return new BigInteger(getAsString());
+		} else if (isSmallInt() || isInt()) {
 			return BigInteger.valueOf(getAsLong());
 		} else if (isUInt()) {
 			return NumberUtil.toBigInteger(vpack, start + 1, length());
 		} else {
-			throw new VPackValueTypeException(ValueType.INT, ValueType.UINT, ValueType.SMALLINT);
+			throw new VPackValueTypeException(ValueType.STRING, ValueType.INT, ValueType.UINT, ValueType.SMALLINT);
 		}
 	}
 

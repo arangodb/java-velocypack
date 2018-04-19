@@ -742,12 +742,12 @@ public class VPackSerializeDeserializeTest {
 		assertThat(vpack.isObject(), is(true));
 		{
 			final VPackSlice bi = vpack.get("bi");
-			assertThat(bi.isInteger(), is(true));
+			assertThat(bi.isString(), is(true));
 			assertThat(bi.getAsBigInteger(), is(BigInteger.valueOf(1L)));
 		}
 		{
 			final VPackSlice bd = vpack.get("bd");
-			assertThat(bd.isDouble(), is(true));
+			assertThat(bd.isString(), is(true));
 			assertThat(bd.getAsBigDecimal(), is(BigDecimal.valueOf(1.5)));
 		}
 	}

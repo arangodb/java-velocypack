@@ -1,6 +1,7 @@
-v1.0.16 (2017-xx-xx)
+v1.1.0 (2018-xx-xx)
 ---------------------------
-* added support for deserializing BigInteger/BigDecimal from String 
+* added support for deserializing BigInteger/BigDecimal from String
+* changed serializing BigInteger/BigDecimal to String
 
 v1.0.15 (2017-04-17)
 ---------------------------

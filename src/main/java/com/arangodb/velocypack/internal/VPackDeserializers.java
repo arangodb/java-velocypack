@@ -115,13 +115,7 @@ public class VPackDeserializers {
 			final VPackSlice parent,
 			final VPackSlice vpack,
 			final VPackDeserializationContext context) throws VPackException {
-			final BigInteger bigInteger;
-			if (vpack.isString()) {
-				bigInteger = new BigInteger(vpack.getAsString());
-			} else {
-				bigInteger = vpack.getAsBigInteger();
-			}
-			return bigInteger;
+			return vpack.getAsBigInteger();
 		}
 	};
 	public static final VPackDeserializer<BigDecimal> BIG_DECIMAL = new VPackDeserializer<BigDecimal>() {
@@ -130,13 +124,7 @@ public class VPackDeserializers {
 			final VPackSlice parent,
 			final VPackSlice vpack,
 			final VPackDeserializationContext context) throws VPackException {
-			final BigDecimal bigDecimal;
-			if (vpack.isString()) {
-				bigDecimal = new BigDecimal(vpack.getAsString());
-			} else {
-				bigDecimal = vpack.getAsBigDecimal();
-			}
-			return bigDecimal;
+			return vpack.getAsBigDecimal();
 		}
 	};
 	public static final VPackDeserializer<Number> NUMBER = new VPackDeserializer<Number>() {
