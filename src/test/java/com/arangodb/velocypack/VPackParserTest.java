@@ -26,7 +26,6 @@ import static org.junit.Assert.assertThat;
 
 import java.util.Date;
 
-import org.json.simple.JSONValue;
 import org.junit.Test;
 
 import com.arangodb.velocypack.exception.VPackException;
@@ -423,7 +422,7 @@ public class VPackParserTest {
 				final String attribute,
 				final VPackSlice vpack,
 				final StringBuilder json) throws VPackException {
-				json.append(JSONValue.toJSONString(vpack.getAsString() + "1"));
+				json.append(VPackParser.toJSONString(vpack.getAsString() + "1"));
 			}
 		};
 		final String json = new VPackParser.Builder().registerDeserializer(ValueType.STRING, deserializer).build()
@@ -446,7 +445,7 @@ public class VPackParserTest {
 						final String attribute,
 						final VPackSlice vpack,
 						final StringBuilder json) throws VPackException {
-						json.append(JSONValue.toJSONString(vpack.getAsString() + "1"));
+						json.append(VPackParser.toJSONString(vpack.getAsString() + "1"));
 					}
 				}).build().toJson(builder.slice());
 		assertThat(json, is("{\"a\":\"a1\",\"b\":\"b\"}"));

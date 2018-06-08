@@ -1,3 +1,7 @@
+v1.2.0 (xxxxx-xx-xx)
+---------------------------
+* replaced dependency json-simple with jackson
+
 v1.1.0 (2018-04-19)
 ---------------------------
 * added support for deserializing BigInteger/BigDecimal from String

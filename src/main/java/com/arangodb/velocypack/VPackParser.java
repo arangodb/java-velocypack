@@ -21,19 +21,23 @@
 package com.arangodb.velocypack;
 
 import java.io.IOException;
+import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.json.simple.JSONValue;
-import org.json.simple.parser.ContentHandler;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
-
 import com.arangodb.velocypack.exception.VPackBuilderException;
 import com.arangodb.velocypack.exception.VPackException;
 import com.arangodb.velocypack.internal.util.DateUtil;
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.core.SerializableString;
+import com.fasterxml.jackson.core.io.CharacterEscapes;
+import com.fasterxml.jackson.core.io.SerializedString;
 
 /**
  * @author Mark Vollmary
@@ -279,7 +283,7 @@ public class VPackParser {
 			} else if (value.isBoolean()) {
 				json.append(value.getAsBoolean());
 			} else if (value.isString()) {
-				json.append(JSONValue.toJSONString(value.getAsString()));
+				json.append(toJSONString(value.getAsString()));
 			} else if (value.isDouble()) {
 				json.append(value.getAsDouble());
 			} else if (value.isInt()) {
@@ -287,17 +291,17 @@ public class VPackParser {
 			} else if (value.isNumber()) {
 				json.append(value.getAsNumber());
 			} else if (value.isDate()) {
-				json.append(JSONValue.toJSONString(DateUtil.format(value.getAsDate())));
+				json.append(toJSONString(DateUtil.format(value.getAsDate())));
 			} else if (value.isNull()) {
 				json.append(NULL);
 			} else {
-				json.append(JSONValue.toJSONString(NON_REPRESENTABLE_TYPE));
+				json.append(toJSONString(NON_REPRESENTABLE_TYPE));
 			}
 		}
 	}
 
 	private static void appendField(final String attribute, final StringBuilder json) {
-		json.append(JSONValue.toJSONString(attribute));
+		json.append(toJSONString(attribute));
 		json.append(FIELD);
 	}
 
@@ -340,11 +344,11 @@ public class VPackParser {
 
 	public VPackSlice fromJson(final String json, final boolean includeNullValues) throws VPackException {
 		final VPackBuilder builder = new VPackBuilder();
-		final JSONParser parser = new JSONParser();
-		final ContentHandler contentHandler = new VPackContentHandler(builder, includeNullValues, this);
 		try {
-			parser.parse(json, contentHandler);
-		} catch (final ParseException e) {
+			parse(json, builder, includeNullValues);
+		} catch (final JsonParseException e) {
+			throw new VPackBuilderException(e);
+		} catch (final IOException e) {
 			throw new VPackBuilderException(e);
 		}
 		return builder.slice();
@@ -356,162 +360,127 @@ public class VPackParser {
 
 	public VPackSlice fromJson(final Iterable<String> jsons, final boolean includeNullValues) throws VPackException {
 		final VPackBuilder builder = new VPackBuilder();
-		final JSONParser parser = new JSONParser();
-		final ContentHandler contentHandler = new VPackContentHandler(builder, includeNullValues, this);
 		try {
 			builder.add(ValueType.ARRAY);
 			for (final String json : jsons) {
-				parser.parse(json, contentHandler);
+				parse(json, builder, includeNullValues);
 			}
-			builder.close();
-		} catch (final ParseException e) {
+		} catch (final JsonParseException e) {
+			throw new VPackBuilderException(e);
+		} catch (final IOException e) {
 			throw new VPackBuilderException(e);
 		}
+		builder.close();
 		return builder.slice();
 	}
 
-	private static class VPackContentHandler implements ContentHandler {
-
-		private final VPackBuilder builder;
-		private String attribute;
-		private final boolean includeNullValues;
-		private final VPackParser parser;
-
-		public VPackContentHandler(final VPackBuilder builder, final boolean includeNullValues,
-			final VPackParser parser) {
-			this.builder = builder;
-			this.includeNullValues = includeNullValues;
-			this.parser = parser;
-			attribute = null;
-		}
-
-		private void add(final ValueType value) throws ParseException {
-			try {
-				builder.add(attribute, value);
-				attribute = null;
-			} catch (final VPackBuilderException e) {
-				throw new ParseException(ParseException.ERROR_UNEXPECTED_EXCEPTION);
-			}
-		}
-
-		private void add(final String value) throws ParseException {
-			try {
-				builder.add(attribute, value);
-				attribute = null;
-			} catch (final VPackBuilderException e) {
-				throw new ParseException(ParseException.ERROR_UNEXPECTED_EXCEPTION);
-			}
-		}
-
-		private void add(final Boolean value) throws ParseException {
-			try {
-				builder.add(attribute, value);
-				attribute = null;
-			} catch (final VPackBuilderException e) {
-				throw new ParseException(ParseException.ERROR_UNEXPECTED_EXCEPTION);
-			}
-		}
-
-		private void add(final Double value) throws ParseException {
-			try {
-				builder.add(attribute, value);
-				attribute = null;
-			} catch (final VPackBuilderException e) {
-				throw new ParseException(ParseException.ERROR_UNEXPECTED_EXCEPTION);
-			}
-		}
-
-		private void add(final Long value) throws ParseException {
-			try {
-				builder.add(attribute, value);
-				attribute = null;
-			} catch (final VPackBuilderException e) {
-				throw new ParseException(ParseException.ERROR_UNEXPECTED_EXCEPTION);
-			}
-		}
-
-		private void close() throws ParseException {
-			try {
+	private void parse(final String json, final VPackBuilder builder, final boolean includeNullValues)
+			throws JsonParseException, IOException {
+		final JsonParser parser = new JsonFactory().createParser(json);
+		String fieldName = null;
+		JsonToken token;
+		while (!parser.isClosed() && (token = parser.nextToken()) != null) {
+			switch (token) {
+			case START_OBJECT:
+			case VALUE_EMBEDDED_OBJECT:
+				builder.add(fieldName, ValueType.OBJECT);
+				fieldName = null;
+				break;
+			case START_ARRAY:
+				builder.add(fieldName, ValueType.ARRAY);
+				fieldName = null;
+				break;
+			case END_OBJECT:
+			case END_ARRAY:
 				builder.close();
-			} catch (final VPackBuilderException e) {
-				throw new ParseException(ParseException.ERROR_UNEXPECTED_EXCEPTION);
-			}
-		}
-
-		@Override
-		public void startJSON() throws ParseException, IOException {
-		}
-
-		@Override
-		public void endJSON() throws ParseException, IOException {
-		}
-
-		@Override
-		public boolean startObject() throws ParseException, IOException {
-			add(ValueType.OBJECT);
-			return true;
-		}
-
-		@Override
-		public boolean endObject() throws ParseException, IOException {
-			close();
-			return true;
-		}
-
-		@Override
-		public boolean startObjectEntry(final String key) throws ParseException, IOException {
-			attribute = key;
-			return true;
-		}
-
-		@Override
-		public boolean endObjectEntry() throws ParseException, IOException {
-			return true;
-		}
-
-		@Override
-		public boolean startArray() throws ParseException, IOException {
-			add(ValueType.ARRAY);
-			return true;
-		}
-
-		@Override
-		public boolean endArray() throws ParseException, IOException {
-			close();
-			return true;
-		}
-
-		@SuppressWarnings("unchecked")
-		@Override
-		public boolean primitive(final Object value) throws ParseException, IOException {
-			if (value == null) {
+				break;
+			case FIELD_NAME:
+				fieldName = parser.getCurrentName();
+				break;
+			case VALUE_TRUE:
+			case VALUE_FALSE:
+				parseValue(builder, fieldName, parser.getBooleanValue());
+				fieldName = null;
+				break;
+			case VALUE_NULL:
 				if (includeNullValues) {
-					add(ValueType.NULL);
-				} else {
-					attribute = null;
+					builder.add(fieldName, ValueType.NULL);
 				}
-			} else {
-				final VPackJsonSerializer<?> serializer = parser.getSerializer(attribute, value.getClass());
-				if (serializer != null) {
-					try {
-						((VPackJsonSerializer<Object>) serializer).serialize(builder, attribute, value);
-						attribute = null;
-					} catch (final VPackBuilderException e) {
-						throw new ParseException(ParseException.ERROR_UNEXPECTED_EXCEPTION);
-					}
-				} else if (String.class.isAssignableFrom(value.getClass())) {
-					add(String.class.cast(value));
-				} else if (Boolean.class.isAssignableFrom(value.getClass())) {
-					add(Boolean.class.cast(value));
-				} else if (Double.class.isAssignableFrom(value.getClass())) {
-					add(Double.class.cast(value));
-				} else if (Number.class.isAssignableFrom(value.getClass())) {
-					add(Long.class.cast(value));
-				}
+				fieldName = null;
+				break;
+			case VALUE_NUMBER_FLOAT:
+				parseValue(builder, fieldName, parser.getDoubleValue());
+				fieldName = null;
+				break;
+			case VALUE_NUMBER_INT:
+				parseValue(builder, fieldName, parser.getLongValue());
+				fieldName = null;
+				break;
+			case VALUE_STRING:
+				parseValue(builder, fieldName, parser.getValueAsString());
+				fieldName = null;
+				break;
+			case NOT_AVAILABLE:
+				fieldName = null;
+			default:
+				break;
 			}
-			return true;
 		}
 
+	}
+
+	@SuppressWarnings("unchecked")
+	private void parseValue(final VPackBuilder builder, final String fieldName, final Object value) {
+		final VPackJsonSerializer<?> serializer = getSerializer(fieldName, value.getClass());
+		if (serializer != null) {
+			((VPackJsonSerializer<Object>) serializer).serialize(builder, fieldName, value);
+		} else if (String.class.isAssignableFrom(value.getClass())) {
+			builder.add(fieldName, String.class.cast(value));
+		} else if (Boolean.class.isAssignableFrom(value.getClass())) {
+			builder.add(fieldName, Boolean.class.cast(value));
+		} else if (Double.class.isAssignableFrom(value.getClass())) {
+			builder.add(fieldName, Double.class.cast(value));
+		} else if (Long.class.isAssignableFrom(value.getClass())) {
+			builder.add(fieldName, Long.class.cast(value));
+		}
+	}
+
+	public static String toJSONString(final String text) {
+		final StringWriter writer = new StringWriter();
+		try {
+			final JsonGenerator generator = new JsonFactory().setCharacterEscapes(new CustomCharacterEscapes())
+					.createGenerator(writer);
+			generator.writeString(text);
+			generator.close();
+		} catch (final IOException e) {
+			throw new VPackBuilderException(e);
+		}
+		return writer.toString();
+	}
+
+	static class CustomCharacterEscapes extends CharacterEscapes {
+
+		private static final long serialVersionUID = -1774622969327286211L;
+		private static final SerializedString escapeSlash = new SerializedString("\\/");
+		private final int[] _asciiEscapes;
+
+		public CustomCharacterEscapes() {
+			_asciiEscapes = standardAsciiEscapesForJSON();
+			_asciiEscapes['/'] = CharacterEscapes.ESCAPE_CUSTOM;
+		}
+
+		@Override
+		public int[] getEscapeCodesForAscii() {
+			return _asciiEscapes;
+		}
+
+		@Override
+		public SerializableString getEscapeSequence(final int i) {
+			if (i == 47) {
+				return escapeSlash;
+			}
+			return null;
+		}
 	}
 
 }
