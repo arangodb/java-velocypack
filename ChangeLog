@@ -1,4 +1,4 @@
-v1.2.0 (xxxxx-xx-xx)
+v1.2.0 (2018-06-08)
 ---------------------------
 * replaced dependency json-simple with jackson
 
