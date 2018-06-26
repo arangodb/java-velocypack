@@ -1,4 +1,3 @@
-
 ![ArangoDB-Logo](https://docs.arangodb.com/assets/arangodb_logo_2016_inverted.png)
 
 # ArangoDB VelocyPack Java
@@ -38,28 +37,27 @@ If you want to test with a snapshot version (e.g. 1.0.0-SNAPSHOT), add the stagi
 mvn clean install -DskipTests=true -Dgpg.skip=true -Dmaven.javadoc.skip=true -B
 ```
 
-
 # Usage
 
 ## build VelocyPack - Object
 
-``` Java
+```Java
   VPackBuilder builder = new VPackBuilder();
   builder.add(ValueType.OBJECT); // object start
   builder.add("foo", "bar"); // add field "foo" with value "bar"
   builder.close(); // object end
-  
+
   VPackSlice slice = builder.slice(); // create slice
 ```
 
 ## working with VPackSlice - Object
 
-``` Java
+```Java
   VPackSlice slice = ...
   int size = slice.size(); // number of fields
   VPackSlice foo = slice.get("foo"); // get field "foo"
   String value = foo.getAsString(); // get value from "foo"
-    
+
   // iterate over the fields
   for (final Iterator<Entry<String, VPackSlice>> iterator = slice.objectIterator(); iterator.hasNext();) {
     Entry<String, VPackSlice> field = iterator.next();
@@ -69,7 +67,7 @@ mvn clean install -DskipTests=true -Dgpg.skip=true -Dmaven.javadoc.skip=true -B
 
 ## build VelocyPack - Array
 
-``` Java
+```Java
   VPackBuilder builder = new VPackBuilder();
   builder.add(ValueType.ARRAY); // array start
   builder.add(1); // add value 1
@@ -82,7 +80,7 @@ mvn clean install -DskipTests=true -Dgpg.skip=true -Dmaven.javadoc.skip=true -B
 
 ## working with VPackSlice - Array
 
-``` Java
+```Java
   VPackSlice slice = ...
   int size = slice.size(); // number of values
 
@@ -91,7 +89,7 @@ mvn clean install -DskipTests=true -Dgpg.skip=true -Dmaven.javadoc.skip=true -B
     VPackSlice value = slice.get(i);
     ...
   }
-  
+
   // iterate over values with Iterator
   for (final Iterator<VPackSlice> iterator = slice.arrayIterator(); iterator.hasNext();) {
     VPackSlice value = iterator.next();
@@ -101,7 +99,7 @@ mvn clean install -DskipTests=true -Dgpg.skip=true -Dmaven.javadoc.skip=true -B
 
 ## build VelocyPack - nested Objects
 
-``` Java
+```Java
   VPackBuilder builder = new VPackBuilder();
   builder.add(ValueType.OBJECT); // object start
   builder.add("foo", ValueType.OBJECT); // add object in field "foo"
@@ -122,7 +120,7 @@ mvn clean install -DskipTests=true -Dgpg.skip=true -Dmaven.javadoc.skip=true -B
 
 ## deserialize VelocyPack
 
-``` Java
+```Java
   VPackSlice slice = ...
   VPack vpack = new VPack.Builder().build();
   MyBean entity = vpack.deserialize(slice, MyBean.class);
@@ -130,7 +128,7 @@ mvn clean install -DskipTests=true -Dgpg.skip=true -Dmaven.javadoc.skip=true -B
 
 ## parse Json to VelocPack
 
-``` Java
+```Java
   String json = ...
   VPackParser parser = new VPackParser.Builder().build();
   VPackSlice slice = parser.fromJson(json);
@@ -138,7 +136,7 @@ mvn clean install -DskipTests=true -Dgpg.skip=true -Dmaven.javadoc.skip=true -B
 
 ## parse VelocyPack to Json
 
-``` Java
+```Java
   VPackSlice slice = ...
   VPackParser parser = new VPackParser.Builder().build();
   String json = parser.toJson(slice);
@@ -150,14 +148,14 @@ Both `VPack` and `VPackParser` allow registering of modules which can offer cust
 
 ## VPackModule
 
-``` Java
+```Java
   VPackModule module = ...
   VPack vpack = new VPack.Builder().registerModule(module).build();
 ```
 
 ## VPackParserModule
 
-``` Java
+```Java
   VPackParserModule module = ...
   VPackParser parser = VPackParser.Builder().registerModule(module).build();
 ```
@@ -165,9 +163,10 @@ Both `VPack` and `VPackParser` allow registering of modules which can offer cust
 # Configure serialization / deserialization
 
 ## POJOs
+
 The class `VPack` can serialize/deserialize POJOs. They need at least a constructor without parameter.
 
-``` Java
+```Java
   public class MyObject {
 
     private String name;
@@ -178,18 +177,19 @@ The class `VPack` can serialize/deserialize POJOs. They need at least a construc
       super();
     }
 
-  }  
+  }
 ```
 
 ## serialized fieldnames
+
 To use a different serialized name for a field, use the annotation `SerializedName`.
 
-``` Java
+```Java
   public class MyObject {
 
     @SerializedName("title")
     private String name;
-    
+
     private Gender gender;
     private int age;
 
@@ -197,13 +197,14 @@ To use a different serialized name for a field, use the annotation `SerializedNa
       super();
     }
 
-  }  
+  }
 ```
 
 ## ignore fields
+
 To ignore fields at serialization/deserialization, use the annotation `Expose`
 
-``` Java
+```Java
   public class MyObject {
 
     @Expose
@@ -216,12 +217,12 @@ To ignore fields at serialization/deserialization, use the annotation `Expose`
       super();
     }
 
-  }  
+  }
 ```
 
 ## custom de-/serializer
 
-``` Java
+```Java
   VPack vpack = new VPack.Builder()
     .registerDeserializer(MyObject.class, new VPackDeserializer<MyObject>() {
       @Override
@@ -229,7 +230,7 @@ To ignore fields at serialization/deserialization, use the annotation `Expose`
         final VPackSlice parent,
         final VPackSlice vpack,
         final VPackDeserializationContext context) throws VPackException {
-        
+
           final MyObject obj = new MyObject();
           obj.setName(vpack.get("name").getAsString());
           return obj;
@@ -241,15 +242,16 @@ To ignore fields at serialization/deserialization, use the annotation `Expose`
         final String attribute,
         final MyObject value,
         final VPackSerializationContext context) throws VPackException {
-        
+
           builder.add(attribute, ValueType.OBJECT);
           builder.add("name", value.getName());
           builder.close();
       }
     }).build();
-``` 
+```
 
 # Learn more
-* [ArangoDB](https://www.arangodb.com/)
-* [ChangeLog](ChangeLog)
-* [JavaDoc](http://arangodb.github.io/java-velocypack/javadoc-1_0/index.html)
+
+- [ArangoDB](https://www.arangodb.com/)
+- [ChangeLog](ChangeLog.md)
+- [JavaDoc](http://arangodb.github.io/java-velocypack/javadoc-1_0/index.html)
