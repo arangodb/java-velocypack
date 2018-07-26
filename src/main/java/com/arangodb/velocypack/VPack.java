@@ -21,9 +21,7 @@
 package com.arangodb.velocypack;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Array;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.*;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -370,7 +368,7 @@ public class VPack {
 		};
 		deserializationContext = new VPackDeserializationContext() {
 			@Override
-			public <T> T deserialize(final VPackSlice vpack, final Class<T> type) throws VPackParserException {
+			public <T> T deserialize(final VPackSlice vpack, final Type type) throws VPackParserException {
 				return VPack.this.deserialize(vpack, type);
 			}
 		};
@@ -557,6 +555,10 @@ public class VPack {
 				} else {
 					value = deserializeObject(parent, vpack, type, fieldName);
 				}
+			} else if (type instanceof WildcardType) {
+				final WildcardType wType = WildcardType.class.cast(type);
+				final Type rawType = wType.getUpperBounds()[0];
+				value = deserializeObject(parent, vpack, rawType, fieldName);
 			} else if (Collection.class.isAssignableFrom((Class<?>) type)) {
 				value = deserializeCollection(parent, vpack, type, Object.class);
 			} else if (Map.class.isAssignableFrom((Class<?>) type)) {

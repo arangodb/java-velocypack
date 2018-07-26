@@ -28,6 +28,6 @@ import com.arangodb.velocypack.exception.VPackParserException;
  */
 public interface VPackDeserializationContext {
 
-	<T> T deserialize(final VPackSlice vpack, final Class<T> type) throws VPackParserException;
+	<T> T deserialize(final VPackSlice vpack, final java.lang.reflect.Type type) throws VPackParserException;
 
 }
