@@ -124,3 +124,23 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 ### Added
 
 - added support for registering modules on `VPack`,`VPackParser`
+
+[unreleased]: https://github.com/arangodb/java-velocypack/compare/1.3.0...HEAD
+[1.3.0]: https://github.com/arangodb/java-velocypack/compare/2.3.1...1.3.0
+[1.2.0]: https://github.com/arangodb/java-velocypack/compare/1.1.0...1.2.0
+[1.1.0]: https://github.com/arangodb/java-velocypack/compare/1.0.15...1.1.0
+[1.0.15]: https://github.com/arangodb/java-velocypack/compare/1.0.14...1.0.15
+[1.0.14]: https://github.com/arangodb/java-velocypack/compare/1.0.13...1.0.14
+[1.0.13]: https://github.com/arangodb/java-velocypack/compare/1.0.12...1.0.13
+[1.0.12]: https://github.com/arangodb/java-velocypack/compare/1.0.11...1.0.12
+[1.0.11]: https://github.com/arangodb/java-velocypack/compare/1.0.10...1.0.11
+[1.0.10]: https://github.com/arangodb/java-velocypack/compare/1.0.9...1.0.10
+[1.0.9]: https://github.com/arangodb/java-velocypack/compare/1.0.8...1.0.9
+[1.0.8]: https://github.com/arangodb/java-velocypack/compare/1.0.7...1.0.8
+[1.0.7]: https://github.com/arangodb/java-velocypack/compare/1.0.6...1.0.7
+[1.0.6]: https://github.com/arangodb/java-velocypack/compare/1.0.5...1.0.6
+[1.0.5]: https://github.com/arangodb/java-velocypack/compare/1.0.4...1.0.5
+[1.0.4]: https://github.com/arangodb/java-velocypack/compare/1.0.3...1.0.4
+[1.0.3]: https://github.com/arangodb/java-velocypack/compare/1.0.2...1.0.3
+[1.0.2]: https://github.com/arangodb/java-velocypack/compare/1.0.1...1.0.2
+[1.0.1]: https://github.com/arangodb/java-velocypack/compare/1.0.1
