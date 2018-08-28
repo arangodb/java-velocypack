@@ -58,7 +58,6 @@ import org.junit.Test;
 import com.arangodb.velocypack.VPack.SerializeOptions;
 import com.arangodb.velocypack.annotations.Expose;
 import com.arangodb.velocypack.annotations.SerializedName;
-import com.arangodb.velocypack.annotations.TypeInfo;
 import com.arangodb.velocypack.exception.VPackException;
 
 /**
@@ -3991,7 +3990,6 @@ public class VPackSerializeDeserializeTest {
 		assertThat(entityOut.e, is(nullValue()));
 	}
 
-	@TypeInfo
 	static class TestEntityTypeInfo {
 
 	}
