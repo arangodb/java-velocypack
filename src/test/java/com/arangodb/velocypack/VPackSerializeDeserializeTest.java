@@ -58,6 +58,7 @@ import org.junit.Test;
 import com.arangodb.velocypack.VPack.SerializeOptions;
 import com.arangodb.velocypack.annotations.Expose;
 import com.arangodb.velocypack.annotations.SerializedName;
+import com.arangodb.velocypack.annotations.TypeInfo;
 import com.arangodb.velocypack.exception.VPackException;
 
 /**
@@ -3988,6 +3989,90 @@ public class VPackSerializeDeserializeTest {
 		final VPackSlice slice = vpack.serialize(entityIn);
 		final TestEntityNullHandle1 entityOut = vpack.deserialize(slice, TestEntityNullHandle1.class);
 		assertThat(entityOut.e, is(nullValue()));
+	}
+
+	@TypeInfo
+	static class TestEntityTypeInfo {
+
+	}
+
+	static class TestEntityGenericA<T> {
+		T value;
+	}
+
+	@Test
+	public void genericType() {
+		final TestEntityGenericA<TestEntityTypeInfo> entity = new TestEntityGenericA<TestEntityTypeInfo>();
+		entity.value = new TestEntityTypeInfo();
+
+		final VPack vpack = new VPack.Builder().build();
+		final VPackSlice slice = vpack.serialize(entity);
+
+		assertThat(slice.isObject(), is(true));
+		assertThat(slice.get("value").isObject(), is(true));
+		assertThat(slice.get("value").get("_class").isString(), is(true));
+		assertThat(slice.get("value").get("_class").getAsString(),
+			is("com.arangodb.velocypack.VPackSerializeDeserializeTest$TestEntityTypeInfo"));
+
+		final TestEntityGenericA<TestEntityTypeInfo> entityOut = vpack.deserialize(slice, TestEntityGenericA.class);
+		assertThat(entityOut, is(notNullValue()));
+		assertThat(entityOut.value, is(notNullValue()));
+		assertThat(entityOut.value instanceof TestEntityTypeInfo, is(true));
+	}
+
+	static class TestEntityGenericList<T> {
+		List<T> value;
+	}
+
+	@Test
+	public void genericList() {
+		final TestEntityGenericList<TestEntityTypeInfo> entity = new TestEntityGenericList<TestEntityTypeInfo>();
+		entity.value = new ArrayList<TestEntityTypeInfo>();
+		entity.value.add(new TestEntityTypeInfo());
+
+		final VPack vpack = new VPack.Builder().build();
+		final VPackSlice slice = vpack.serialize(entity);
+
+		assertThat(slice.isObject(), is(true));
+		assertThat(slice.get("value").isArray(), is(true));
+		assertThat(slice.get("value").get(0).isObject(), is(true));
+		assertThat(slice.get("value").get(0).get("_class").isString(), is(true));
+		assertThat(slice.get("value").get(0).get("_class").getAsString(),
+			is("com.arangodb.velocypack.VPackSerializeDeserializeTest$TestEntityTypeInfo"));
+
+		final TestEntityGenericList<TestEntityTypeInfo> entityOut = vpack.deserialize(slice,
+			TestEntityGenericList.class);
+		assertThat(entityOut, is(notNullValue()));
+		assertThat(entityOut.value, is(notNullValue()));
+		assertThat(entityOut.value.size(), is(1));
+		assertThat(entityOut.value.get(0) instanceof TestEntityTypeInfo, is(true));
+	}
+
+	static class TestEntityObjectList {
+		List<Object> value;
+	}
+
+	@Test
+	public void objectList() {
+		final TestEntityObjectList entity = new TestEntityObjectList();
+		entity.value = new ArrayList<Object>();
+		entity.value.add(new TestEntityTypeInfo());
+
+		final VPack vpack = new VPack.Builder().build();
+		final VPackSlice slice = vpack.serialize(entity);
+
+		assertThat(slice.isObject(), is(true));
+		assertThat(slice.get("value").isArray(), is(true));
+		assertThat(slice.get("value").get(0).isObject(), is(true));
+		assertThat(slice.get("value").get(0).get("_class").isString(), is(true));
+		assertThat(slice.get("value").get(0).get("_class").getAsString(),
+			is("com.arangodb.velocypack.VPackSerializeDeserializeTest$TestEntityTypeInfo"));
+
+		final TestEntityObjectList entityOut = vpack.deserialize(slice, TestEntityObjectList.class);
+		assertThat(entityOut, is(notNullValue()));
+		assertThat(entityOut.value, is(notNullValue()));
+		assertThat(entityOut.value.size(), is(1));
+		assertThat(entityOut.value.get(0) instanceof TestEntityTypeInfo, is(true));
 	}
 
 }
