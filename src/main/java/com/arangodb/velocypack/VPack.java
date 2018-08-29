@@ -22,6 +22,7 @@ package com.arangodb.velocypack;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
+import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -592,6 +593,8 @@ public class VPack {
 				final WildcardType wType = WildcardType.class.cast(realType);
 				final Type rawType = wType.getUpperBounds()[0];
 				value = deserializeObject(parent, vpack, rawType, fieldName);
+			} else if (realType instanceof GenericArrayType) {
+				throw new VPackParserException(new IllegalArgumentException("Generic arrays are not supported!"));
 			} else if (Collection.class.isAssignableFrom((Class<?>) realType)) {
 				value = deserializeCollection(parent, vpack, realType, Object.class);
 			} else if (Map.class.isAssignableFrom((Class<?>) realType)) {

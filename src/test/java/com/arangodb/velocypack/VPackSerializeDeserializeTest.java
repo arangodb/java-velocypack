@@ -36,6 +36,7 @@ import java.math.BigInteger;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -4071,6 +4072,43 @@ public class VPackSerializeDeserializeTest {
 		assertThat(entityOut.value, is(notNullValue()));
 		assertThat(entityOut.value.size(), is(1));
 		assertThat(entityOut.value.get(0) instanceof TestEntityTypeInfo, is(true));
+	}
+
+	public static class Limb {
+	}
+
+	public static class Leg extends Limb {
+
+		public String name;
+
+		public Leg() {
+		}
+
+		public Leg(final String name) {
+			this.name = name;
+		}
+	}
+
+	public static abstract class Animal<L extends Limb> {
+		public List<L> arms;
+		public L rightLeg;
+	}
+
+	public static class Husky extends Animal<Leg> {
+	}
+
+	@Test
+	public void huskyTestWauWau() {
+		final VPack vpack = new VPack.Builder().build();
+		final Husky tom = new Husky();
+		tom.rightLeg = new Leg("right leg");
+		tom.arms = new ArrayList<Leg>(Arrays.asList(new Leg("right arm"), new Leg("left arm")));
+
+		final Husky tomInMirror = vpack.deserialize(vpack.serialize(tom), Husky.class);
+		assertThat(tomInMirror, is(notNullValue()));
+		assertThat(tomInMirror.rightLeg instanceof Leg, is(true));
+		assertThat(tomInMirror.rightLeg.name, is("right leg"));
+		assertThat(tomInMirror.arms.size(), is(2));
 	}
 
 }
