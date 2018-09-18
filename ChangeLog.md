@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 
 ## [Unreleased]
 
+## [1.4.1] - 2018-09-18
+
 ### Fixed
 
 - fixed handling of additional fields
@@ -137,7 +139,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 
 - added support for registering modules on `VPack`,`VPackParser`
 
-[unreleased]: https://github.com/arangodb/java-velocypack/compare/1.4.0...HEAD
+[unreleased]: https://github.com/arangodb/java-velocypack/compare/1.4.1...HEAD
+[1.4.1]: https://github.com/arangodb/java-velocypack/compare/1.4.0...1.4.1
 [1.4.0]: https://github.com/arangodb/java-velocypack/compare/1.3.0...1.4.0
 [1.3.0]: https://github.com/arangodb/java-velocypack/compare/2.3.1...1.3.0
 [1.2.0]: https://github.com/arangodb/java-velocypack/compare/1.1.0...1.2.0
