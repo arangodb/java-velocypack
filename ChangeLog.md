@@ -6,11 +6,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 
 ## [Unreleased]
 
+## [1.4.0] - 2018-09-18
+
 ### Added
 
 - added support for generic types (issue #1, #3)
 
-  Serialize the class name in a field `_class` when necessary. Field name can be configured through `VPack.Builder#typeKey(String)` 
+  Serialize the class name in a field `_class` when necessary. Field name can be configured through `VPack.Builder#typeKey(String)`
 
 ## [1.3.0] - 2018-08-02
 
@@ -131,7 +133,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 
 - added support for registering modules on `VPack`,`VPackParser`
 
-[unreleased]: https://github.com/arangodb/java-velocypack/compare/1.3.0...HEAD
+[unreleased]: https://github.com/arangodb/java-velocypack/compare/1.4.0...HEAD
+[1.4.0]: https://github.com/arangodb/java-velocypack/compare/1.3.0...1.4.0
 [1.3.0]: https://github.com/arangodb/java-velocypack/compare/2.3.1...1.3.0
 [1.2.0]: https://github.com/arangodb/java-velocypack/compare/1.1.0...1.2.0
 [1.1.0]: https://github.com/arangodb/java-velocypack/compare/1.0.15...1.1.0
