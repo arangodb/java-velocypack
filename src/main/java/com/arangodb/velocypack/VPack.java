@@ -823,7 +823,6 @@ public class VPack {
 			builder.add(name, ValueType.OBJECT);
 			serializeFields(entity, builder, additionalFields);
 			if (!additionalFields.isEmpty()) {
-				// additionalFields.clear();
 				builder.close(true);
 			} else {
 				builder.close(false);
@@ -961,7 +960,6 @@ public class VPack {
 							builder, null, Collections.<String, Object> emptyMap());
 					}
 				}
-				additionalFields.clear();
 				builder.close();
 			} else {
 				builder.add(name, ValueType.ARRAY);
