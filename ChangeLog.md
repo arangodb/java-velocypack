@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 
 ## [Unreleased]
 
+### Added
+
+- added support for generic types (issue #1, #3)
+
+  Serialize the class name in a field `_class` when necessary. Field name can be configured through `VPack.Builder#typeKey(String)` 
+
 ## [1.3.0] - 2018-08-02
 
 ### Changed

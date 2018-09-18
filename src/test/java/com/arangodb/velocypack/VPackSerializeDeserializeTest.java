@@ -36,6 +36,7 @@ import java.math.BigInteger;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -3988,6 +3989,126 @@ public class VPackSerializeDeserializeTest {
 		final VPackSlice slice = vpack.serialize(entityIn);
 		final TestEntityNullHandle1 entityOut = vpack.deserialize(slice, TestEntityNullHandle1.class);
 		assertThat(entityOut.e, is(nullValue()));
+	}
+
+	static class TestEntityTypeInfo {
+
+	}
+
+	static class TestEntityGenericA<T> {
+		T value;
+	}
+
+	@Test
+	public void genericType() {
+		final TestEntityGenericA<TestEntityTypeInfo> entity = new TestEntityGenericA<TestEntityTypeInfo>();
+		entity.value = new TestEntityTypeInfo();
+
+		final VPack vpack = new VPack.Builder().build();
+		final VPackSlice slice = vpack.serialize(entity);
+
+		assertThat(slice.isObject(), is(true));
+		assertThat(slice.get("value").isObject(), is(true));
+		assertThat(slice.get("value").get("_class").isString(), is(true));
+		assertThat(slice.get("value").get("_class").getAsString(),
+			is("com.arangodb.velocypack.VPackSerializeDeserializeTest$TestEntityTypeInfo"));
+
+		final TestEntityGenericA<TestEntityTypeInfo> entityOut = vpack.deserialize(slice, TestEntityGenericA.class);
+		assertThat(entityOut, is(notNullValue()));
+		assertThat(entityOut.value, is(notNullValue()));
+		assertThat(entityOut.value instanceof TestEntityTypeInfo, is(true));
+	}
+
+	static class TestEntityGenericList<T> {
+		List<T> value;
+	}
+
+	@Test
+	public void genericList() {
+		final TestEntityGenericList<TestEntityTypeInfo> entity = new TestEntityGenericList<TestEntityTypeInfo>();
+		entity.value = new ArrayList<TestEntityTypeInfo>();
+		entity.value.add(new TestEntityTypeInfo());
+
+		final VPack vpack = new VPack.Builder().build();
+		final VPackSlice slice = vpack.serialize(entity);
+
+		assertThat(slice.isObject(), is(true));
+		assertThat(slice.get("value").isArray(), is(true));
+		assertThat(slice.get("value").get(0).isObject(), is(true));
+		assertThat(slice.get("value").get(0).get("_class").isString(), is(true));
+		assertThat(slice.get("value").get(0).get("_class").getAsString(),
+			is("com.arangodb.velocypack.VPackSerializeDeserializeTest$TestEntityTypeInfo"));
+
+		final TestEntityGenericList<TestEntityTypeInfo> entityOut = vpack.deserialize(slice,
+			TestEntityGenericList.class);
+		assertThat(entityOut, is(notNullValue()));
+		assertThat(entityOut.value, is(notNullValue()));
+		assertThat(entityOut.value.size(), is(1));
+		assertThat(entityOut.value.get(0) instanceof TestEntityTypeInfo, is(true));
+	}
+
+	static class TestEntityObjectList {
+		List<Object> value;
+	}
+
+	@Test
+	public void objectList() {
+		final TestEntityObjectList entity = new TestEntityObjectList();
+		entity.value = new ArrayList<Object>();
+		entity.value.add(new TestEntityTypeInfo());
+
+		final VPack vpack = new VPack.Builder().build();
+		final VPackSlice slice = vpack.serialize(entity);
+
+		assertThat(slice.isObject(), is(true));
+		assertThat(slice.get("value").isArray(), is(true));
+		assertThat(slice.get("value").get(0).isObject(), is(true));
+		assertThat(slice.get("value").get(0).get("_class").isString(), is(true));
+		assertThat(slice.get("value").get(0).get("_class").getAsString(),
+			is("com.arangodb.velocypack.VPackSerializeDeserializeTest$TestEntityTypeInfo"));
+
+		final TestEntityObjectList entityOut = vpack.deserialize(slice, TestEntityObjectList.class);
+		assertThat(entityOut, is(notNullValue()));
+		assertThat(entityOut.value, is(notNullValue()));
+		assertThat(entityOut.value.size(), is(1));
+		assertThat(entityOut.value.get(0) instanceof TestEntityTypeInfo, is(true));
+	}
+
+	public static class Limb {
+	}
+
+	public static class Leg extends Limb {
+
+		public String name;
+
+		public Leg() {
+		}
+
+		public Leg(final String name) {
+			this.name = name;
+		}
+	}
+
+	public static abstract class Animal<L extends Limb> {
+		public List<L> arms;
+		public L rightLeg;
+	}
+
+	public static class Husky extends Animal<Leg> {
+	}
+
+	@Test
+	public void huskyTestWauWau() {
+		final VPack vpack = new VPack.Builder().build();
+		final Husky tom = new Husky();
+		tom.rightLeg = new Leg("right leg");
+		tom.arms = new ArrayList<Leg>(Arrays.asList(new Leg("right arm"), new Leg("left arm")));
+
+		final Husky tomInMirror = vpack.deserialize(vpack.serialize(tom), Husky.class);
+		assertThat(tomInMirror, is(notNullValue()));
+		assertThat(tomInMirror.rightLeg instanceof Leg, is(true));
+		assertThat(tomInMirror.rightLeg.name, is("right leg"));
+		assertThat(tomInMirror.arms.size(), is(2));
 	}
 
 }
