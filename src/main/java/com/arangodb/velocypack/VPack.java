@@ -896,7 +896,8 @@ public class VPack {
 			} else if (type instanceof Class && Map.class.isAssignableFrom((Class<?>) type)) {
 				serializeMap(name, value, builder, String.class, additionalFields);
 			} else if (type instanceof Class && ((Class) type).isArray()) {
-				serializeArray(name, value, builder);
+				final Type elemType = ((Class<?>) type).getComponentType();
+				serializeArray(name, value, builder, elemType);
 			} else if (type instanceof Class && ((Class) type).isEnum()) {
 				builder.add(name, Enum.class.cast(value).name());
 			} else if (type != value.getClass()) {
@@ -908,13 +909,14 @@ public class VPack {
 		}
 	}
 
-	private void serializeArray(final String name, final Object value, final VPackBuilder builder)
+	private void serializeArray(final String name, final Object value, final VPackBuilder builder, final Type type)
 			throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, VPackException {
 		builder.add(name, ValueType.ARRAY);
 		for (int i = 0; i < Array.getLength(value); i++) {
 			final Object element = Array.get(value, i);
 			if (element != null) {
-				addValue(null, element.getClass(), element, builder, null, Collections.<String, Object> emptyMap());
+				final Type t = type != null ? type : element.getClass();
+				addValue(null, t, element, builder, null, Collections.<String, Object> emptyMap());
 			} else {
 				builder.add(ValueType.NULL);
 			}
