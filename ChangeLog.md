@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 
 ## [Unreleased]
 
+## [1.4.2] - 2019-07-29
+
+- properly (always) close the builder object
+
 ## [1.4.1] - 2018-09-18
 
 ### Fixed
