@@ -21,7 +21,7 @@ import java.util.concurrent.TimeUnit;
 @Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
-@Fork(3)
+@Fork(1)
 public class Bench {
     @State(Scope.Benchmark)
     public static class Data {
@@ -44,7 +44,7 @@ public class Bench {
     public static void main(String[] args) throws RunnerException {
         Options opt = new OptionsBuilder()
             .include(Bench.class.getSimpleName())
-            .addProfiler(GCProfiler.class)
+//            .addProfiler(GCProfiler.class)
             .addProfiler(JmhFlightRecorderProfiler.class)
             .jvmArgs("-Xmx256m", "-Xms256m", "-XX:+UnlockCommercialFeatures") // https://stackoverflow.com/a/37857708
             .resultFormat(ResultFormatType.JSON)
@@ -55,9 +55,29 @@ public class Bench {
     }
 
 
+    @OutputTimeUnit(TimeUnit.NANOSECONDS)
+    @Benchmark
+    public void builder(Data data, Blackhole bh) {
+        VPackBuilder builder = new VPackBuilder();
+        builder.add(ValueType.OBJECT);
+        builder.add("name", "Koko");
+        builder.add("species", "Gorilla");
+        builder.add("language", "GSL");
+        builder.add("knownSigns", 1000);
+        builder.add("knownEnglishWords", 2000);
+        builder.add("age", 46);
+        builder.add("hairy", true);
+        builder.add("iq", 80);
+        builder.add("pet", "All Ball");
+        builder.close();
+        bh.consume(builder.slice());
+    }
+
+
     @Benchmark
     public void fromJson(Data data, Blackhole bh) {
         VPackParser parser = new VPackParser.Builder().build();
+
         VPackSlice slice = parser.fromJson(data.str);
         bh.consume(slice);
     }

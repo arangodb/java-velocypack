@@ -28,6 +28,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Map.Entry;
+import java.lang.Comparable;
 
 import com.arangodb.velocypack.exception.VPackException;
 import com.arangodb.velocypack.exception.VPackKeyTypeException;
@@ -294,6 +295,10 @@ public class VPackSlice implements Serializable {
 	}
 
 	public String getAsString() {
+		return getAsStringSlice().toString();
+	}
+
+	public VPackStringSlice getAsStringSlice() {
 		if (!isString()) {
 			throw new VPackValueTypeException(ValueType.STRING);
 		}
@@ -308,12 +313,12 @@ public class VPackSlice implements Serializable {
 		return head() == (byte) 0xbf;
 	}
 
-	private String getShortString() {
-		return new String(vpack, start + 1, length(), Charset.forName("UTF-8"));
+	private VPackStringSlice getShortString() {
+		return new VPackStringSlice(vpack, start + 1, length());
 	}
 
-	private String getLongString() {
-		return new String(vpack, start + 9, getLongStringLength(), Charset.forName("UTF-8"));
+	private VPackStringSlice getLongString() {
+		return new VPackStringSlice(vpack, start + 9, getLongStringLength());
 	}
 
 	private int getLongStringLength() {
@@ -815,5 +820,6 @@ public class VPackSlice implements Serializable {
 		}
 		return true;
 	}
+
 
 }
