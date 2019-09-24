@@ -23,6 +23,7 @@ package com.arangodb.velocypack;
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -46,6 +47,7 @@ import com.arangodb.velocypack.exception.VPackValueTypeException;
 import com.arangodb.velocypack.internal.DefaultVPackBuilderOptions;
 import com.arangodb.velocypack.internal.Value;
 import com.arangodb.velocypack.internal.util.NumberUtil;
+import com.fasterxml.jackson.core.io.CharTypes;
 
 /**
  * @author Mark Vollmary
@@ -546,7 +548,7 @@ public class VPackBuilder {
 				throw new VPackBuilderUnexpectedValueException(ValueType.UINT, Long.class, Integer.class,
 						BigInteger.class);
 			}
-			if (-1 == vUInt.compareTo(BigInteger.ZERO)) {
+			if (vUInt.compareTo(BigInteger.ZERO) < 0) {
 				throw new VPackBuilderUnexpectedValueException(ValueType.UINT, "non-negative", Long.class,
 						Integer.class, BigInteger.class);
 			}
@@ -621,21 +623,64 @@ public class VPackBuilder {
 	}
 
 	private void appendString(final String value) throws VPackBuilderException {
-		try {
-			final byte[] bytes = value.getBytes("UTF-8");
-			final int length = bytes.length;
-			if (length <= 126) {
-				// short string
-				add((byte) (0x40 + length));
-			} else {
-				// long string
-				add((byte) 0xbf);
-				appendLength(length);
+		int tagPos = size;
+		int strLen = value.length();
+
+		// Guess whether the end result will be short or long. Assume ASCII for now.
+		int tagSizeLen = strLen <= 126 ? 1 : 9;
+
+		// Fast path. Assume ASCII.
+		ensureCapacity(size + tagSizeLen + strLen);
+
+		// Reserve space for the tag + length.
+		size += tagSizeLen;
+
+		// Fast+tight loop for ASCII-only, no-escaping-needed output
+		// Implementation lifted from jackson's UTF8JsonGenerator.
+		int[] escCodes = CharTypes.get7BitOutputEscapes();
+		int offset = 0;
+		while(offset < strLen) {
+			int ch = value.charAt(offset);
+			if (ch > 0x7F || escCodes[ch] != 0) {
+				break; // Not ASCII.
 			}
-			appendString(bytes);
-		} catch (final UnsupportedEncodingException e) {
-			throw new VPackBuilderException(e);
+			buffer[size++] = (byte) ch;
+			++offset;
 		}
+
+		if (offset < strLen) {
+			// Not ASCII. Rewind and do the slow path.
+			size = tagPos;
+			appendUtf8String(value);
+			return;
+		}
+
+		// ASCII. strLen == bytes len.
+		// Rewind size temporarily to write the header before the string data.
+		size = tagPos;
+		if (strLen <= 126) {
+			// short string
+			add((byte) (0x40 + strLen));
+		} else {
+			// long string
+			add((byte) 0xbf);
+			appendLength(strLen);
+		}
+		size += strLen;
+	}
+
+	private void appendUtf8String(String value) {
+		final byte[] bytes = value.getBytes(StandardCharsets.UTF_8);
+		final int length = bytes.length;
+		if (length <= 126) {
+			// short string
+			add((byte) (0x40 + length));
+		} else {
+			// long string
+			add((byte) 0xbf);
+			appendLength(length);
+		}
+		appendString(bytes);
 	}
 
 	private void appendString(final byte[] bytes) {
