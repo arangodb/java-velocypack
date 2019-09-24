@@ -18,7 +18,7 @@ import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
 
 @Warmup(iterations = 8, time = 1, timeUnit = TimeUnit.SECONDS)
-@Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 30, time = 1, timeUnit = TimeUnit.SECONDS)
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
 @Fork(1)
@@ -27,6 +27,7 @@ public class Bench {
     public static class Data {
 
         public final String str;
+        public final VPackSlice koko = buildKoko();
 
         public Data() {
             try {
@@ -39,6 +40,23 @@ public class Bench {
                 throw new RuntimeException(e);
             }
         }
+
+        public VPackSlice buildKoko() {
+            VPackBuilder builder = new VPackBuilder();
+            builder.add(ValueType.OBJECT);
+            builder.add("name", "Koko");
+            builder.add("species", "Gorilla");
+            builder.add("language", "GSL");
+            builder.add("knownSigns", 1000);
+            builder.add("knownEnglishWords", 2000);
+            builder.add("age", 46);
+            builder.add("hairy", true);
+            builder.add("iq", 80);
+            builder.add("pet", "All Ball");
+            builder.close();
+            return builder.slice();
+        }
+
     }
 
     public static void main(String[] args) throws RunnerException {
@@ -58,21 +76,23 @@ public class Bench {
     @OutputTimeUnit(TimeUnit.NANOSECONDS)
     @Benchmark
     public void builder(Data data, Blackhole bh) {
-        VPackBuilder builder = new VPackBuilder();
-        builder.add(ValueType.OBJECT);
-        builder.add("name", "Koko");
-        builder.add("species", "Gorilla");
-        builder.add("language", "GSL");
-        builder.add("knownSigns", 1000);
-        builder.add("knownEnglishWords", 2000);
-        builder.add("age", 46);
-        builder.add("hairy", true);
-        builder.add("iq", 80);
-        builder.add("pet", "All Ball");
-        builder.close();
-        bh.consume(builder.slice());
+        bh.consume(data.buildKoko());
     }
 
+    @OutputTimeUnit(TimeUnit.NANOSECONDS)
+    @Benchmark
+    public void sliceGet(Data data, Blackhole bh) {
+        VPackSlice koko = data.koko;
+        bh.consume(koko.get("name"));
+        bh.consume(koko.get("species"));
+        bh.consume(koko.get("language"));
+        bh.consume(koko.get("knownSigns"));
+        bh.consume(koko.get("knownEnglishWords"));
+        bh.consume(koko.get("age"));
+        bh.consume(koko.get("hairy"));
+        bh.consume(koko.get("iq"));
+        bh.consume(koko.get("pet"));
+    }
 
     @Benchmark
     public void fromJson(Data data, Blackhole bh) {

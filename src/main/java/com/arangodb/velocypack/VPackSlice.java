@@ -24,6 +24,7 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Iterator;
@@ -579,6 +580,7 @@ public class VPackSlice implements Serializable {
 		long l = 0;
 		long r = n - 1;
 
+		byte[] attributeBytes = attribute.getBytes(StandardCharsets.UTF_8);
 		for (;;) {
 			// midpoint
 			final long index = l + ((r - l) / 2);
@@ -587,14 +589,14 @@ public class VPackSlice implements Serializable {
 			final VPackSlice key = new VPackSlice(vpack, (int) (start + keyIndex));
 			int res = 0;
 			if (key.isString()) {
-				res = key.compareString(attribute);
+				res = key.getAsStringSlice().compareToBytes(attributeBytes);
 			} else if (key.isInteger()) {
 				// translate key
 				if (!useTranslator) {
 					// no attribute translator
 					throw new VPackNeedAttributeTranslatorException();
 				}
-				res = key.translateUnchecked().compareString(attribute);
+				res = key.translateUnchecked().getAsStringSlice().compareToBytes(attributeBytes);
 			} else {
 				// invalid key
 				result = new VPackSlice();

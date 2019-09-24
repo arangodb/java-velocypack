@@ -24,11 +24,19 @@ public class VPackStringSlice implements Comparable<VPackStringSlice> {
 
     @Override
     public int compareTo(VPackStringSlice o) {
-        for (int i = 0; i < length || i < o.length; i++) {
-            int c = vpack[start + i] - o.vpack[o.start + i];
+        return compareToBytes(o.vpack, o.start, o.length);
+    }
+
+    public int compareToBytes(byte[] other) {
+        return compareToBytes(other, 0, other.length);
+    }
+
+    public int compareToBytes(byte[] other, int off, int oLen) {
+        for (int i = 0; i < length && i < oLen; i++) {
+            int c = (vpack[start + i] & 0xff) - (other[off + i] & 0xff);
             if (c != 0) return c;
         }
-        return length - o.length;
+        return length - oLen;
     }
 
     @Override
