@@ -622,7 +622,7 @@ public class VPackBuilder {
 		append(value.getTime(), LONG_BYTES);
 	}
 
-	private void appendString(final String value) throws VPackBuilderException {
+	private void appendString(final String value) {
 		final byte[] bytes = value.getBytes(StandardCharsets.UTF_8);
 		final int length = bytes.length;
 		if (length <= 126) {
