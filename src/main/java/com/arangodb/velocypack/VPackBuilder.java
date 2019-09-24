@@ -623,53 +623,6 @@ public class VPackBuilder {
 	}
 
 	private void appendString(final String value) throws VPackBuilderException {
-		int tagPos = size;
-		int strLen = value.length();
-
-		// Guess whether the end result will be short or long. Assume ASCII for now.
-		int tagSizeLen = strLen <= 126 ? 1 : 9;
-
-		// Fast path. Assume ASCII.
-		ensureCapacity(size + tagSizeLen + strLen);
-
-		// Reserve space for the tag + length.
-		size += tagSizeLen;
-
-		// Fast+tight loop for ASCII-only, no-escaping-needed output
-		// Implementation lifted from jackson's UTF8JsonGenerator.
-		int[] escCodes = CharTypes.get7BitOutputEscapes();
-		int offset = 0;
-		while(offset < strLen) {
-			int ch = value.charAt(offset);
-			if (ch > 0x7F || escCodes[ch] != 0) {
-				break; // Not ASCII.
-			}
-			buffer[size++] = (byte) ch;
-			++offset;
-		}
-
-		if (offset < strLen) {
-			// Not ASCII. Rewind and do the slow path.
-			size = tagPos;
-			appendUtf8String(value);
-			return;
-		}
-
-		// ASCII. strLen == bytes len.
-		// Rewind size temporarily to write the header before the string data.
-		size = tagPos;
-		if (strLen <= 126) {
-			// short string
-			add((byte) (0x40 + strLen));
-		} else {
-			// long string
-			add((byte) 0xbf);
-			appendLength(strLen);
-		}
-		size += strLen;
-	}
-
-	private void appendUtf8String(String value) {
 		final byte[] bytes = value.getBytes(StandardCharsets.UTF_8);
 		final int length = bytes.length;
 		if (length <= 126) {
