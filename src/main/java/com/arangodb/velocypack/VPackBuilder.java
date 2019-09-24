@@ -1051,9 +1051,10 @@ public class VPackBuilder {
 
 	private void sortObjectIndex(final int start, final List<Integer> offsets)
 			throws VPackKeyTypeException, VPackNeedAttributeTranslatorException {
-		final List<VPackBuilder.SortEntry> attributes = new ArrayList<VPackBuilder.SortEntry>(offsets.size());
-		for (final Integer offset : offsets) {
-			attributes.add(new SortEntry(new VPackSlice(buffer, start + offset).makeKey().getAsStringSlice(), offset));
+		VPackBuilder.SortEntry[] attributes = new VPackBuilder.SortEntry[offsets.size()];
+		for (int i = 0; i < offsets.size(); i++) {
+			Integer offset = offsets.get(i);
+			attributes[i] = new SortEntry(new VPackSlice(buffer, start + offset).makeKey().getAsStringSlice(), offset);
 		}
 		final Comparator<SortEntry> comparator = new Comparator<SortEntry>() {
 			@Override
@@ -1061,7 +1062,7 @@ public class VPackBuilder {
 				return o1.slice.compareTo(o2.slice);
 			}
 		};
-		Collections.sort(attributes, comparator);
+		Arrays.sort(attributes, comparator);
 		offsets.clear();
 		for (final SortEntry sortEntry : attributes) {
 			offsets.add(sortEntry.offset);
