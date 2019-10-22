@@ -952,7 +952,7 @@ public class VPackSliceTest {
 	@Test
 	public void objectSingleEntryString() throws VPackException {
 		// {"a":"b"}
-		final VPackSlice slice = new VPackSlice(new byte[] { 0x0b, 0x07, 0x01, 0x41, 0x61, 0x41, 0x62 });
+		final VPackSlice slice = new VPackSlice(new byte[] { 0x0b, 0x08, 0x01, 0x41, 0x61, 0x41, 0x62, 0x03 });
 		final VPackSlice sliceNone = slice.get("abc");
 		assertThat(sliceNone.isNone(), is(true));
 		final VPackSlice sliceA = slice.get("a");
