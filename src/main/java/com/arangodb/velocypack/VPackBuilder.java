@@ -23,6 +23,7 @@ package com.arangodb.velocypack;
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -46,6 +47,7 @@ import com.arangodb.velocypack.exception.VPackValueTypeException;
 import com.arangodb.velocypack.internal.DefaultVPackBuilderOptions;
 import com.arangodb.velocypack.internal.Value;
 import com.arangodb.velocypack.internal.util.NumberUtil;
+import com.fasterxml.jackson.core.io.CharTypes;
 
 /**
  * @author Mark Vollmary
@@ -216,7 +218,7 @@ public class VPackBuilder {
 	private int size;
 	private final List<Integer> stack; // Start positions of open
 										// objects/arrays
-	private final Map<Integer, List<Integer>> index; // Indices for starts
+	private List<Integer>[] index; // Indices for starts
 														// of
 														// subindex
 	private boolean keyWritten; // indicates that in the current object the key
@@ -233,7 +235,7 @@ public class VPackBuilder {
 		size = 0;
 		buffer = new byte[10];
 		stack = new ArrayList<Integer>();
-		index = new HashMap<Integer, List<Integer>>();
+		index = new List[4];
 	}
 
 	public BuilderOptions getOptions() {
@@ -546,7 +548,7 @@ public class VPackBuilder {
 				throw new VPackBuilderUnexpectedValueException(ValueType.UINT, Long.class, Integer.class,
 						BigInteger.class);
 			}
-			if (-1 == vUInt.compareTo(BigInteger.ZERO)) {
+			if (vUInt.compareTo(BigInteger.ZERO) < 0) {
 				throw new VPackBuilderUnexpectedValueException(ValueType.UINT, "non-negative", Long.class,
 						Integer.class, BigInteger.class);
 			}
@@ -621,21 +623,17 @@ public class VPackBuilder {
 	}
 
 	private void appendString(final String value) throws VPackBuilderException {
-		try {
-			final byte[] bytes = value.getBytes("UTF-8");
-			final int length = bytes.length;
-			if (length <= 126) {
-				// short string
-				add((byte) (0x40 + length));
-			} else {
-				// long string
-				add((byte) 0xbf);
-				appendLength(length);
-			}
-			appendString(bytes);
-		} catch (final UnsupportedEncodingException e) {
-			throw new VPackBuilderException(e);
+		final byte[] bytes = value.getBytes(StandardCharsets.UTF_8);
+		final int length = bytes.length;
+		if (length <= 126) {
+			// short string
+			add((byte) (0x40 + length));
+		} else {
+			// long string
+			add((byte) 0xbf);
+			appendLength(length);
 		}
+		appendString(bytes);
 	}
 
 	private void appendString(final byte[] bytes) {
@@ -670,7 +668,11 @@ public class VPackBuilder {
 	private void addCompoundValue(final byte head) {
 		// an Array or Object is started:
 		stack.add(size);
-		index.put(stack.size() - 1, new ArrayList<Integer>());
+		if (index.length < stack.size()) {
+			// ensureCapacity
+			index = Arrays.copyOf(index, index.length * 2);
+		}
+		index[stack.size() - 1] = new ArrayList<Integer>();
 		add(head);
 		// Will be filled later with bytelength and nr subs
 		size += 8;
@@ -682,12 +684,12 @@ public class VPackBuilder {
 	}
 
 	private void reportAdd() {
-		final Collection<Integer> depth = index.get(stack.size() - 1);
+		final Collection<Integer> depth = index[stack.size() - 1];
 		depth.add(size - stack.get(stack.size() - 1));
 	}
 
 	private void cleanupAdd() {
-		final List<Integer> depth = index.get(stack.size() - 1);
+		final List<Integer> depth = index[stack.size() - 1];
 		depth.remove(depth.size() - 1);
 	}
 
@@ -708,7 +710,7 @@ public class VPackBuilder {
 		}
 		final byte head = head();
 		final boolean isArray = head == 0x06 || head == 0x13;
-		final List<Integer> in = index.get(stack.size() - 1);
+		final List<Integer> in = index[stack.size() - 1];
 		final int tos = stack.get(stack.size() - 1);
 		if (in.isEmpty()) {
 			return closeEmptyArrayOrObject(tos, isArray);
@@ -990,10 +992,10 @@ public class VPackBuilder {
 	}
 
 	private static class SortEntry {
-		private final VPackSlice slice;
+		private final VPackStringSlice slice;
 		private final int offset;
 
-		public SortEntry(final VPackSlice slice, final int offset) {
+		public SortEntry(final VPackStringSlice slice, final int offset) {
 			super();
 			this.slice = slice;
 			this.offset = offset;
@@ -1002,17 +1004,18 @@ public class VPackBuilder {
 
 	private void sortObjectIndex(final int start, final List<Integer> offsets)
 			throws VPackKeyTypeException, VPackNeedAttributeTranslatorException {
-		final List<VPackBuilder.SortEntry> attributes = new ArrayList<VPackBuilder.SortEntry>();
-		for (final Integer offset : offsets) {
-			attributes.add(new SortEntry(new VPackSlice(buffer, start + offset).makeKey(), offset));
+		VPackBuilder.SortEntry[] attributes = new VPackBuilder.SortEntry[offsets.size()];
+		for (int i = 0; i < offsets.size(); i++) {
+			Integer offset = offsets.get(i);
+			attributes[i] = new SortEntry(new VPackSlice(buffer, start + offset).makeKey().getAsStringSlice(), offset);
 		}
 		final Comparator<SortEntry> comparator = new Comparator<SortEntry>() {
 			@Override
 			public int compare(final SortEntry o1, final SortEntry o2) {
-				return o1.slice.getAsString().compareTo(o2.slice.getAsString());
+				return o1.slice.compareTo(o2.slice);
 			}
 		};
-		Collections.sort(attributes, comparator);
+		Arrays.sort(attributes, comparator);
 		offsets.clear();
 		for (final SortEntry sortEntry : attributes) {
 			offsets.add(sortEntry.offset);

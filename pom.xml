@@ -27,6 +27,8 @@
 		<logback-classic.version>1.1.3</logback-classic.version>
 		<hamcrest-all.version>1.3</hamcrest-all.version>
 		<junit.version>4.12</junit.version>
+		<jmh.version>1.21</jmh.version>
+		<spf4j-jmh.version>8.6.19</spf4j-jmh.version>
 	</properties>
 
 	<developers>
@@ -214,6 +216,21 @@
 			<artifactId>hamcrest-all</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.openjdk.jmh</groupId>
+			<artifactId>jmh-core</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.openjdk.jmh</groupId>
+			<artifactId>jmh-generator-annprocess</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.spf4j</groupId>
+			<artifactId>spf4j-jmh</artifactId>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 	<dependencyManagement>
@@ -242,6 +259,24 @@
 				<groupId>org.hamcrest</groupId>
 				<artifactId>hamcrest-all</artifactId>
 				<version>${hamcrest-all.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.openjdk.jmh</groupId>
+				<artifactId>jmh-core</artifactId>
+				<version>${jmh.version}</version>
+				<scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.openjdk.jmh</groupId>
+				<artifactId>jmh-generator-annprocess</artifactId>
+				<version>${jmh.version}</version>
+				<scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.spf4j</groupId>
+				<artifactId>spf4j-jmh</artifactId>
+				<version>${spf4j-jmh.version}</version>
+				<scope>test</scope>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
