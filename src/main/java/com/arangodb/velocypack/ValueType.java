@@ -43,5 +43,6 @@ public enum ValueType {
 	BINARY,
 	BCD,
 	CUSTOM,
+	TAGGED,
 	VPACK
 }

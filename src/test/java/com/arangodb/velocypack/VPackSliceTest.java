@@ -21,7 +21,7 @@
 package com.arangodb.velocypack;
 
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.*;
 
 import java.math.BigInteger;
 import java.util.Arrays;
@@ -1461,4 +1461,39 @@ public class VPackSliceTest {
 		assertThat(slice.getAsLong(), is((long) -Integer.MAX_VALUE));
 	}
 
+	@Test
+	public void testReadTag() {
+		VPackBuilder b = new VPackBuilder();
+		b.addTagged(42, 5);
+
+		VPackSlice s = b.slice();
+
+		assertTrue(s.isTagged());
+		assertEquals(s.getFirstTag(), 42);
+		assertEquals((long) s.getTags().get(0), 42);
+		assertEquals(s.getTags().size(), 1);
+		assertTrue(s.hasTag(42));
+		assertFalse(s.hasTag(49));
+		assertEquals(s.value().getAsInt(), 5);
+	}
+
+	@Test
+	public void testReadTags() {
+		VPackBuilder b = new VPackBuilder();
+		b.addTagged(42, 5);
+
+		VPackBuilder bb = new VPackBuilder();
+		bb.addTagged(49, b.slice());
+
+		VPackSlice s = bb.slice();
+
+		assertTrue(s.isTagged());
+		assertEquals(s.getFirstTag(), 49);
+		assertEquals(s.getTags().size(), 2);
+		assertEquals((long) s.getTags().get(0), 49);
+		assertEquals((long) s.getTags().get(1), 42);
+		assertTrue(s.hasTag(42));
+		assertTrue(s.hasTag(49));
+		assertFalse(s.hasTag(50));
+	}
 }

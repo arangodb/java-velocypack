@@ -24,19 +24,19 @@ package com.arangodb.velocypack.exception;
  * @author Mark Vollmary
  *
  */
-public abstract class VPackException extends RuntimeException {
+public class VPackException extends RuntimeException {
 
 	private static final long serialVersionUID = 3547943271830879415L;
 
-	protected VPackException() {
+	public VPackException() {
 		super();
 	}
 
-	protected VPackException(final String message) {
+	public VPackException(final String message) {
 		super(message);
 	}
 
-	protected VPackException(final Throwable cause) {
+	public VPackException(final Throwable cause) {
 		super(cause);
 	}
 

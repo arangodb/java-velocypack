@@ -23,13 +23,14 @@ package com.arangodb.velocypack;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map.Entry;
-import java.lang.Comparable;
 
 import com.arangodb.velocypack.exception.VPackException;
 import com.arangodb.velocypack.exception.VPackKeyTypeException;
@@ -51,13 +52,16 @@ public class VPackSlice implements Serializable {
 
 	private static final long serialVersionUID = -3452953589283603980L;
 
+	private static final byte[] NONE_SLICE_DATA = new byte[] { 0x00 };
+	public static final VPackSlice NONE_SLICE = new VPackSlice();
+
 	public static final VPackAttributeTranslator attributeTranslator = new VPackAttributeTranslatorImpl();
 
 	private final byte[] vpack;
 	private final int start;
 
 	protected VPackSlice() {
-		this(new byte[] { 0x00 }, 0);
+		this(NONE_SLICE_DATA, 0);
 	}
 
 	public VPackSlice(final byte[] vpack) {
@@ -80,6 +84,14 @@ public class VPackSlice implements Serializable {
 
 	public int getStart() {
 		return start;
+	}
+
+	public int getValueStart() {
+		return start + tagsOffset(start);
+	}
+
+	public VPackSlice value() {
+		return isTagged() ? new VPackSlice(vpack, getValueStart()) : this;
 	}
 
 	public ValueType getType() {
@@ -180,6 +192,80 @@ public class VPackSlice implements Serializable {
 
 	public boolean isCustom() {
 		return isType(ValueType.CUSTOM);
+	}
+
+	public boolean isTagged() {
+		return isType(ValueType.TAGGED);
+	}
+
+	public long getFirstTag() {
+		if(isTagged()) {
+			if(vpack[start] == (byte)0xee) {
+				return NumberUtil.toLong(vpack, start+1, 1, false);
+			} else if(vpack[start] == (byte)0xef) {
+				return NumberUtil.toLong(vpack, start+1, 8, false);
+			} else {
+				throw new IllegalStateException("Invalid tag type ID");
+			}
+		}
+
+		return 0;
+	}
+
+	public List<Long> getTags() {
+		if(!isTagged()) {
+			return Collections.emptyList();
+		}
+
+		List<Long> ret = new ArrayList<Long>();
+		int start = this.start;
+
+		while(ValueTypeUtil.get(vpack[start]) == ValueType.TAGGED) {
+			int offset;
+			long tag;
+
+			if(vpack[start] == (byte)0xee) {
+				tag = NumberUtil.toLong(vpack, start+1, 1, false);
+				offset = 2;
+			} else if(vpack[start] == (byte)0xef) {
+				tag = NumberUtil.toLong(vpack, start+1, 8, false);
+				offset = 9;
+			} else {
+				throw new IllegalStateException("Invalid tag type ID");
+			}
+
+			ret.add(tag);
+			start += offset;
+		}
+
+		return ret;
+	}
+
+	public boolean hasTag(long tagId) {
+		int start = this.start;
+
+		while(ValueTypeUtil.get(vpack[start]) == ValueType.TAGGED) {
+			int offset;
+			long tag;
+
+			if(vpack[start] == (byte)0xee) {
+				tag = NumberUtil.toLong(vpack, start+1, 1, false);
+				offset = 2;
+			} else if(vpack[start] == (byte)0xef) {
+				tag = NumberUtil.toLong(vpack, start+1, 8, false);
+				offset = 9;
+			} else {
+				throw new IllegalStateException("Invalid tag type ID");
+			}
+
+			if(tag == tagId) {
+				return true;
+			}
+
+			start += offset;
+		}
+
+		return false;
 	}
 
 	public boolean getAsBoolean() {
@@ -408,13 +494,17 @@ public class VPackSlice implements Serializable {
 	}
 
 	public int getByteSize() {
-		final long size;
-		final byte head = head();
+		return getByteSize(start);
+	}
+
+	private int getByteSize(int start) {
+		long size;
+		final byte head = vpack[start];
 		final int valueLength = ValueLengthUtil.get(head);
 		if (valueLength != 0) {
 			size = valueLength;
 		} else {
-			switch (getType()) {
+			switch (ValueTypeUtil.get(head)) {
 			case ARRAY:
 			case OBJECT:
 				if (head == 0x13 || head == 0x14) {
@@ -426,10 +516,10 @@ public class VPackSlice implements Serializable {
 				break;
 			case STRING:
 				// long UTF-8 String
-				size = getLongStringLength() + 1 + 8;
+				size = NumberUtil.toLong(vpack, start + 1, 8) + 1 + 8;
 				break;
 			case BINARY:
-				size = 1 + head - ((byte) 0xbf) + getBinaryLengthUnchecked();
+				size = 1 + head - ((byte) 0xbf) + NumberUtil.toLong(vpack, start + 1, head - ((byte) 0xbf));
 				break;
 			case BCD:
 				if (head <= 0xcf) {
@@ -438,6 +528,9 @@ public class VPackSlice implements Serializable {
 					size = 1 + head - ((byte) 0xcf) + NumberUtil.toLong(vpack, start + 1, head - ((byte) 0xcf));
 				}
 				break;
+			case TAGGED:
+				int offset = tagsOffset(start);
+				size = getByteSize(start + offset) + offset;
 			case CUSTOM:
 				if (head == 0xf4 || head == 0xf5 || head == 0xf6) {
 					size = 2 + NumberUtil.toLong(vpack, start + 1, 1);
@@ -451,10 +544,38 @@ public class VPackSlice implements Serializable {
 				break;
 			default:
 				// TODO
-				throw new InternalError();
+				throw new VPackException("Invalid type for byteSize()");
 			}
 		}
 		return (int) size;
+	}
+
+	private int tagOffset(int start) {
+		byte v = vpack[start];
+
+		if(ValueTypeUtil.get(v) == ValueType.TAGGED) {
+			if(v == (byte)0xee) {
+				return 2;
+			} else if(v == (byte)0xef) {
+				return 9;
+			} else {
+			  throw new IllegalStateException("Invalid tag type ID");
+			}
+		}
+
+		return 0;
+	}
+
+	private int tagsOffset(int start) {
+		int ret = 0;
+
+		while(ValueTypeUtil.get(vpack[start]) == ValueType.TAGGED) {
+			int offset = tagOffset(start);
+			ret += offset;
+			start += offset;
+		}
+
+		return ret;
 	}
 
 	/**
@@ -473,10 +594,10 @@ public class VPackSlice implements Serializable {
 			throw new VPackValueTypeException(ValueType.OBJECT);
 		}
 		final byte head = head();
-		VPackSlice result = new VPackSlice();
+		VPackSlice result = NONE_SLICE;
 		if (head == 0x0a) {
 			// special case, empty object
-			result = new VPackSlice();
+			result = NONE_SLICE;
 		} else if (head == 0x14) {
 			// compact Object
 			result = getFromCompactObject(attribute);
@@ -498,7 +619,7 @@ public class VPackSlice implements Serializable {
 						result = new VPackSlice(vpack, key.start + key.getByteSize());
 					} else {
 						// no match
-						result = new VPackSlice();
+						result = NONE_SLICE;
 					}
 				} else if (key.isInteger()) {
 					// translate key
@@ -509,11 +630,11 @@ public class VPackSlice implements Serializable {
 						result = new VPackSlice(vpack, key.start + key.getByteSize());
 					} else {
 						// no match
-						result = new VPackSlice();
+						result = NONE_SLICE;
 					}
 				} else {
 					// no match
-					result = new VPackSlice();
+					result = NONE_SLICE;
 				}
 			} else {
 				final long ieBase = end - n * offsetsize - (offsetsize == 8 ? 8 : 0);
@@ -541,7 +662,7 @@ public class VPackSlice implements Serializable {
 	 */
 	protected VPackSlice translateUnchecked() {
 		final VPackSlice result = attributeTranslator.translate(getAsInt());
-		return result != null ? result : new VPackSlice();
+		return result != null ? result : NONE_SLICE;
 	}
 
 	protected VPackSlice makeKey() throws VPackKeyTypeException, VPackNeedAttributeTranslatorException {
@@ -566,7 +687,7 @@ public class VPackSlice implements Serializable {
 			}
 		}
 		// not found
-		return new VPackSlice();
+		return NONE_SLICE;
 	}
 
 	private VPackSlice searchObjectKeyBinary(
@@ -599,7 +720,7 @@ public class VPackSlice implements Serializable {
 				res = key.translateUnchecked().getAsStringSlice().compareToBytes(attributeBytes);
 			} else {
 				// invalid key
-				result = new VPackSlice();
+				result = NONE_SLICE;
 				break;
 			}
 			if (res == 0) {
@@ -609,7 +730,7 @@ public class VPackSlice implements Serializable {
 			}
 			if (res > 0) {
 				if (index == 0) {
-					result = new VPackSlice();
+					result = NONE_SLICE;
 					break;
 				}
 				r = index - 1;
@@ -617,7 +738,7 @@ public class VPackSlice implements Serializable {
 				l = index + 1;
 			}
 			if (r < l) {
-				result = new VPackSlice();
+				result = NONE_SLICE;
 				break;
 			}
 		}
@@ -631,7 +752,7 @@ public class VPackSlice implements Serializable {
 		final long n) throws VPackValueTypeException, VPackNeedAttributeTranslatorException {
 
 		final boolean useTranslator = VPackSlice.attributeTranslator != null;
-		VPackSlice result = new VPackSlice();
+		VPackSlice result = NONE_SLICE;
 		for (long index = 0; index < n; index++) {
 			final long offset = ieBase + index * offsetsize;
 			final long keyIndex = NumberUtil.toLong(vpack, (int) (start + offset), offsetsize);
@@ -651,7 +772,7 @@ public class VPackSlice implements Serializable {
 				}
 			} else {
 				// invalid key type
-				result = new VPackSlice();
+				result = NONE_SLICE;
 				break;
 			}
 			// key is identical. now return value
@@ -686,7 +807,7 @@ public class VPackSlice implements Serializable {
 	}
 
 	/**
-	 * 
+	 *
 	 * @return the offset for the nth member from an Array or Object type
 	 */
 	private int getNthOffset(final int index) {
@@ -781,6 +902,10 @@ public class VPackSlice implements Serializable {
 	}
 
 	protected byte[] getRawVPack() {
+		if(start == 0 && vpack.length == getByteSize()) {
+			return vpack;
+		}
+
 		return Arrays.copyOfRange(vpack, start, start + getByteSize());
 	}
 
