@@ -531,6 +531,7 @@ public class VPackSlice implements Serializable {
 			case TAGGED:
 				int offset = tagsOffset(start);
 				size = getByteSize(start + offset) + offset;
+				break;
 			case CUSTOM:
 				if (head == 0xf4 || head == 0xf5 || head == 0xf6) {
 					size = 2 + NumberUtil.toLong(vpack, start + 1, 1);
