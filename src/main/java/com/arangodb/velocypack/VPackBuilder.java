@@ -652,9 +652,11 @@ public class VPackBuilder {
 					final VPackSlice translate = VPackSlice.attributeTranslator.translate(attribute);
 					if (translate != null) {
 						final byte[] trValue = translate.getRawVPack();
-						ensureCapacity(size + trValue.length);
-						for (int i = 0; i < trValue.length; i++) {
-							addUnchecked(trValue[i]);
+						int trValueLength = translate.getByteSize();
+						int trValueStart = translate.getStart();
+						ensureCapacity(size + trValueLength);
+						for (int i = 0; i < trValueLength; i++) {
+							addUnchecked(trValue[i+trValueStart]);
 						}
 						keyWritten = true;
 						if (value == null) {
@@ -837,9 +839,10 @@ public class VPackBuilder {
 
 	private void appendVPack(final VPackSlice value) {
 		final byte[] vpack = value.getRawVPack();
-		ensureCapacity(size + vpack.length);
-		System.arraycopy(vpack, 0, buffer, size, vpack.length);
-		size += vpack.length;
+		int length = value.getByteSize();
+		ensureCapacity(size + length);
+		System.arraycopy(vpack, value.getStart(), buffer, size, length);
+		size += length;
 	}
 
 	private void addArray(final boolean unindexed) {

@@ -902,12 +902,16 @@ public class VPackSlice implements Serializable {
 		}
 	}
 
-	protected byte[] getRawVPack() {
+	protected byte[] getVPack() {
 		if(start == 0 && vpack.length == getByteSize()) {
 			return vpack;
 		}
 
 		return Arrays.copyOfRange(vpack, start, start + getByteSize());
+	}
+
+	protected byte[] getRawVPack() {
+		return vpack;
 	}
 
 	@Override
@@ -924,7 +928,12 @@ public class VPackSlice implements Serializable {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + start;
-		result = prime * result + Arrays.hashCode(getRawVPack());
+
+		int arrayHash = 1;
+		for (int i = start, max = getByteSize(); i < max; i++)
+			arrayHash = 31 * arrayHash + vpack[i];
+
+		result = prime * result + arrayHash;
 		return result;
 	}
 
@@ -940,12 +949,20 @@ public class VPackSlice implements Serializable {
 			return false;
 		}
 		final VPackSlice other = (VPackSlice) obj;
-		if (start != other.start) {
+
+		int byteSize = getByteSize();
+		int otherByteSize = other.getByteSize();
+
+		if(byteSize != otherByteSize) {
 			return false;
 		}
-		if (!Arrays.equals(getRawVPack(), other.getRawVPack())) {
-			return false;
+
+		for(int i = 0; i < byteSize; i++) {
+			if(vpack[i+start] != other.vpack[i+other.start]) {
+				return false;
+			}
 		}
+
 		return true;
 	}
 
