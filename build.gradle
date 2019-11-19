@@ -41,7 +41,7 @@ task javadocJar(type: Jar) {
 group = 'com.arangodb'
 version = '1.4.3'
 description = 'ArangoDB Velocypack'
-sourceCompatibility = '1.8'
+sourceCompatibility = '1.7'
 
 publishing {
 	publications {
