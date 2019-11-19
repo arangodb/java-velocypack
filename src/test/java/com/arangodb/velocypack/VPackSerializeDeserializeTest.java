@@ -4074,6 +4074,56 @@ public class VPackSerializeDeserializeTest {
 		assertThat(entityOut.value.get(0) instanceof TestEntityTypeInfo, is(true));
 	}
 
+	static class TestEntityObjectArray {
+		Object[] value;
+	}
+
+	@Test
+	public void heterogeneousArray() {
+		final TestEntityObjectArray entity = new TestEntityObjectArray();
+		entity.value = new Object[]{new TestEntityTypeInfo()};
+
+		final VPack vpack = new VPack.Builder().build();
+		final VPackSlice slice = vpack.serialize(entity);
+
+		assertThat(slice.isObject(), is(true));
+		assertThat(slice.get("value").isArray(), is(true));
+		assertThat(slice.get("value").get(0).isObject(), is(true));
+		assertThat(slice.get("value").get(0).get("_class").isString(), is(true));
+		assertThat(slice.get("value").get(0).get("_class").getAsString(),
+			is("com.arangodb.velocypack.VPackSerializeDeserializeTest$TestEntityTypeInfo"));
+
+		final TestEntityObjectArray entityOut = vpack.deserialize(slice, TestEntityObjectArray.class);
+		assertThat(entityOut, is(notNullValue()));
+		assertThat(entityOut.value, is(notNullValue()));
+		assertThat(entityOut.value.length, is(1));
+		assertThat(entityOut.value[0] instanceof TestEntityTypeInfo, is(true));
+	}
+
+	static class TestEntityTypeInfoArray {
+		TestEntityTypeInfo[] value;
+	}
+
+	@Test
+	public void homogeneousArray() {
+		final TestEntityTypeInfoArray entity = new TestEntityTypeInfoArray();
+		entity.value = new TestEntityTypeInfo[]{new TestEntityTypeInfo()};
+
+		final VPack vpack = new VPack.Builder().build();
+		final VPackSlice slice = vpack.serialize(entity);
+
+		assertThat(slice.isObject(), is(true));
+		assertThat(slice.get("value").isArray(), is(true));
+		assertThat(slice.get("value").get(0).isObject(), is(true));
+		assertThat(slice.get("value").get(0).get("_class").isNone(), is(true));
+
+		final TestEntityTypeInfoArray entityOut = vpack.deserialize(slice, TestEntityTypeInfoArray.class);
+		assertThat(entityOut, is(notNullValue()));
+		assertThat(entityOut.value, is(notNullValue()));
+		assertThat(entityOut.value.length, is(1));
+		assertThat(entityOut.value[0], notNullValue());
+	}
+
 	public static class Limb {
 	}
 
