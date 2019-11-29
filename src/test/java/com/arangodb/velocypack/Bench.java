@@ -64,7 +64,7 @@ public class Bench {
             .include(Bench.class.getSimpleName())
 //            .addProfiler(GCProfiler.class)
             .addProfiler(JmhFlightRecorderProfiler.class)
-            .jvmArgs("-Xmx256m", "-Xms256m", "-XX:+UnlockCommercialFeatures") // https://stackoverflow.com/a/37857708
+            .jvmArgs("-Xmx256m", "-Xms256m")
             .resultFormat(ResultFormatType.JSON)
             .result("target/jmh-result-" + System.currentTimeMillis() + ".json")
             .build();
