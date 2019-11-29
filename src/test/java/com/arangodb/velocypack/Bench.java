@@ -3,18 +3,19 @@ package com.arangodb.velocypack;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.infra.Blackhole;
 import org.openjdk.jmh.profile.GCProfiler;
-import org.openjdk.jmh.profile.StackProfiler;
 import org.openjdk.jmh.results.format.ResultFormatType;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
-import org.spf4j.stackmonitor.JmhFlightRecorderProfiler;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 @Warmup(iterations = 8, time = 1, timeUnit = TimeUnit.SECONDS)
@@ -59,14 +60,23 @@ public class Bench {
 
     }
 
-    public static void main(String[] args) throws RunnerException {
+    public static void main(String[] args) throws RunnerException, IOException {
+        String datetime = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss").format(new Date());
+        Path target = Files.createDirectories(Paths.get("target", "jmh-result"));
+
+        ArrayList<String> jvmArgs = new ArrayList<>();
+        jvmArgs.add("-Xms256m");
+        jvmArgs.add("-Xmx256m");
+        if (Integer.parseInt(System.getProperty("java.version").split("\\.")[0]) >= 11) {
+            jvmArgs.add("-XX:StartFlightRecording=filename=" + target.resolve(datetime + ".jfr") + ",settings=profile");
+        }
+
         Options opt = new OptionsBuilder()
             .include(Bench.class.getSimpleName())
-//            .addProfiler(GCProfiler.class)
-            .addProfiler(JmhFlightRecorderProfiler.class)
-            .jvmArgs("-Xmx256m", "-Xms256m")
+            .addProfiler(GCProfiler.class)
+            .jvmArgs(jvmArgs.toArray(new String[0]))
             .resultFormat(ResultFormatType.JSON)
-            .result("target/jmh-result-" + System.currentTimeMillis() + ".json")
+            .result(target.resolve(datetime + ".json").toString())
             .build();
 
         new Runner(opt).run();
