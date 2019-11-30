@@ -3,9 +3,9 @@ package com.arangodb.velocypack;
 import java.nio.charset.StandardCharsets;
 
 /**
- * Wrapper around a {@link ValueType.STRING} supporting fast bytewise comparison.
+ * Wrapper around a {@link ValueType#STRING} supporting fast bytewise comparison.
  *
- * @see https://github.com/arangodb/velocypack/blob/master/VelocyPack.md#objects
+ * @see <a href="https://github.com/arangodb/velocypack/blob/master/VelocyPack.md#objects">VelocyPack Objects</a>
  */
 public class VPackStringSlice implements Comparable<VPackStringSlice> {
     private byte[] vpack;
