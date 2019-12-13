@@ -31,6 +31,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
+import java.lang.Comparable;
 
 import com.arangodb.velocypack.exception.VPackException;
 import com.arangodb.velocypack.exception.VPackKeyTypeException;

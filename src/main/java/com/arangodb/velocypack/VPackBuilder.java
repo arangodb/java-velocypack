@@ -43,6 +43,7 @@ import com.arangodb.velocypack.exception.VPackValueTypeException;
 import com.arangodb.velocypack.internal.DefaultVPackBuilderOptions;
 import com.arangodb.velocypack.internal.Value;
 import com.arangodb.velocypack.internal.util.NumberUtil;
+import com.fasterxml.jackson.core.io.CharTypes;
 
 /**
  * @author Mark Vollmary
@@ -213,7 +214,7 @@ public class VPackBuilder {
 	private int size;
 	private final List<Integer> stack; // Start positions of open
 										// objects/arrays
-	private List<Integer>[] index; // Indices for starts
+	private List<List<Integer>> index; // Indices for starts
 														// of
 														// subindex
 	private boolean keyWritten; // indicates that in the current object the key
@@ -230,7 +231,7 @@ public class VPackBuilder {
 		size = 0;
 		buffer = new byte[10];
 		stack = new ArrayList<Integer>();
-		index = new List[4];
+		index = new ArrayList<List<Integer>>(4);
 	}
 
 	public BuilderOptions getOptions() {
@@ -809,7 +810,7 @@ public class VPackBuilder {
 		append(value.getTime(), LONG_BYTES);
 	}
 
-	private void appendString(final String value) throws VPackBuilderException {
+	private void appendString(final String value) {
 		final byte[] bytes = value.getBytes(StandardCharsets.UTF_8);
 		final int length = bytes.length;
 		if (length <= 126) {
@@ -856,11 +857,7 @@ public class VPackBuilder {
 	private void addCompoundValue(final byte head) {
 		// an Array or Object is started:
 		stack.add(size);
-		if (index.length < stack.size()) {
-			// ensureCapacity
-			index = Arrays.copyOf(index, index.length * 2);
-		}
-		index[stack.size() - 1] = new ArrayList<Integer>();
+		index.add(stack.size() - 1, new ArrayList<Integer>());
 		add(head);
 		// Will be filled later with bytelength and nr subs
 		size += 8;
@@ -872,12 +869,12 @@ public class VPackBuilder {
 	}
 
 	private void reportAdd() {
-		final Collection<Integer> depth = index[stack.size() - 1];
+		final Collection<Integer> depth = index.get(stack.size() - 1);
 		depth.add(size - stack.get(stack.size() - 1));
 	}
 
 	private void cleanupAdd() {
-		final List<Integer> depth = index[stack.size() - 1];
+		final List<Integer> depth = index.get(stack.size() - 1);
 		depth.remove(depth.size() - 1);
 	}
 
@@ -898,7 +895,7 @@ public class VPackBuilder {
 		}
 		final byte head = head();
 		final boolean isArray = head == 0x06 || head == 0x13;
-		final List<Integer> in = index[stack.size() - 1];
+		final List<Integer> in = index.get(stack.size() - 1);
 		final int tos = stack.get(stack.size() - 1);
 		if (in.isEmpty()) {
 			return closeEmptyArrayOrObject(tos, isArray);
