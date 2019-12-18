@@ -36,7 +36,7 @@ public class VPackKeyMapAdapters {
 		super();
 	}
 
-	public static final VPackKeyMapAdapter<Enum<?>> createEnumAdapter(final Type type) {
+	public static VPackKeyMapAdapter<Enum<?>> createEnumAdapter(final Type type) {
 		return new VPackKeyMapAdapter<Enum<?>>() {
 			@Override
 			public String serialize(final Enum<?> key) {

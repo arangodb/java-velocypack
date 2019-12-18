@@ -96,7 +96,7 @@ public class VPackCache {
 		final Map<Class<? extends Annotation>, VPackAnnotationFieldFilter<? extends Annotation>> annotationFieldFilter,
 		final Map<Class<? extends Annotation>, VPackAnnotationFieldNaming<? extends Annotation>> annotationFieldNaming) {
 		super();
-		cache = new ConcurrentHashMap<Type, Map<String, FieldInfo>>();
+		cache = new ConcurrentHashMap<>();
 		fieldComparator = new Comparator<Map.Entry<String, FieldInfo>>() {
 			@Override
 			public int compare(final Entry<String, FieldInfo> o1, final Entry<String, FieldInfo> o2) {
@@ -111,7 +111,7 @@ public class VPackCache {
 	public Map<String, FieldInfo> getFields(final Type entityClass) {
 		Map<String, FieldInfo> fields = cache.get(entityClass);
 		if (fields == null) {
-			fields = new HashMap<String, VPackCache.FieldInfo>();
+			fields = new HashMap<>();
 			Class<?> tmp = (Class<?>) entityClass;
 			while (tmp != null && tmp != Object.class) {
 				final Field[] declaredFields = tmp.getDeclaredFields();
@@ -134,8 +134,8 @@ public class VPackCache {
 	}
 
 	private Map<String, FieldInfo> sort(final Set<Entry<String, FieldInfo>> entrySet) {
-		final Map<String, FieldInfo> sorted = new LinkedHashMap<String, VPackCache.FieldInfo>();
-		final List<Entry<String, FieldInfo>> tmp = new ArrayList<Map.Entry<String, FieldInfo>>(entrySet);
+		final Map<String, FieldInfo> sorted = new LinkedHashMap<>();
+		final List<Entry<String, FieldInfo>> tmp = new ArrayList<>(entrySet);
 		Collections.sort(tmp, fieldComparator);
 		for (final Entry<String, FieldInfo> entry : tmp) {
 			sorted.put(entry.getKey(), entry.getValue());

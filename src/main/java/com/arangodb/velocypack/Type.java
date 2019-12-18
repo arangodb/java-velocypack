@@ -45,7 +45,7 @@ public class Type<T> {
 		if (superclass instanceof Class) {
 			throw new RuntimeException("Missing type parameter.");
 		}
-		return ParameterizedType.class.cast(superclass).getActualTypeArguments()[0];
+		return ((ParameterizedType) superclass).getActualTypeArguments()[0];
 	}
 
 	public java.lang.reflect.Type getType() {

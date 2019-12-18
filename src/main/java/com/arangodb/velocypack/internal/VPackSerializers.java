@@ -142,7 +142,7 @@ public class VPackSerializers {
 			final String attribute,
 			final Number value,
 			final VPackSerializationContext context) throws VPackException {
-			builder.add(attribute, Double.class.cast(value));
+			builder.add(attribute, (Double) value);
 		}
 	};
 	public static final VPackSerializer<Character> CHARACTER = new VPackSerializer<Character>() {

@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 
 ## [Unreleased]
 
-## [2.0.0] - 2019-12-18
+## [2.0.0] - 2019-12-19
 
 - performance improvements
 - raised minimum supported Java version to Java 7
