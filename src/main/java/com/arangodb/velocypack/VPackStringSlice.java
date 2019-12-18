@@ -10,7 +10,7 @@ import java.nio.charset.StandardCharsets;
 public class VPackStringSlice implements Comparable<VPackStringSlice> {
     private byte[] vpack;
     /**
-     * Index of the string bytes within {@link vpack},
+     * Index of the string bytes within {@link this#vpack},
      * i.e. tag byte and length are somewhere before this index.
      */
     private int start;

@@ -166,7 +166,7 @@ public class VPackParser {
 	 * @param attribute
 	 * @param type
 	 * @param deserializer
-	 * @return
+	 * @return this
 	 */
 	@Deprecated
 	public VPackParser registerDeserializer(
@@ -186,7 +186,7 @@ public class VPackParser {
 	 * @deprecated use {@link VPackParser.Builder#registerDeserializer(ValueType, VPackJsonDeserializer)} instead
 	 * @param type
 	 * @param deserializer
-	 * @return
+	 * @return this
 	 */
 	@Deprecated
 	public VPackParser registerDeserializer(final ValueType type, final VPackJsonDeserializer deserializer) {
@@ -199,7 +199,7 @@ public class VPackParser {
 	 * @param attribute
 	 * @param type
 	 * @param serializer
-	 * @return
+	 * @return this
 	 */
 	@Deprecated
 	public <T> VPackParser registerSerializer(
@@ -219,7 +219,7 @@ public class VPackParser {
 	 * @deprecated use {@link VPackParser.Builder#registerSerializer(Class, VPackJsonSerializer)} instead
 	 * @param type
 	 * @param serializer
-	 * @return
+	 * @return this
 	 */
 	@Deprecated
 	public <T> VPackParser registerSerializer(final Class<T> type, final VPackJsonSerializer<T> serializer) {
