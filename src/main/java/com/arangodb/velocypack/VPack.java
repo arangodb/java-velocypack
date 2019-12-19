@@ -97,18 +97,18 @@ public class VPack {
 
         public Builder() {
             super();
-            serializers = new HashMap<Type, VPackSerializer<?>>();
-            enclosingSerializers = new HashMap<Type, VPackSerializer<?>>();
-            deserializers = new HashMap<Type, VPackDeserializer<?>>();
-            deserializersWithSelfNullHandle = new HashMap<Type, VPackDeserializer<?>>();
-            deserializersByName = new HashMap<String, Map<Type, VPackDeserializer<?>>>();
-            deserializersByNameWithSelfNullHandle = new HashMap<String, Map<Type, VPackDeserializer<?>>>();
-            instanceCreators = new HashMap<Type, VPackInstanceCreator<?>>();
+            serializers = new HashMap<>();
+            enclosingSerializers = new HashMap<>();
+            deserializers = new HashMap<>();
+            deserializersWithSelfNullHandle = new HashMap<>();
+            deserializersByName = new HashMap<>();
+            deserializersByNameWithSelfNullHandle = new HashMap<>();
+            instanceCreators = new HashMap<>();
             builderOptions = new DefaultVPackBuilderOptions();
             serializeNullValues = false;
-            annotationFieldFilter = new HashMap<Class<? extends Annotation>, VPackAnnotationFieldFilter<? extends Annotation>>();
-            annotationFieldNaming = new HashMap<Class<? extends Annotation>, VPackAnnotationFieldNaming<? extends Annotation>>();
-            keyMapAdapters = new HashMap<Type, VPackKeyMapAdapter<?>>();
+            annotationFieldFilter = new HashMap<>();
+            annotationFieldNaming = new HashMap<>();
+            keyMapAdapters = new HashMap<>();
             typeKey = null;
 
             instanceCreators.put(Collection.class, VPackInstanceCreators.COLLECTION);
@@ -139,7 +139,7 @@ public class VPack {
             serializers.put(java.sql.Timestamp.class, VPackSerializers.SQL_TIMESTAMP);
             serializers.put(VPackSlice.class, VPackSerializers.VPACK);
             serializers.put(UUID.class, VPackSerializers.UUID);
-            serializers.put(new byte[]{}.getClass(), VPackSerializers.BYTE_ARRAY);
+            serializers.put(byte[].class, VPackSerializers.BYTE_ARRAY);
             serializers.put(Byte.class, VPackSerializers.BYTE);
             serializers.put(byte.class, VPackSerializers.BYTE);
 
@@ -166,7 +166,7 @@ public class VPack {
             deserializers.put(java.sql.Timestamp.class, VPackDeserializers.SQL_TIMESTAMP);
             deserializers.put(VPackSlice.class, VPackDeserializers.VPACK);
             deserializers.put(UUID.class, VPackDeserializers.UUID);
-            deserializers.put(new byte[]{}.getClass(), VPackDeserializers.BYTE_ARRAY);
+            deserializers.put(byte[].class, VPackDeserializers.BYTE_ARRAY);
             deserializers.put(Byte.class, VPackDeserializers.BYTE);
             deserializers.put(byte.class, VPackDeserializers.BYTE);
 
@@ -235,14 +235,14 @@ public class VPack {
             if (includeNullValues) {
                 Map<Type, VPackDeserializer<?>> byName = deserializersByNameWithSelfNullHandle.get(fieldName);
                 if (byName == null) {
-                    byName = new HashMap<Type, VPackDeserializer<?>>();
+                    byName = new HashMap<>();
                     deserializersByNameWithSelfNullHandle.put(fieldName, byName);
                 }
                 byName.put(type, deserializer);
             }
             Map<Type, VPackDeserializer<?>> byName = deserializersByName.get(fieldName);
             if (byName == null) {
-                byName = new HashMap<Type, VPackDeserializer<?>>();
+                byName = new HashMap<>();
                 deserializersByName.put(fieldName, byName);
             }
             byName.put(type, deserializer);
@@ -335,17 +335,12 @@ public class VPack {
         }
 
         public synchronized VPack build() {
-            return new VPack(new HashMap<Type, VPackSerializer<?>>(serializers),
-                    new HashMap<Type, VPackSerializer<?>>(enclosingSerializers),
-                    new HashMap<Type, VPackDeserializer<?>>(deserializers),
-                    new HashMap<Type, VPackDeserializer<?>>(deserializersWithSelfNullHandle),
-                    new HashMap<Type, VPackInstanceCreator<?>>(instanceCreators), builderOptions, serializeNullValues,
-                    fieldNamingStrategy, new HashMap<String, Map<Type, VPackDeserializer<?>>>(deserializersByName),
-                    new HashMap<String, Map<Type, VPackDeserializer<?>>>(deserializersByNameWithSelfNullHandle),
-                    new HashMap<Class<? extends Annotation>, VPackAnnotationFieldFilter<? extends Annotation>>(
-                            annotationFieldFilter),
-                    new HashMap<Class<? extends Annotation>, VPackAnnotationFieldNaming<? extends Annotation>>(
-                            annotationFieldNaming),
+            return new VPack(new HashMap<>(serializers), new HashMap<>(enclosingSerializers), new HashMap<>(deserializers),
+                    new HashMap<>(deserializersWithSelfNullHandle),
+                    new HashMap<>(instanceCreators), builderOptions, serializeNullValues,
+                    fieldNamingStrategy, new HashMap<>(deserializersByName),
+                    new HashMap<>(deserializersByNameWithSelfNullHandle),
+                    new HashMap<>(annotationFieldFilter), new HashMap<>(annotationFieldNaming),
                     keyMapAdapters, typeKey != null ? typeKey : DEFAULT_TYPE_KEY);
         }
 
@@ -437,7 +432,7 @@ public class VPack {
             deserializer = deserializers.get(type);
         }
         if (deserializer == null && ParameterizedType.class.isAssignableFrom(type.getClass())) {
-            deserializer = getDeserializer(fieldName, ParameterizedType.class.cast(type).getRawType(), deserializers,
+            deserializer = getDeserializer(fieldName, ((ParameterizedType) type).getRawType(), deserializers,
                     deserializersByName);
         }
         return deserializer;
@@ -455,7 +450,7 @@ public class VPack {
             if (VPackDeserializerParameterizedType.class.isAssignableFrom(deserializer.getClass())
                     && ParameterizedType.class.isAssignableFrom(type.getClass())) {
                 entity = ((VPackDeserializerParameterizedType<T>) deserializer).deserialize(parent, vpack,
-                        deserializationContext, ParameterizedType.class.cast(type));
+                        deserializationContext, (ParameterizedType) type);
             } else {
                 entity = ((VPackDeserializer<T>) deserializer).deserialize(parent, vpack, deserializationContext);
             }
@@ -555,7 +550,7 @@ public class VPack {
                 if (VPackDeserializerParameterizedType.class.isAssignableFrom(deserializer.getClass())
                         && ParameterizedType.class.isAssignableFrom(realType.getClass())) {
                     value = ((VPackDeserializerParameterizedType<Object>) deserializer).deserialize(parent, vpack,
-                            deserializationContext, ParameterizedType.class.cast(realType));
+                            deserializationContext, (ParameterizedType) realType);
                 } else {
                     value = ((VPackDeserializer<Object>) deserializer).deserialize(parent, vpack,
                             deserializationContext);
@@ -569,13 +564,13 @@ public class VPack {
                 if (VPackDeserializerParameterizedType.class.isAssignableFrom(deserializer.getClass())
                         && ParameterizedType.class.isAssignableFrom(realType.getClass())) {
                     value = ((VPackDeserializerParameterizedType<Object>) deserializer).deserialize(parent, vpack,
-                            deserializationContext, ParameterizedType.class.cast(realType));
+                            deserializationContext, (ParameterizedType) realType);
                 } else {
                     value = ((VPackDeserializer<Object>) deserializer).deserialize(parent, vpack,
                             deserializationContext);
                 }
             } else if (realType instanceof ParameterizedType) {
-                final ParameterizedType pType = ParameterizedType.class.cast(realType);
+                final ParameterizedType pType = (ParameterizedType) realType;
                 final Type rawType = pType.getRawType();
                 if (Collection.class.isAssignableFrom((Class<?>) rawType)) {
                     value = deserializeCollection(parent, vpack, realType, pType.getActualTypeArguments()[0]);
@@ -586,7 +581,7 @@ public class VPack {
                     value = deserializeObject(parent, vpack, realType, fieldName);
                 }
             } else if (realType instanceof WildcardType) {
-                final WildcardType wType = WildcardType.class.cast(realType);
+                final WildcardType wType = (WildcardType) realType;
                 final Type rawType = wType.getUpperBounds()[0];
                 value = deserializeObject(parent, vpack, rawType, fieldName);
             } else if (realType instanceof GenericArrayType) {
@@ -609,7 +604,7 @@ public class VPack {
     private <T> Object deserializeArray(final VPackSlice parent, final VPackSlice vpack, final Type type)
             throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException,
             VPackException {
-        final int length = (int) vpack.getLength();
+        final int length = vpack.getLength();
         final Class<?> componentType = ((Class<?>) type).getComponentType();
         final Object value = Array.newInstance(componentType, length);
         for (int i = 0; i < length; i++) {
@@ -624,7 +619,7 @@ public class VPack {
             final Type type,
             final Type contentType) throws InstantiationException, IllegalAccessException, NoSuchMethodException,
             InvocationTargetException, VPackException {
-        final Collection value = (Collection) createInstance(type);
+        final Collection value = createInstance(type);
         final long length = vpack.getLength();
         if (length > 0) {
             for (int i = 0; i < length; i++) {
@@ -641,8 +636,8 @@ public class VPack {
             final Type keyType,
             final Type valueType) throws InstantiationException, IllegalAccessException, NoSuchMethodException,
             InvocationTargetException, VPackException {
-        final int length = (int) vpack.getLength();
-        final Map value = (Map) createInstance(type);
+        final int length = vpack.getLength();
+        final Map value = createInstance(type);
         if (length > 0) {
             final VPackKeyMapAdapter<Object> keyMapAdapter = getKeyMapAdapter(keyType);
             if (keyMapAdapter != null) {
@@ -670,7 +665,7 @@ public class VPack {
         public SerializeOptions() {
             super();
             type = null;
-            additionalFields = Collections.<String, Object>emptyMap();
+            additionalFields = Collections.emptyMap();
         }
 
         public Type getType() {
@@ -773,7 +768,7 @@ public class VPack {
             return (VPackSlice) entity;
         }
         final VPackBuilder builder = new VPackBuilder(builderOptions);
-        serialize(null, entity, type, builder, new HashMap<String, Object>(options.getAdditionalFields()));
+        serialize(null, entity, type, builder, new HashMap<>(options.getAdditionalFields()));
         return builder.slice();
     }
 
@@ -797,7 +792,7 @@ public class VPack {
             final Map<String, Object> additionalFields)
             throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, VPackException {
 
-        final Class<? extends Object> type = entity.getClass();
+        final Class<?> type = entity.getClass();
 
         final VPackSerializer<?> serializer = getSerializer(type);
         if (serializer != null) {
@@ -862,7 +857,7 @@ public class VPack {
             if (serializer != null) {
                 ((VPackSerializer<Object>) serializer).serialize(builder, name, value, serializationContext);
             } else if (type instanceof ParameterizedType) {
-                final ParameterizedType pType = ParameterizedType.class.cast(type);
+                final ParameterizedType pType = (ParameterizedType) type;
                 final Type rawType = pType.getRawType();
                 if (Iterable.class.isAssignableFrom((Class<?>) rawType)) {
                     serializeIterable(name, value, builder, pType.getActualTypeArguments()[0]);
@@ -879,7 +874,7 @@ public class VPack {
 				final Type elemType = ((Class<?>) type).getComponentType();
 				serializeArray(name, value, builder, elemType);
             } else if (type instanceof Class && ((Class) type).isEnum()) {
-                builder.add(name, Enum.class.cast(value).name());
+                builder.add(name, ((Enum) value).name());
             } else if (type != value.getClass()) {
                 addValue(name, value.getClass(), value, builder, fieldInfo,
                         Collections.<String, Object>singletonMap(typeKey, value.getClass().getName()));
@@ -907,8 +902,7 @@ public class VPack {
     private void serializeIterable(final String name, final Object value, final VPackBuilder builder, final Type type)
             throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, VPackException {
         builder.add(name, ValueType.ARRAY);
-        for (final Iterator iterator = Iterable.class.cast(value).iterator(); iterator.hasNext(); ) {
-            final Object element = iterator.next();
+        for (final Object element : (Iterable) value) {
             final Type t = type != null ? type : element != null ? element.getClass() : null;
             addValue(null, t, element, builder, null, Collections.<String, Object>emptyMap());
         }
@@ -922,7 +916,7 @@ public class VPack {
             final Type keyType,
             final Map<String, Object> additionalFields)
             throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, VPackException {
-        final Map map = Map.class.cast(value);
+        final Map map = (Map) value;
         if (map.size() > 0) {
             final VPackKeyMapAdapter<Object> keyMapAdapter = getKeyMapAdapter(keyType);
             if (keyMapAdapter != null) {
@@ -942,25 +936,22 @@ public class VPack {
                                 builder, null, Collections.<String, Object>emptyMap());
                     }
                 }
-                builder.close();
             } else {
                 builder.add(name, ValueType.ARRAY);
                 final Set<Entry<?, ?>> entrySet = map.entrySet();
                 for (final Entry<?, ?> entry : entrySet) {
-                    final String s = null;
-                    builder.add(s, ValueType.OBJECT);
+                    builder.add((String) null, ValueType.OBJECT);
                     addValue(ATTR_KEY, entry.getKey().getClass(), entry.getKey(), builder, null,
                             Collections.<String, Object>emptyMap());
                     addValue(ATTR_VALUE, entry.getValue().getClass(), entry.getValue(), builder, null,
                             Collections.<String, Object>emptyMap());
                     builder.close();
                 }
-                builder.close();
             }
         } else {
             builder.add(name, ValueType.OBJECT);
-            builder.close();
         }
+        builder.close();
     }
 
     private VPackKeyMapAdapter<Object> getKeyMapAdapter(final Type type) {
@@ -979,7 +970,7 @@ public class VPack {
             }
         }
         if (serializer == null && ParameterizedType.class.isAssignableFrom(type.getClass())) {
-            serializer = getSerializer(ParameterizedType.class.cast(type).getRawType());
+            serializer = getSerializer(((ParameterizedType) type).getRawType());
         }
         return serializer;
     }

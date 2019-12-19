@@ -43,7 +43,6 @@ import com.arangodb.velocypack.exception.VPackValueTypeException;
 import com.arangodb.velocypack.internal.DefaultVPackBuilderOptions;
 import com.arangodb.velocypack.internal.Value;
 import com.arangodb.velocypack.internal.util.NumberUtil;
-import com.fasterxml.jackson.core.io.CharTypes;
 
 /**
  * @author Mark Vollmary
@@ -55,7 +54,7 @@ public class VPackBuilder {
 	private static final int LONG_BYTES = Long.SIZE / Byte.SIZE;
 	private static final int DOUBLE_BYTES = Double.SIZE / Byte.SIZE;
 
-	public static interface BuilderOptions {
+	public interface BuilderOptions {
 		boolean isBuildUnindexedArrays();
 
 		void setBuildUnindexedArrays(boolean buildUnindexedArrays);
@@ -65,7 +64,7 @@ public class VPackBuilder {
 		void setBuildUnindexedObjects(boolean buildUnindexedObjects);
 	}
 
-	public static interface Appender<T> {
+	public interface Appender<T> {
 		void append(VPackBuilder builder, T value) throws VPackBuilderException;
 	}
 
@@ -214,7 +213,7 @@ public class VPackBuilder {
 	private int size;
 	private final List<Integer> stack; // Start positions of open
 										// objects/arrays
-	private List<List<Integer>> index; // Indices for starts
+	private final List<List<Integer>> index; // Indices for starts
 														// of
 														// subindex
 	private boolean keyWritten; // indicates that in the current object the key
@@ -230,8 +229,8 @@ public class VPackBuilder {
 		this.options = options;
 		size = 0;
 		buffer = new byte[10];
-		stack = new ArrayList<Integer>();
-		index = new ArrayList<List<Integer>>(4);
+		stack = new ArrayList<>();
+		index = new ArrayList<>(4);
 	}
 
 	public BuilderOptions getOptions() {
@@ -778,7 +777,7 @@ public class VPackBuilder {
 
 	private void appendUInt(final BigInteger value) {
 		add((byte) 0x2f);
-		append(value, LONG_BYTES);
+		append(value);
 	}
 
 	private void append(final long value, final int length) {
@@ -788,10 +787,10 @@ public class VPackBuilder {
 		}
 	}
 
-	private void append(final BigInteger value, final int length) {
-		ensureCapacity(size + length);
-		for (int i = length - 1; i >= 0; i--) {
-			addUnchecked(value.shiftRight(length - i - 1 << 3).byteValue());
+	private void append(final BigInteger value) {
+		ensureCapacity(size + VPackBuilder.LONG_BYTES);
+		for (int i = VPackBuilder.LONG_BYTES - 1; i >= 0; i--) {
+			addUnchecked(value.shiftRight(VPackBuilder.LONG_BYTES - i - 1 << 3).byteValue());
 		}
 	}
 
@@ -881,9 +880,7 @@ public class VPackBuilder {
 	public VPackBuilder close() throws VPackBuilderException {
 		try {
 			return close(true);
-		} catch (final VPackKeyTypeException e) {
-			throw new VPackBuilderException(e);
-		} catch (final VPackNeedAttributeTranslatorException e) {
+		} catch (final VPackKeyTypeException | VPackNeedAttributeTranslatorException e) {
 			throw new VPackBuilderException(e);
 		}
 	}
@@ -928,10 +925,8 @@ public class VPackBuilder {
 			offsetSize = 1;
 		} else if ((size - tos) + 2 * in.size() <= 0xffff) {
 			offsetSize = 2;
-		} else if (((size - tos) / 2) + 4 * in.size() / 2 <= Integer.MAX_VALUE/* 0xffffffffu */) {
-			offsetSize = 4;
 		} else {
-			offsetSize = 8;
+			offsetSize = 4;
 		}
 		// Maybe we need to move down data
 		if (offsetSize == 1) {
@@ -957,8 +952,7 @@ public class VPackBuilder {
 			sortObjectIndex(tos, in);
 		}
 		// final int tableBase = size;
-		for (int i = 0; i < in.size(); i++) {
-			long x = in.get(i);
+		for (long x : in) {
 			ensureCapacity(size + offsetSize);
 			for (int j = 0; j < offsetSize; j++) {
 				addUnchecked(/* tableBase + offsetSize * i + j, */ (byte) (x & 0xff));
@@ -969,11 +963,8 @@ public class VPackBuilder {
 		if (offsetSize > 1) {
 			if (offsetSize == 2) {
 				buffer[tos] = (byte) (buffer[tos] + 1);
-			} else if (offsetSize == 4) {
+			} else {
 				buffer[tos] = (byte) (buffer[tos] + 2);
-			} else { // offsetSize == 8
-				buffer[tos] = (byte) (buffer[tos] + 3);
-				appendLength(in.size());
 			}
 		}
 		// Fix the byte length in the beginning
@@ -983,12 +974,10 @@ public class VPackBuilder {
 			x >>= 8;
 		}
 		// set the number of items in the beginning
-		if (offsetSize < 8) {
-			x = in.size();
-			for (int i = offsetSize + 1; i <= 2 * offsetSize; i++) {
-				buffer[tos + i] = (byte) (x & 0xff);
-				x >>= 8;
-			}
+		x = in.size();
+		for (int i = offsetSize + 1; i <= 2 * offsetSize; i++) {
+			buffer[tos + i] = (byte) (x & 0xff);
+			x >>= 8;
 		}
 		stack.remove(stack.size() - 1);
 		return this;
@@ -1104,10 +1093,8 @@ public class VPackBuilder {
 			offsetSize = 1;
 		} else if ((size - tos) + (needIndexTable ? 2 * n : 0) <= 0xffff) {
 			offsetSize = 2;
-		} else if (((size - tos) / 2) + ((needIndexTable ? 4 * n : 0) / 2) <= Integer.MAX_VALUE/* 0xffffffffu */) {
-			offsetSize = 4;
 		} else {
-			offsetSize = 8;
+			offsetSize = 4;
 		}
 		// Maybe we need to move down data
 		if (offsetSize == 1) {
@@ -1134,8 +1121,7 @@ public class VPackBuilder {
 		// Now build the table:
 		if (needIndexTable) {
 			// final int tableBase = size;
-			for (int i = 0; i < n; i++) {
-				long x = in.get(i);
+			for (long x : in) {
 				ensureCapacity(size + offsetSize);
 				for (int j = 0; j < offsetSize; j++) {
 					addUnchecked(/* tableBase + offsetSize * i + j, */ (byte) (x & 0xff));
@@ -1149,13 +1135,8 @@ public class VPackBuilder {
 		if (offsetSize > 1) {
 			if (offsetSize == 2) {
 				buffer[tos] = (byte) (buffer[tos] + 1);
-			} else if (offsetSize == 4) {
+			} else {
 				buffer[tos] = (byte) (buffer[tos] + 2);
-			} else { // offsetSize == 8
-				buffer[tos] = (byte) (buffer[tos] + 3);
-				if (needNrSubs) {
-					appendLength(n);
-				}
 			}
 		}
 		// Fix the byte length in the beginning
@@ -1165,7 +1146,7 @@ public class VPackBuilder {
 			x >>= 8;
 		}
 		// set the number of items in the beginning
-		if (offsetSize < 8 && needNrSubs) {
+		if (needNrSubs) {
 			x = n;
 			for (int i = offsetSize + 1; i <= 2 * offsetSize; i++) {
 				buffer[tos + i] = (byte) (x & 0xff);

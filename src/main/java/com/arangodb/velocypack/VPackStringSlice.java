@@ -8,13 +8,13 @@ import java.nio.charset.StandardCharsets;
  * @see <a href="https://github.com/arangodb/velocypack/blob/master/VelocyPack.md#objects">VelocyPack Objects</a>
  */
 public class VPackStringSlice implements Comparable<VPackStringSlice> {
-    private byte[] vpack;
+    private final byte[] vpack;
     /**
-     * Index of the string bytes within {@link vpack},
+     * Index of the string bytes within {@link this#vpack},
      * i.e. tag byte and length are somewhere before this index.
      */
-    private int start;
-    private int length;
+    private final int start;
+    private final int length;
 
     public VPackStringSlice(byte[] vpack, int start, int length) {
         this.vpack = vpack;

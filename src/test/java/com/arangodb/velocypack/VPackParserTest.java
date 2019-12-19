@@ -165,8 +165,7 @@ public class VPackParserTest {
 		final VPackBuilder builder = new VPackBuilder();
 		builder.add(ValueType.OBJECT);
 		builder.add("a", ValueType.NULL);
-		final String b = null;
-		builder.add("b", b);
+		builder.add("b", (String) null);
 		builder.add("c", "test");
 		builder.close();
 		final String json = new VPackParser.Builder().build().toJson(builder.slice(), false);
@@ -178,8 +177,7 @@ public class VPackParserTest {
 		final VPackBuilder builder = new VPackBuilder();
 		builder.add(ValueType.OBJECT);
 		builder.add("a", ValueType.NULL);
-		final String b = null;
-		builder.add("b", b);
+		builder.add("b", (String) null);
 		builder.add("c", "test");
 		builder.close();
 		final String json = new VPackParser.Builder().build().toJson(builder.slice(), true);
@@ -191,8 +189,7 @@ public class VPackParserTest {
 		final VPackBuilder builder = new VPackBuilder();
 		builder.add(ValueType.ARRAY);
 		builder.add(ValueType.NULL);
-		final String s = null;
-		builder.add(s);
+		builder.add((String) null);
 		builder.add("test");
 		builder.close();
 		final String json = new VPackParser.Builder().build().toJson(builder.slice(), false);
@@ -204,8 +201,7 @@ public class VPackParserTest {
 		final VPackBuilder builder = new VPackBuilder();
 		builder.add(ValueType.ARRAY);
 		builder.add(ValueType.NULL);
-		final String s = null;
-		builder.add(s);
+		builder.add((String) null);
 		builder.add("test");
 		builder.close();
 		final String json = new VPackParser.Builder().build().toJson(builder.slice(), true);

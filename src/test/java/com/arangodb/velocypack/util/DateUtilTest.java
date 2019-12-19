@@ -36,7 +36,7 @@ import com.arangodb.velocypack.internal.util.DateUtil;
 public class DateUtilTest {
 
 	@Test
-	public void format() throws Exception {
+	public void format() {
 		assertThat(DateUtil.format(new Date(1523891841000L)), is("2018-04-16T15:17:21.000Z"));
 	}
 

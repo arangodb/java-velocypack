@@ -32,7 +32,6 @@ import com.arangodb.velocypack.exception.VPackException;
 import com.arangodb.velocypack.internal.util.DateUtil;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.SerializableString;
@@ -66,10 +65,10 @@ public class VPackParser {
 
 		public Builder() {
 			super();
-			deserializers = new HashMap<ValueType, VPackJsonDeserializer>();
-			deserializersByName = new HashMap<String, Map<ValueType, VPackJsonDeserializer>>();
-			serializers = new HashMap<Class<?>, VPackJsonSerializer<?>>();
-			serializersByName = new HashMap<String, Map<Class<?>, VPackJsonSerializer<?>>>();
+			deserializers = new HashMap<>();
+			deserializersByName = new HashMap<>();
+			serializers = new HashMap<>();
+			serializersByName = new HashMap<>();
 		}
 
 		@Override
@@ -79,7 +78,7 @@ public class VPackParser {
 			final VPackJsonDeserializer deserializer) {
 			Map<ValueType, VPackJsonDeserializer> byName = deserializersByName.get(attribute);
 			if (byName == null) {
-				byName = new HashMap<ValueType, VPackJsonDeserializer>();
+				byName = new HashMap<>();
 				deserializersByName.put(attribute, byName);
 			}
 			byName.put(type, deserializer);
@@ -101,7 +100,7 @@ public class VPackParser {
 			final VPackJsonSerializer<T> serializer) {
 			Map<Class<?>, VPackJsonSerializer<?>> byName = serializersByName.get(attribute);
 			if (byName == null) {
-				byName = new HashMap<Class<?>, VPackJsonSerializer<?>>();
+				byName = new HashMap<>();
 				serializersByName.put(attribute, byName);
 			}
 			byName.put(type, serializer);
@@ -131,10 +130,9 @@ public class VPackParser {
 		}
 
 		public synchronized VPackParser build() {
-			return new VPackParser(new HashMap<Class<?>, VPackJsonSerializer<?>>(serializers),
-					new HashMap<String, Map<Class<?>, VPackJsonSerializer<?>>>(serializersByName),
-					new HashMap<ValueType, VPackJsonDeserializer>(deserializers),
-					new HashMap<String, Map<ValueType, VPackJsonDeserializer>>(deserializersByName));
+			return new VPackParser(new HashMap<>(serializers),
+					new HashMap<>(serializersByName),
+					new HashMap<>(deserializers), new HashMap<>(deserializersByName));
 		}
 	}
 
@@ -166,7 +164,7 @@ public class VPackParser {
 	 * @param attribute
 	 * @param type
 	 * @param deserializer
-	 * @return
+	 * @return this
 	 */
 	@Deprecated
 	public VPackParser registerDeserializer(
@@ -175,7 +173,7 @@ public class VPackParser {
 		final VPackJsonDeserializer deserializer) {
 		Map<ValueType, VPackJsonDeserializer> byName = deserializersByName.get(attribute);
 		if (byName == null) {
-			byName = new HashMap<ValueType, VPackJsonDeserializer>();
+			byName = new HashMap<>();
 			deserializersByName.put(attribute, byName);
 		}
 		byName.put(type, deserializer);
@@ -186,7 +184,7 @@ public class VPackParser {
 	 * @deprecated use {@link VPackParser.Builder#registerDeserializer(ValueType, VPackJsonDeserializer)} instead
 	 * @param type
 	 * @param deserializer
-	 * @return
+	 * @return this
 	 */
 	@Deprecated
 	public VPackParser registerDeserializer(final ValueType type, final VPackJsonDeserializer deserializer) {
@@ -199,7 +197,7 @@ public class VPackParser {
 	 * @param attribute
 	 * @param type
 	 * @param serializer
-	 * @return
+	 * @return this
 	 */
 	@Deprecated
 	public <T> VPackParser registerSerializer(
@@ -208,7 +206,7 @@ public class VPackParser {
 		final VPackJsonSerializer<T> serializer) {
 		Map<Class<?>, VPackJsonSerializer<?>> byName = serializersByName.get(attribute);
 		if (byName == null) {
-			byName = new HashMap<Class<?>, VPackJsonSerializer<?>>();
+			byName = new HashMap<>();
 			serializersByName.put(attribute, byName);
 		}
 		byName.put(type, serializer);
@@ -219,7 +217,7 @@ public class VPackParser {
 	 * @deprecated use {@link VPackParser.Builder#registerSerializer(Class, VPackJsonSerializer)} instead
 	 * @param type
 	 * @param serializer
-	 * @return
+	 * @return this
 	 */
 	@Deprecated
 	public <T> VPackParser registerSerializer(final Class<T> type, final VPackJsonSerializer<T> serializer) {
@@ -346,8 +344,6 @@ public class VPackParser {
 		final VPackBuilder builder = new VPackBuilder();
 		try {
 			parse(json, builder, includeNullValues);
-		} catch (final JsonParseException e) {
-			throw new VPackBuilderException(e);
 		} catch (final IOException e) {
 			throw new VPackBuilderException(e);
 		}
@@ -365,8 +361,6 @@ public class VPackParser {
 			for (final String json : jsons) {
 				parse(json, builder, includeNullValues);
 			}
-		} catch (final JsonParseException e) {
-			throw new VPackBuilderException(e);
 		} catch (final IOException e) {
 			throw new VPackBuilderException(e);
 		}
@@ -375,7 +369,7 @@ public class VPackParser {
 	}
 
 	private void parse(final String json, final VPackBuilder builder, final boolean includeNullValues)
-			throws JsonParseException, IOException {
+			throws IOException {
 		final JsonParser parser = new JsonFactory().createParser(json);
 		String fieldName = null;
 		JsonToken token;
@@ -435,13 +429,13 @@ public class VPackParser {
 		if (serializer != null) {
 			((VPackJsonSerializer<Object>) serializer).serialize(builder, fieldName, value);
 		} else if (String.class.isAssignableFrom(value.getClass())) {
-			builder.add(fieldName, String.class.cast(value));
+			builder.add(fieldName, (String) value);
 		} else if (Boolean.class.isAssignableFrom(value.getClass())) {
-			builder.add(fieldName, Boolean.class.cast(value));
+			builder.add(fieldName, (Boolean) value);
 		} else if (Double.class.isAssignableFrom(value.getClass())) {
-			builder.add(fieldName, Double.class.cast(value));
+			builder.add(fieldName, (Double) value);
 		} else if (Long.class.isAssignableFrom(value.getClass())) {
-			builder.add(fieldName, Long.class.cast(value));
+			builder.add(fieldName, (Long) value);
 		}
 	}
 

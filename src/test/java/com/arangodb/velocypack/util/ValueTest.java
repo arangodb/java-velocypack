@@ -46,7 +46,7 @@ public class ValueTest {
 
 	@Test(expected = VPackValueTypeException.class)
 	public void wrongIntegerType() {
-		new Value(new Long(1L), ValueType.STRING);
+		new Value(1L, ValueType.STRING);
 	}
 
 	@Test(expected = VPackValueTypeException.class)

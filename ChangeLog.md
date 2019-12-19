@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 
 ## [Unreleased]
 
+## [2.0.0] - 2019-12-19
+
+- performance improvements
+- raised minimum supported Java version to Java 7
+
 ## [1.4.3] - 2019-10-22
 
 - jackson v2.9.10

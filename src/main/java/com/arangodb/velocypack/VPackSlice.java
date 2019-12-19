@@ -31,7 +31,6 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
-import java.lang.Comparable;
 
 import com.arangodb.velocypack.exception.VPackException;
 import com.arangodb.velocypack.exception.VPackKeyTypeException;
@@ -421,8 +420,7 @@ public class VPackSlice implements Serializable {
 		if (!isBinary()) {
 			throw new VPackValueTypeException(ValueType.BINARY);
 		}
-		final byte[] binary = BinaryUtil.toBinary(vpack, start + 1 + head() - ((byte) 0xbf), getBinaryLength());
-		return binary;
+		return BinaryUtil.toBinary(vpack, start + 1 + head() - ((byte) 0xbf), getBinaryLength());
 	}
 
 	public int getBinaryLength() {
@@ -596,7 +594,7 @@ public class VPackSlice implements Serializable {
 			throw new VPackValueTypeException(ValueType.OBJECT);
 		}
 		final byte head = head();
-		VPackSlice result = NONE_SLICE;
+		VPackSlice result;
 		if (head == 0x0a) {
 			// special case, empty object
 			result = NONE_SLICE;
@@ -625,9 +623,6 @@ public class VPackSlice implements Serializable {
 					}
 				} else if (key.isInteger()) {
 					// translate key
-					if (VPackSlice.attributeTranslator == null) {
-						throw new VPackNeedAttributeTranslatorException();
-					}
 					if (key.translateUnchecked().isEqualString(attribute)) {
 						result = new VPackSlice(vpack, key.start + key.getByteSize());
 					} else {
@@ -672,9 +667,6 @@ public class VPackSlice implements Serializable {
 			return this;
 		}
 		if (isInteger()) {
-			if (VPackSlice.attributeTranslator == null) {
-				throw new VPackNeedAttributeTranslatorException();
-			}
 			return translateUnchecked();
 		}
 		throw new VPackKeyTypeException("Cannot translate key of this type");
@@ -698,7 +690,6 @@ public class VPackSlice implements Serializable {
 		final int offsetsize,
 		final long n) throws VPackValueTypeException, VPackNeedAttributeTranslatorException {
 
-		final boolean useTranslator = VPackSlice.attributeTranslator != null;
 		VPackSlice result;
 		long l = 0;
 		long r = n - 1;
@@ -710,15 +701,11 @@ public class VPackSlice implements Serializable {
 			final long offset = ieBase + index * offsetsize;
 			final long keyIndex = NumberUtil.toLong(vpack, (int) (start + offset), offsetsize);
 			final VPackSlice key = new VPackSlice(vpack, (int) (start + keyIndex));
-			int res = 0;
+			int res;
 			if (key.isString()) {
 				res = key.getAsStringSlice().compareToBytes(attributeBytes);
 			} else if (key.isInteger()) {
 				// translate key
-				if (!useTranslator) {
-					// no attribute translator
-					throw new VPackNeedAttributeTranslatorException();
-				}
 				res = key.translateUnchecked().getAsStringSlice().compareToBytes(attributeBytes);
 			} else {
 				// invalid key
@@ -753,7 +740,6 @@ public class VPackSlice implements Serializable {
 		final int offsetsize,
 		final long n) throws VPackValueTypeException, VPackNeedAttributeTranslatorException {
 
-		final boolean useTranslator = VPackSlice.attributeTranslator != null;
 		VPackSlice result = NONE_SLICE;
 		for (long index = 0; index < n; index++) {
 			final long offset = ieBase + index * offsetsize;
@@ -765,10 +751,6 @@ public class VPackSlice implements Serializable {
 				}
 			} else if (key.isInteger()) {
 				// translate key
-				if (!useTranslator) {
-					// no attribute translator
-					throw new VPackNeedAttributeTranslatorException();
-				}
 				if (!key.translateUnchecked().isEqualString(attribute)) {
 					continue;
 				}

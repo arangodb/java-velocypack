@@ -557,7 +557,7 @@ public class VPackSliceTest {
 	public void getDate() throws VPackException {
 		final byte[] vpack = { 0x1c, 0, 83, 115, 5, -114, 0, 0, 0, };
 		final VPackSlice slice = new VPackSlice(vpack);
-		assertThat(slice.getAsDate(), is(new Date(609976800000l)));
+		assertThat(slice.getAsDate(), is(new Date(609976800000L)));
 	}
 
 	@Test(expected = VPackValueTypeException.class)
@@ -877,8 +877,7 @@ public class VPackSliceTest {
 		final VPackSlice slice = new VPackSlice(new byte[] { 0x13, 0x0f, 0x41, 0x61, 0x41, 0x62, 0x41, 0x63, 0x41, 0x64,
 				0x41, 0x65, 0x41, 0x66, 0x06 });
 		final Iterator<VPackSlice> iteratorSlice = slice.arrayIterator();
-		for (final Iterator<String> iterator = expected.iterator(); iterator.hasNext();) {
-			final String string = iterator.next();
+		for (final String string : expected) {
 			final VPackSlice next = iteratorSlice.next();
 			assertThat(next.isString(), is(true));
 			assertThat(next.getAsString(), is(string));

@@ -79,8 +79,7 @@ public class VPackBuilderTest {
 	@Test
 	public void addBooleanNull() throws VPackException {
 		final VPackBuilder builder = new VPackBuilder();
-		final Boolean b = null;
-		builder.add(b);
+		builder.add((Boolean) null);
 
 		final VPackSlice slice = builder.slice();
 		assertThat(slice.isNull(), is(true));
@@ -313,7 +312,7 @@ public class VPackBuilderTest {
 		try {
 			slice.get(0);
 			fail();
-		} catch (final IndexOutOfBoundsException e) {
+		} catch (final IndexOutOfBoundsException ignored) {
 
 		}
 	}
@@ -547,13 +546,13 @@ public class VPackBuilderTest {
 		try {
 			slice.keyAt(0);
 			fail();
-		} catch (final IndexOutOfBoundsException e) {
+		} catch (final IndexOutOfBoundsException ignored) {
 
 		}
 		try {
 			slice.valueAt(0);
 			fail();
-		} catch (final IndexOutOfBoundsException e) {
+		} catch (final IndexOutOfBoundsException ignored) {
 
 		}
 	}
@@ -771,15 +770,15 @@ public class VPackBuilderTest {
 		assertThat(keysUnsorted.length, is(keys.length));
 		final VPackBuilder builder = new VPackBuilder();
 		builder.add(ValueType.OBJECT);
-		for (int i = 0; i < keysUnsorted.length; i++) {
-			builder.add(String.valueOf(keysUnsorted[i]), "test");
+		for (String s : keysUnsorted) {
+			builder.add(s, "test");
 		}
 		builder.close();
 		final VPackSlice vpack = builder.slice();
 		assertThat(vpack.isObject(), is(true));
 		assertThat(vpack.getLength(), is(keys.length));
 		for (int i = 0; i < keys.length; i++) {
-			assertThat(vpack.keyAt(i).getAsString(), is(String.valueOf(keys[i])));
+			assertThat(vpack.keyAt(i).getAsString(), is(keys[i]));
 		}
 	}
 
