@@ -216,7 +216,7 @@ public class VPackSlice implements Serializable {
 			return Collections.emptyList();
 		}
 
-		List<Long> ret = new ArrayList<Long>();
+		List<Long> ret = new ArrayList<>();
 		int start = this.start;
 
 		while(ValueTypeUtil.get(vpack[start]) == ValueType.TAGGED) {
