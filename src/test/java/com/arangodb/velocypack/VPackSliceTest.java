@@ -1462,37 +1462,49 @@ public class VPackSliceTest {
 
 	@Test
 	public void testReadTag() {
-		VPackBuilder b = new VPackBuilder();
-		b.addTagged(42, 5);
-
-		VPackSlice s = b.slice();
-
-		assertTrue(s.isTagged());
-		assertEquals(s.getFirstTag(), 42);
-		assertEquals((long) s.getTags().get(0), 42);
-		assertEquals(s.getTags().size(), 1);
-		assertTrue(s.hasTag(42));
-		assertFalse(s.hasTag(49));
-		assertEquals(s.value().getAsInt(), 5);
+		testReadTag(1);
+		testReadTag(1000);
+		testReadTag(21474836);
 	}
 
 	@Test
 	public void testReadTags() {
+		testReadTags(1);
+		testReadTags(1000);
+		testReadTags(21474836);
+	}
+
+	protected void testReadTag(int size) {
 		VPackBuilder b = new VPackBuilder();
-		b.addTagged(42, 5);
+		b.addTagged(42 * size, 5);
+
+		VPackSlice s = b.slice();
+
+		assertTrue(s.isTagged());
+		assertEquals(s.getFirstTag(), 42 * size);
+		assertEquals((long) s.getTags().get(0), 42 * size);
+		assertEquals(s.getTags().size(), 1);
+		assertTrue(s.hasTag(42 * size));
+		assertFalse(s.hasTag(49 * size));
+		assertEquals(s.value().getAsInt(), 5);
+	}
+
+	protected void testReadTags(int size) {
+		VPackBuilder b = new VPackBuilder();
+		b.addTagged(42 * size, 5);
 
 		VPackBuilder bb = new VPackBuilder();
-		bb.addTagged(49, b.slice());
+		bb.addTagged(49 * size, b.slice());
 
 		VPackSlice s = bb.slice();
 
 		assertTrue(s.isTagged());
-		assertEquals(s.getFirstTag(), 49);
+		assertEquals(s.getFirstTag(), 49 * size);
 		assertEquals(s.getTags().size(), 2);
-		assertEquals((long) s.getTags().get(0), 49);
-		assertEquals((long) s.getTags().get(1), 42);
-		assertTrue(s.hasTag(42));
-		assertTrue(s.hasTag(49));
-		assertFalse(s.hasTag(50));
+		assertEquals((long) s.getTags().get(0), 49 * size);
+		assertEquals((long) s.getTags().get(1), 42 * size);
+		assertTrue(s.hasTag(42 * size));
+		assertTrue(s.hasTag(49 * size));
+		assertFalse(s.hasTag(50 * size));
 	}
 }

@@ -651,7 +651,7 @@ public class VPackBuilder {
 				if (VPackSlice.attributeTranslator != null) {
 					final VPackSlice translate = VPackSlice.attributeTranslator.translate(attribute);
 					if (translate != null) {
-						final byte[] trValue = translate.getRawVPack();
+						final byte[] trValue = translate.getBuffer();
 						int trValueLength = translate.getByteSize();
 						int trValueStart = translate.getStart();
 						ensureCapacity(size + trValueLength);
@@ -838,7 +838,7 @@ public class VPackBuilder {
 	}
 
 	private void appendVPack(final VPackSlice value) {
-		final byte[] vpack = value.getRawVPack();
+		final byte[] vpack = value.getBuffer();
 		int length = value.getByteSize();
 		ensureCapacity(size + length);
 		System.arraycopy(vpack, value.getStart(), buffer, size, length);

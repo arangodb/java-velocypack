@@ -28,15 +28,15 @@ public class VPackException extends RuntimeException {
 
 	private static final long serialVersionUID = 3547943271830879415L;
 
-	public VPackException() {
+	protected VPackException() {
 		super();
 	}
 
-	public VPackException(final String message) {
+	protected VPackException(final String message) {
 		super(message);
 	}
 
-	public VPackException(final Throwable cause) {
+	protected VPackException(final Throwable cause) {
 		super(cause);
 	}
 

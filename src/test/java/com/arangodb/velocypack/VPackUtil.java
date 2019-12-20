@@ -29,7 +29,7 @@ public class VPackUtil {
 	private final static char[] hexArray = "0123456789ABCDEF".toCharArray();
 
 	public static String toHex(final VPackSlice vpack) {
-		final byte[] bytes = vpack.getRawVPack();
+		final byte[] bytes = vpack.getBuffer();
 		final int bytesLength = vpack.getByteSize();
 		final int bytesStart = vpack.getStart();
 		final char[] hexChars = new char[bytesLength * 2];

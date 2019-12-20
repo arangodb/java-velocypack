@@ -25,7 +25,6 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
@@ -544,7 +543,7 @@ public class VPackSlice implements Serializable {
 				break;
 			default:
 				// TODO
-				throw new VPackException("Invalid type for byteSize()");
+				throw new IllegalStateException("Invalid type for byteSize()");
 			}
 		}
 		return (int) size;
@@ -883,18 +882,6 @@ public class VPackSlice implements Serializable {
 		} else {
 			throw new VPackValueTypeException(ValueType.OBJECT);
 		}
-	}
-
-	protected byte[] getVPack() {
-		if(start == 0 && vpack.length == getByteSize()) {
-			return vpack;
-		}
-
-		return Arrays.copyOfRange(vpack, start, start + getByteSize());
-	}
-
-	protected byte[] getRawVPack() {
-		return vpack;
 	}
 
 	@Override
