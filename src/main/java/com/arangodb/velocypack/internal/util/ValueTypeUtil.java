@@ -267,8 +267,8 @@ public class ValueTypeUtil {
 		ValueType.NONE, // 0xeb
 		ValueType.NONE, // 0xec
 		ValueType.NONE, // 0xed
-		ValueType.NONE, // 0xee
-		ValueType.NONE, // 0xef
+		ValueType.TAGGED, // 0xee
+		ValueType.TAGGED, // 0xef
 		ValueType.CUSTOM, // 0xf0
 		ValueType.CUSTOM, // 0xf1
 		ValueType.CUSTOM, // 0xf2

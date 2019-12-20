@@ -266,6 +266,18 @@ public class VPackBuilder {
 		}
 	}
 
+	private void appendTag(long tag) {
+		if(tag <= 255) {
+			ensureCapacity(1+1);
+			addUnchecked((byte) 0xee);
+			append(tag, 1);
+		} else {
+			ensureCapacity(1+8);
+			addUnchecked((byte) 0xef);
+			append(tag, LONG_BYTES);
+		}
+	}
+
 	public VPackBuilder add(final ValueType value) throws VPackBuilderException {
 		return addInternal(VALUE_TYPE, value);
 	}
@@ -425,12 +437,180 @@ public class VPackBuilder {
 		return addInternal(attribute, VPACK, value);
 	}
 
+	public VPackBuilder addTagged(final long tag, final ValueType value) throws VPackBuilderException {
+		return addInternal(tag, VALUE_TYPE, value);
+	}
+
+	public VPackBuilder addTagged(final long tag, final ValueType value, final boolean unindexed) throws VPackBuilderException {
+		return addInternal(tag, VALUE, new Value(value, unindexed));
+	}
+
+	public VPackBuilder addTagged(final long tag, final Boolean value) throws VPackBuilderException {
+		return addInternal(tag, BOOLEAN, value);
+	}
+
+	public VPackBuilder addTagged(final long tag, final Double value) throws VPackBuilderException {
+		return addInternal(tag, DOUBLE, value);
+	}
+
+	public VPackBuilder addTagged(final long tag, final Float value) throws VPackBuilderException {
+		return addInternal(tag, FLOAT, value);
+	}
+
+	public VPackBuilder addTagged(final long tag, final BigDecimal value) throws VPackBuilderException {
+		return addInternal(tag, BIG_DECIMAL, value);
+	}
+
+	public VPackBuilder addTagged(final long tag, final Long value) throws VPackBuilderException {
+		return addInternal(tag, LONG, value);
+	}
+
+	public VPackBuilder addTagged(final long tag, final Long value, final ValueType type) throws VPackBuilderException {
+		return addInternal(tag, VALUE, new Value(value, type));
+	}
+
+	public VPackBuilder addTagged(final long tag, final Integer value) throws VPackBuilderException {
+		return addInternal(tag, INTEGER, value);
+	}
+
+	public VPackBuilder addTagged(final long tag, final Short value) throws VPackBuilderException {
+		return addInternal(tag, SHORT, value);
+	}
+
+	public VPackBuilder addTagged(final long tag, final BigInteger value) throws VPackBuilderException {
+		return addInternal(tag, BIG_INTEGER, value);
+	}
+
+	public VPackBuilder addTagged(final long tag, final BigInteger value, final ValueType type) throws VPackBuilderException {
+		return addInternal(tag, VALUE, new Value(value, type));
+	}
+
+	public VPackBuilder addTagged(final long tag, final Date value) throws VPackBuilderException {
+		return addInternal(tag, DATE, value);
+	}
+
+	public VPackBuilder addTagged(final long tag, final java.sql.Date value) throws VPackBuilderException {
+		return addInternal(tag, SQL_DATE, value);
+	}
+
+	public VPackBuilder addTagged(final long tag, final java.sql.Timestamp value) throws VPackBuilderException {
+		return addInternal(tag, SQL_TIMESTAMP, value);
+	}
+
+	public VPackBuilder addTagged(final long tag, final String value) throws VPackBuilderException {
+		return addInternal(tag, STRING, value);
+	}
+
+	public VPackBuilder addTagged(final long tag, final Character value) throws VPackBuilderException {
+		return addInternal(tag, CHARACTER, value);
+	}
+
+	public VPackBuilder addTagged(final long tag, final byte[] value) throws VPackBuilderException {
+		return addInternal(tag, BYTE_ARRAY, value);
+	}
+
+	public VPackBuilder addTagged(final long tag, final VPackSlice value) throws VPackBuilderException {
+		return addInternal(tag, VPACK, value);
+	}
+
+	public VPackBuilder addTagged(final String attribute, final long tag, final ValueType value) throws VPackBuilderException {
+		return addInternal(attribute, tag, VALUE_TYPE, value);
+	}
+
+	public VPackBuilder addTagged(final String attribute, final long tag, final ValueType value, final boolean unindexed)
+			throws VPackBuilderException {
+		return addInternal(attribute, tag, VALUE, new Value(value, unindexed));
+	}
+
+	public VPackBuilder addTagged(final String attribute, final long tag, final Boolean value) throws VPackBuilderException {
+		return addInternal(attribute, tag, BOOLEAN, value);
+	}
+
+	public VPackBuilder addTagged(final String attribute, final long tag, final Double value) throws VPackBuilderException {
+		return addInternal(attribute, tag, DOUBLE, value);
+	}
+
+	public VPackBuilder addTagged(final String attribute, final long tag, final Float value) throws VPackBuilderException {
+		return addInternal(attribute, tag, FLOAT, value);
+	}
+
+	public VPackBuilder addTagged(final String attribute, final long tag, final BigDecimal value) throws VPackBuilderException {
+		return addInternal(attribute, tag, BIG_DECIMAL, value);
+	}
+
+	public VPackBuilder addTagged(final String attribute, final long tag, final Long value) throws VPackBuilderException {
+		return addInternal(attribute, tag, LONG, value);
+	}
+
+	public VPackBuilder addTagged(final String attribute, final long tag, final Long value, final ValueType type)
+			throws VPackBuilderException {
+		return addInternal(attribute, tag, VALUE, new Value(value, type));
+	}
+
+	public VPackBuilder addTagged(final String attribute, final long tag, final Integer value) throws VPackBuilderException {
+		return addInternal(attribute, tag, INTEGER, value);
+	}
+
+	public VPackBuilder addTagged(final String attribute, final long tag, final Short value) throws VPackBuilderException {
+		return addInternal(attribute, tag, SHORT, value);
+	}
+
+	public VPackBuilder addTagged(final String attribute, final long tag, final Byte value) throws VPackBuilderException {
+		return addInternal(attribute, tag, BYTE, value);
+	}
+
+	public VPackBuilder addTagged(final String attribute, final long tag, final BigInteger value) throws VPackBuilderException {
+		return addInternal(attribute, tag, BIG_INTEGER, value);
+	}
+
+	public VPackBuilder addTagged(final String attribute, final long tag, final BigInteger value, final ValueType type)
+			throws VPackBuilderException {
+		return addInternal(attribute, tag, VALUE, new Value(value, type));
+	}
+
+	public VPackBuilder addTagged(final String attribute, final long tag, final String value) throws VPackBuilderException {
+		return addInternal(attribute, tag, STRING, value);
+	}
+
+	public VPackBuilder addTagged(final String attribute, final long tag, final Character value) throws VPackBuilderException {
+		return addInternal(attribute, tag, CHARACTER, value);
+	}
+
+	public VPackBuilder addTagged(final String attribute, final long tag, final Date value) throws VPackBuilderException {
+		return addInternal(attribute, tag, DATE, value);
+	}
+
+	public VPackBuilder addTagged(final String attribute, final long tag, final java.sql.Date value) throws VPackBuilderException {
+		return addInternal(attribute, tag, SQL_DATE, value);
+	}
+
+	public VPackBuilder addTagged(final String attribute, final long tag, final java.sql.Timestamp value) throws VPackBuilderException {
+		return addInternal(attribute, tag, SQL_TIMESTAMP, value);
+	}
+
+	public VPackBuilder addTagged(final String attribute, final long tag, final byte[] value) throws VPackBuilderException {
+		return addInternal(attribute, tag, BYTE_ARRAY, value);
+	}
+
+	public VPackBuilder addTagged(final String attribute, final long tag, final VPackSlice value) throws VPackBuilderException {
+		return addInternal(attribute, tag, VPACK, value);
+	}
+
 	private <T> VPackBuilder addInternal(final Appender<T> appender, final T value) throws VPackBuilderException {
+		return addInternal(0, appender, value);
+	}
+
+	private <T> VPackBuilder addInternal(final long tag, final Appender<T> appender, final T value) throws VPackBuilderException {
 		boolean haveReported = false;
 		if (!stack.isEmpty() && !keyWritten) {
 			reportAdd();
 			haveReported = true;
 		}
+
+		if (tag != 0) {
+			appendTag(tag);
+		}
+
 		try {
 			if (value == null) {
 				appendNull();
@@ -449,6 +629,11 @@ public class VPackBuilder {
 
 	private <T> VPackBuilder addInternal(final String attribute, final Appender<T> appender, final T value)
 			throws VPackBuilderException {
+		return addInternal(attribute, 0, appender, value);
+	}
+
+	private <T> VPackBuilder addInternal(final String attribute, final long tag, final Appender<T> appender, final T value)
+			throws VPackBuilderException {
 		if (attribute != null) {
 			boolean haveReported = false;
 			if (!stack.isEmpty()) {
@@ -466,10 +651,12 @@ public class VPackBuilder {
 				if (VPackSlice.attributeTranslator != null) {
 					final VPackSlice translate = VPackSlice.attributeTranslator.translate(attribute);
 					if (translate != null) {
-						final byte[] trValue = translate.getRawVPack();
-						ensureCapacity(size + trValue.length);
-						for (byte b : trValue) {
-							addUnchecked(b);
+						final byte[] trValue = translate.getBuffer();
+						int trValueLength = translate.getByteSize();
+						int trValueStart = translate.getStart();
+						ensureCapacity(size + trValueLength);
+						for (int i = 0; i < trValueLength; i++) {
+							addUnchecked(trValue[i+trValueStart]);
 						}
 						keyWritten = true;
 						if (value == null) {
@@ -483,6 +670,11 @@ public class VPackBuilder {
 				}
 				STRING.append(this, attribute);
 				keyWritten = true;
+
+				if (tag != 0) {
+					appendTag(tag);
+				}
+
 				if (value == null) {
 					appendNull();
 				} else {
@@ -646,10 +838,11 @@ public class VPackBuilder {
 	}
 
 	private void appendVPack(final VPackSlice value) {
-		final byte[] vpack = value.getRawVPack();
-		ensureCapacity(size + vpack.length);
-		System.arraycopy(vpack, 0, buffer, size, vpack.length);
-		size += vpack.length;
+		final byte[] vpack = value.getBuffer();
+		int length = value.getByteSize();
+		ensureCapacity(size + length);
+		System.arraycopy(vpack, value.getStart(), buffer, size, length);
+		size += length;
 	}
 
 	private void addArray(final boolean unindexed) {
