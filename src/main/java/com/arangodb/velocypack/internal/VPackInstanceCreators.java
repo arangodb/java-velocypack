@@ -20,15 +20,9 @@
 
 package com.arangodb.velocypack.internal;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import com.arangodb.velocypack.VPackInstanceCreator;
+
+import java.util.*;
 
 /**
  * @author Mark Vollmary
@@ -56,13 +50,13 @@ public class VPackInstanceCreators {
 	public static final VPackInstanceCreator<Set> SET = new VPackInstanceCreator<Set>() {
 		@Override
 		public Set createInstance() {
-			return new HashSet();
+			return new LinkedHashSet();
 		}
 	};
 	public static final VPackInstanceCreator<Map> MAP = new VPackInstanceCreator<Map>() {
 		@Override
 		public Map createInstance() {
-			return new HashMap();
+			return new LinkedHashMap();
 		}
 	};
 
