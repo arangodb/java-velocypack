@@ -20,8 +20,9 @@
 
 package com.arangodb.velocypack;
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.*;
+import com.arangodb.velocypack.exception.VPackException;
+import com.arangodb.velocypack.exception.VPackValueTypeException;
+import org.junit.Test;
 
 import java.math.BigInteger;
 import java.util.Arrays;
@@ -30,10 +31,8 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.Map.Entry;
 
-import org.junit.Test;
-
-import com.arangodb.velocypack.exception.VPackException;
-import com.arangodb.velocypack.exception.VPackValueTypeException;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.*;
 
 /**
  * @author Mark Vollmary
@@ -401,27 +400,28 @@ public class VPackSliceTest {
 
 	@Test
 	public void isCustom() {
-		checkCustom(new byte[] { (byte) 0xf0 });
-		checkCustom(new byte[] { (byte) 0xf1 });
-		checkCustom(new byte[] { (byte) 0xf2 });
-		checkCustom(new byte[] { (byte) 0xf3 });
-		checkCustom(new byte[] { (byte) 0xf4 });
-		checkCustom(new byte[] { (byte) 0xf5 });
-		checkCustom(new byte[] { (byte) 0xf6 });
-		checkCustom(new byte[] { (byte) 0xf7 });
-		checkCustom(new byte[] { (byte) 0xf8 });
-		checkCustom(new byte[] { (byte) 0xf9 });
-		checkCustom(new byte[] { (byte) 0xfa });
-		checkCustom(new byte[] { (byte) 0xfb });
-		checkCustom(new byte[] { (byte) 0xfc });
-		checkCustom(new byte[] { (byte) 0xfd });
-		checkCustom(new byte[] { (byte) 0xfe });
-		checkCustom(new byte[] { (byte) 0xff });
+		checkCustom(new byte[] { (byte) 0xf0 }, 2);
+		checkCustom(new byte[] { (byte) 0xf1 }, 3);
+		checkCustom(new byte[] { (byte) 0xf2 }, 5);
+		checkCustom(new byte[] { (byte) 0xf3 }, 9);
+		checkCustom(new byte[] { (byte) 0xf4, (byte) 0x00 }, 2);
+		checkCustom(new byte[] { (byte) 0xf5, (byte) 0x01 }, 3);
+		checkCustom(new byte[] { (byte) 0xf6, (byte) 0x02 }, 4);
+		checkCustom(new byte[] { (byte) 0xf7, (byte) 0x00, (byte) 0x00 }, 3);
+		checkCustom(new byte[] { (byte) 0xf8, (byte) 0x01, (byte) 0x00 }, 4);
+		checkCustom(new byte[] { (byte) 0xf9, (byte) 0x02, (byte) 0x00 }, 5);
+		checkCustom(new byte[] { (byte) 0xfa, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00 }, 5);
+		checkCustom(new byte[] { (byte) 0xfb, (byte) 0x01, (byte) 0x00, (byte) 0x00, (byte) 0x00 }, 6);
+		checkCustom(new byte[] { (byte) 0xfc, (byte) 0x02, (byte) 0x00, (byte) 0x00, (byte) 0x00 }, 7);
+		checkCustom(new byte[] { (byte) 0xfd, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00 }, 9);
+		checkCustom(new byte[] { (byte) 0xfe, (byte) 0x01, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00 }, 10);
+		checkCustom(new byte[] { (byte) 0xff, (byte) 0x02, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00 }, 11);
 	}
 
-	private void checkCustom(final byte[] vpack) {
+	private void checkCustom(final byte[] vpack, final int expectedSize) {
 		final VPackSlice slice = new VPackSlice(vpack);
 		assertThat(slice.isCustom(), is(true));
+		assertThat(slice.getByteSize(), is(expectedSize));
 	}
 
 	@Test

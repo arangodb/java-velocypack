@@ -531,11 +531,11 @@ public class VPackSlice implements Serializable {
 				size = getByteSize(start + offset) + offset;
 				break;
 			case CUSTOM:
-				if (head == 0xf4 || head == 0xf5 || head == 0xf6) {
+				if (head == (byte) 0xf4 || head == (byte) 0xf5 || head == (byte) 0xf6) {
 					size = 2 + NumberUtil.toLong(vpack, start + 1, 1);
-				} else if (head == 0xf7 || head == 0xf8 || head == 0xf9) {
+				} else if (head == (byte) 0xf7 || head == (byte) 0xf8 || head == (byte) 0xf9) {
 					size = 3 + NumberUtil.toLong(vpack, start + 1, 2);
-				} else if (head == 0xfa || head == 0xfb || head == 0xfc) {
+				} else if (head == (byte) 0xfa || head == (byte) 0xfb || head == (byte) 0xfc) {
 					size = 5 + NumberUtil.toLong(vpack, start + 1, 4);
 				} else /* if (head == 0xfd || head == 0xfe || head == 0xff) */ {
 					size = 9 + NumberUtil.toLong(vpack, start + 1, 8);
