@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 
 ## [Unreleased]
 
+- fixed custom types byte size
+- fixed BCD byte size
 - Map and Set VPackInstanceCreators preserve collections entries order (based on `LinkedHashSet` and `LinkedHashMap`) 
 
 ## [2.1.0] - 2019-12-20

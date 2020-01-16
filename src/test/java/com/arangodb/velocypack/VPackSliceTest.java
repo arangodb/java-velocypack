@@ -375,27 +375,28 @@ public class VPackSliceTest {
 
 	@Test
 	public void isBCD() {
-		checkBCD(new byte[] { (byte) 0xc8 });
-		checkBCD(new byte[] { (byte) 0xc9 });
-		checkBCD(new byte[] { (byte) 0xca });
-		checkBCD(new byte[] { (byte) 0xcb });
-		checkBCD(new byte[] { (byte) 0xcc });
-		checkBCD(new byte[] { (byte) 0xcd });
-		checkBCD(new byte[] { (byte) 0xce });
-		checkBCD(new byte[] { (byte) 0xcf });
-		checkBCD(new byte[] { (byte) 0xd0 });
-		checkBCD(new byte[] { (byte) 0xd1 });
-		checkBCD(new byte[] { (byte) 0xd2 });
-		checkBCD(new byte[] { (byte) 0xd3 });
-		checkBCD(new byte[] { (byte) 0xd4 });
-		checkBCD(new byte[] { (byte) 0xd5 });
-		checkBCD(new byte[] { (byte) 0xd6 });
-		checkBCD(new byte[] { (byte) 0xd7 });
+		checkBCD(new byte[] { (byte) 0xc8, (byte) 0x03 }, 9);
+		checkBCD(new byte[] { (byte) 0xc9, (byte) 0x03, (byte) 0x00 }, 10);
+		checkBCD(new byte[] { (byte) 0xca, (byte) 0x03, (byte) 0x00, (byte) 0x00 }, 11);
+		checkBCD(new byte[] { (byte) 0xcb, (byte) 0x03, (byte) 0x00, (byte) 0x00, (byte) 0x00 }, 12);
+		checkBCD(new byte[] { (byte) 0xcc, (byte) 0x03, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00 }, 13);
+		checkBCD(new byte[] { (byte) 0xcd, (byte) 0x03, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00 }, 14);
+		checkBCD(new byte[] { (byte) 0xce, (byte) 0x03, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00 }, 15);
+		checkBCD(new byte[] { (byte) 0xcf, (byte) 0x03, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00 }, 16);
+		checkBCD(new byte[] { (byte) 0xd0, (byte) 0x03 }, 9);
+		checkBCD(new byte[] { (byte) 0xd1, (byte) 0x03, (byte) 0x00 }, 10);
+		checkBCD(new byte[] { (byte) 0xd2, (byte) 0x03, (byte) 0x00, (byte) 0x00 }, 11);
+		checkBCD(new byte[] { (byte) 0xd3, (byte) 0x03, (byte) 0x00, (byte) 0x00, (byte) 0x00 }, 12);
+		checkBCD(new byte[] { (byte) 0xd4, (byte) 0x03, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00 }, 13);
+		checkBCD(new byte[] { (byte) 0xd5, (byte) 0x03, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00 }, 14);
+		checkBCD(new byte[] { (byte) 0xd6, (byte) 0x03, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00 }, 15);
+		checkBCD(new byte[] { (byte) 0xd7, (byte) 0x03, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00 }, 16);
 	}
 
-	private void checkBCD(final byte[] vpack) {
+	private void checkBCD(final byte[] vpack, final int expectedSize) {
 		final VPackSlice slice = new VPackSlice(vpack);
 		assertThat(slice.isBCD(), is(true));
+		assertThat(slice.getByteSize(), is(expectedSize));
 	}
 
 	@Test

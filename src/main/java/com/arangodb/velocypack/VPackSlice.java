@@ -20,28 +20,19 @@
 
 package com.arangodb.velocypack;
 
-import java.io.Serializable;
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map.Entry;
-
 import com.arangodb.velocypack.exception.VPackException;
 import com.arangodb.velocypack.exception.VPackKeyTypeException;
 import com.arangodb.velocypack.exception.VPackNeedAttributeTranslatorException;
 import com.arangodb.velocypack.exception.VPackValueTypeException;
 import com.arangodb.velocypack.internal.VPackAttributeTranslatorImpl;
-import com.arangodb.velocypack.internal.util.BinaryUtil;
-import com.arangodb.velocypack.internal.util.DateUtil;
-import com.arangodb.velocypack.internal.util.NumberUtil;
-import com.arangodb.velocypack.internal.util.ObjectArrayUtil;
-import com.arangodb.velocypack.internal.util.ValueLengthUtil;
-import com.arangodb.velocypack.internal.util.ValueTypeUtil;
+import com.arangodb.velocypack.internal.util.*;
+
+import java.io.Serializable;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
+import java.util.Map.Entry;
 
 /**
  * @author Mark Vollmary
@@ -520,10 +511,10 @@ public class VPackSlice implements Serializable {
 				size = 1 + head - ((byte) 0xbf) + NumberUtil.toLong(vpack, start + 1, head - ((byte) 0xbf));
 				break;
 			case BCD:
-				if (head <= 0xcf) {
-					size = 1 + head + ((byte) 0xc7) + NumberUtil.toLong(vpack, start + 1, head - ((byte) 0xc7));
+				if (head <= (byte) 0xcf) {
+					size = 1 + head - ((byte) 0xc7) + NumberUtil.toLong(vpack, start + 1, head - ((byte) 0xc7)) + 4;
 				} else {
-					size = 1 + head - ((byte) 0xcf) + NumberUtil.toLong(vpack, start + 1, head - ((byte) 0xcf));
+					size = 1 + head - ((byte) 0xcf) + NumberUtil.toLong(vpack, start + 1, head - ((byte) 0xcf)) + 4;
 				}
 				break;
 			case TAGGED:
