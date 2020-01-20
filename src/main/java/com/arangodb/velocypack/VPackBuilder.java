@@ -268,11 +268,11 @@ public class VPackBuilder {
 
 	private void appendTag(long tag) {
 		if(tag <= 255) {
-			ensureCapacity(1+1);
+			ensureCapacity(size + 1 + 1);
 			addUnchecked((byte) 0xee);
 			append(tag, 1);
 		} else {
-			ensureCapacity(1+8);
+			ensureCapacity(size + 1 + 8);
 			addUnchecked((byte) 0xef);
 			append(tag, LONG_BYTES);
 		}
@@ -690,7 +690,7 @@ public class VPackBuilder {
 				keyWritten = false;
 			}
 		} else {
-			addInternal(appender, value);
+			addInternal(tag, appender, value);
 		}
 		return this;
 	}
