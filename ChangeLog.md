@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 
 ## [Unreleased]
 
+## [2.1.1] - 2020-01-20
+
+- fixed tagging bugs
 - fixed custom types byte size
 - fixed BCD byte size
 - Map and Set VPackInstanceCreators preserve collections entries order (based on `LinkedHashSet` and `LinkedHashMap`) 
