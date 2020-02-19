@@ -20,38 +20,21 @@
 
 package com.arangodb.velocypack;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Array;
-import java.lang.reflect.GenericArrayType;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.lang.reflect.WildcardType;
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.UUID;
-
 import com.arangodb.velocypack.VPackBuilder.BuilderOptions;
 import com.arangodb.velocypack.annotations.Expose;
 import com.arangodb.velocypack.annotations.SerializedName;
 import com.arangodb.velocypack.exception.VPackException;
 import com.arangodb.velocypack.exception.VPackParserException;
-import com.arangodb.velocypack.internal.DefaultVPackBuilderOptions;
-import com.arangodb.velocypack.internal.VPackCache;
+import com.arangodb.velocypack.internal.*;
 import com.arangodb.velocypack.internal.VPackCache.FieldInfo;
-import com.arangodb.velocypack.internal.VPackDeserializers;
-import com.arangodb.velocypack.internal.VPackInstanceCreators;
-import com.arangodb.velocypack.internal.VPackKeyMapAdapters;
-import com.arangodb.velocypack.internal.VPackSerializers;
+
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
+import java.lang.reflect.*;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.util.*;
+import java.util.Map.Entry;
 
 /**
  * @author Mark Vollmary
@@ -438,24 +421,52 @@ public class VPack {
         return deserializer;
     }
 
+    private Method getBuilderMethod(Type type) {
+        if (!(type instanceof Class<?>))
+            return null;
+
+        Class<?> clazz = (Class<?>) type;
+        Method builder;
+        try {
+            builder = clazz.getDeclaredMethod("builder");
+        } catch (NoSuchMethodException e) {
+            return null;
+        }
+
+        if (Modifier.isStatic(builder.getModifiers()))
+            return builder;
+        else
+            return null;
+    }
+
+    private Method getBuild(Class<?> clazz) throws NoSuchMethodException {
+        Method build = clazz.getDeclaredMethod("build");
+        if (Modifier.isStatic(build.getModifiers()))
+            throw new NoSuchMethodException("Cannot find build() method!");
+        return build;
+    }
+
     private <T> T deserializeObject(
-            final VPackSlice parent,
-            final VPackSlice vpack,
-            final Type type,
-            final String fieldName) throws InstantiationException, IllegalAccessException, NoSuchMethodException,
-            InvocationTargetException, VPackException {
+            final VPackSlice parent, final VPackSlice vpack, final Type type, final String fieldName)
+            throws ReflectiveOperationException, VPackException {
         final T entity;
         final VPackDeserializer<?> deserializer = getDeserializer(fieldName, type);
+        final Method builderMethod = getBuilderMethod(type);
         if (deserializer != null) {
             if (VPackDeserializerParameterizedType.class.isAssignableFrom(deserializer.getClass())
                     && ParameterizedType.class.isAssignableFrom(type.getClass())) {
-                entity = ((VPackDeserializerParameterizedType<T>) deserializer).deserialize(parent, vpack,
-                        deserializationContext, (ParameterizedType) type);
+                entity = ((VPackDeserializerParameterizedType<T>) deserializer)
+                        .deserialize(parent, vpack, deserializationContext, (ParameterizedType) type);
             } else {
                 entity = ((VPackDeserializer<T>) deserializer).deserialize(parent, vpack, deserializationContext);
             }
         } else if (type == Object.class) {
             entity = (T) getValue(parent, vpack, getType(vpack), fieldName);
+        } else if (builderMethod != null) {
+            Object builder = builderMethod.invoke(null);
+            deserializeBuilder(builder, vpack);
+            Method build = getBuild(builder.getClass());
+            entity = (T) build.invoke(builder);
         } else {
             entity = createInstance(type);
             deserializeFields(entity, vpack);
@@ -499,7 +510,7 @@ public class VPack {
         return type;
     }
 
-    private <T> T createInstance(final Type type) throws InstantiationException, IllegalAccessException {
+    private <T> T createInstance(final Type type) throws ReflectiveOperationException {
         final T entity;
         final VPackInstanceCreator<?> creator = instanceCreators.get(type);
         if (creator != null) {
@@ -512,8 +523,8 @@ public class VPack {
         return entity;
     }
 
-    private void deserializeFields(final Object entity, final VPackSlice vpack) throws NoSuchMethodException,
-            IllegalAccessException, InvocationTargetException, InstantiationException, VPackException {
+    private void deserializeFields(final Object entity, final VPackSlice vpack)
+            throws ReflectiveOperationException, VPackException {
         final Map<String, FieldInfo> fields = cache.getFields(entity.getClass());
         for (final Iterator<Entry<String, VPackSlice>> iterator = vpack.objectIterator(); iterator.hasNext(); ) {
             final Entry<String, VPackSlice> next = iterator.next();
@@ -524,12 +535,21 @@ public class VPack {
         }
     }
 
+    private void deserializeBuilder(final Object builder, final VPackSlice vpack)
+            throws ReflectiveOperationException, VPackException {
+        final Map<String, FieldInfo> setters = cache.getBuiderSetters(builder.getClass());
+        for (final Iterator<Entry<String, VPackSlice>> iterator = vpack.objectIterator(); iterator.hasNext(); ) {
+            final Entry<String, VPackSlice> next = iterator.next();
+            final FieldInfo fieldInfo = setters.get(next.getKey());
+            if (fieldInfo != null && fieldInfo.isDeserialize()) {
+                deserializeField(vpack, next.getValue(), builder, fieldInfo);
+            }
+        }
+    }
+
     private void deserializeField(
-            final VPackSlice parent,
-            final VPackSlice vpack,
-            final Object entity,
-            final FieldInfo fieldInfo) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException,
-            InstantiationException, VPackException {
+            final VPackSlice parent, final VPackSlice vpack, final Object entity, final FieldInfo fieldInfo)
+            throws ReflectiveOperationException, VPackException {
         if (!vpack.isNone()) {
             final Object value = getValue(parent, vpack, fieldInfo.getType(), fieldInfo.getFieldName());
             fieldInfo.set(entity, value);
@@ -537,11 +557,8 @@ public class VPack {
     }
 
     private <T> Object getValue(
-            final VPackSlice parent,
-            final VPackSlice vpack,
-            final Type type,
-            final String fieldName) throws InstantiationException, IllegalAccessException, NoSuchMethodException,
-            InvocationTargetException, VPackException {
+            final VPackSlice parent, final VPackSlice vpack, final Type type, final String fieldName)
+            throws ReflectiveOperationException, VPackException {
         final Object value;
         final Type realType = determineType(vpack, type);
         if (vpack.isNull()) {
@@ -549,8 +566,8 @@ public class VPack {
             if (deserializer != null) {
                 if (VPackDeserializerParameterizedType.class.isAssignableFrom(deserializer.getClass())
                         && ParameterizedType.class.isAssignableFrom(realType.getClass())) {
-                    value = ((VPackDeserializerParameterizedType<Object>) deserializer).deserialize(parent, vpack,
-                            deserializationContext, (ParameterizedType) realType);
+                    value = ((VPackDeserializerParameterizedType<Object>) deserializer)
+                            .deserialize(parent, vpack, deserializationContext, (ParameterizedType) realType);
                 } else {
                     value = ((VPackDeserializer<Object>) deserializer).deserialize(parent, vpack,
                             deserializationContext);
@@ -602,8 +619,7 @@ public class VPack {
     }
 
     private <T> Object deserializeArray(final VPackSlice parent, final VPackSlice vpack, final Type type)
-            throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException,
-            VPackException {
+            throws ReflectiveOperationException, VPackException {
         final int length = vpack.getLength();
         final Class<?> componentType = ((Class<?>) type).getComponentType();
         final Object value = Array.newInstance(componentType, length);
@@ -614,11 +630,8 @@ public class VPack {
     }
 
     private <T, C> Object deserializeCollection(
-            final VPackSlice parent,
-            final VPackSlice vpack,
-            final Type type,
-            final Type contentType) throws InstantiationException, IllegalAccessException, NoSuchMethodException,
-            InvocationTargetException, VPackException {
+            final VPackSlice parent, final VPackSlice vpack, final Type type, final Type contentType)
+            throws ReflectiveOperationException, VPackException {
         final Collection value = createInstance(type);
         final long length = vpack.getLength();
         if (length > 0) {
@@ -630,18 +643,15 @@ public class VPack {
     }
 
     private <T, K, C> Object deserializeMap(
-            final VPackSlice parent,
-            final VPackSlice vpack,
-            final Type type,
-            final Type keyType,
-            final Type valueType) throws InstantiationException, IllegalAccessException, NoSuchMethodException,
-            InvocationTargetException, VPackException {
+            final VPackSlice parent, final VPackSlice vpack, final Type type, final Type keyType, final Type valueType)
+            throws ReflectiveOperationException, VPackException {
         final int length = vpack.getLength();
         final Map value = createInstance(type);
         if (length > 0) {
             final VPackKeyMapAdapter<Object> keyMapAdapter = getKeyMapAdapter(keyType);
             if (keyMapAdapter != null) {
-                for (final Iterator<Entry<String, VPackSlice>> iterator = vpack.objectIterator(); iterator.hasNext(); ) {
+                for (final Iterator<Entry<String, VPackSlice>> iterator = vpack.objectIterator(); iterator
+                        .hasNext(); ) {
                     final Entry<String, VPackSlice> next = iterator.next();
                     final Object name = keyMapAdapter.deserialize(next.getKey());
                     value.put(name, getValue(vpack, next.getValue(), valueType, name.toString()));
@@ -789,8 +799,7 @@ public class VPack {
             final String name,
             final Object entity,
             final VPackBuilder builder,
-            final Map<String, Object> additionalFields)
-            throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, VPackException {
+            final Map<String, Object> additionalFields) throws ReflectiveOperationException, VPackException {
 
         final Class<?> type = entity.getClass();
 
@@ -808,8 +817,7 @@ public class VPack {
     private void serializeFields(
             final Object entity,
             final VPackBuilder builder,
-            final Map<String, Object> additionalFields)
-            throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, VPackException {
+            final Map<String, Object> additionalFields) throws ReflectiveOperationException, VPackException {
         final Map<String, FieldInfo> fields = cache.getFields(entity.getClass());
         for (final FieldInfo fieldInfo : fields.values()) {
             if (fieldInfo.isSerialize()) {
@@ -830,8 +838,7 @@ public class VPack {
             final Object entity,
             final VPackBuilder builder,
             final FieldInfo fieldInfo,
-            final Map<String, Object> additionalFields)
-            throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, VPackException {
+            final Map<String, Object> additionalFields) throws ReflectiveOperationException, VPackException {
 
         final String fieldName = fieldInfo.getFieldName();
         final Type type = fieldInfo.getType();
@@ -845,8 +852,7 @@ public class VPack {
             final Object value,
             final VPackBuilder builder,
             final FieldInfo fieldInfo,
-            final Map<String, Object> additionalFields)
-            throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, VPackException {
+            final Map<String, Object> additionalFields) throws ReflectiveOperationException, VPackException {
 
         if (value == null) {
             if (serializeNullValues) {
@@ -885,7 +891,7 @@ public class VPack {
     }
 
 	private void serializeArray(final String name, final Object value, final VPackBuilder builder, final Type type)
-            throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, VPackException {
+            throws ReflectiveOperationException, VPackException {
         builder.add(name, ValueType.ARRAY);
         for (int i = 0; i < Array.getLength(value); i++) {
             final Object element = Array.get(value, i);
@@ -900,7 +906,7 @@ public class VPack {
     }
 
     private void serializeIterable(final String name, final Object value, final VPackBuilder builder, final Type type)
-            throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, VPackException {
+            throws ReflectiveOperationException, VPackException {
         builder.add(name, ValueType.ARRAY);
         for (final Object element : (Iterable) value) {
             final Type t = type != null ? type : element != null ? element.getClass() : null;
@@ -914,8 +920,7 @@ public class VPack {
             final Object value,
             final VPackBuilder builder,
             final Type keyType,
-            final Map<String, Object> additionalFields)
-            throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, VPackException {
+            final Map<String, Object> additionalFields) throws ReflectiveOperationException, VPackException {
         final Map map = (Map) value;
         if (map.size() > 0) {
             final VPackKeyMapAdapter<Object> keyMapAdapter = getKeyMapAdapter(keyType);

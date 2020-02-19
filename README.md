@@ -250,6 +250,14 @@ To ignore fields at serialization/deserialization, use the annotation `Expose`
     }).build();
 ```
 
+# Builders support
+
+Deserialization using builders is supported under the following conditions:
+- the deserialization target class must have a public static builder method named `builder`, eg: `public static Builder<T> builder() {...}`
+- builder setters must be public and start with `set`, eg: `public final Builder<T> setName(String name) {...}`
+- the builder must have a public `build()` method, eg: `public T build() {...}`
+
+
 # Learn more
 
 - [ArangoDB](https://www.arangodb.com/)

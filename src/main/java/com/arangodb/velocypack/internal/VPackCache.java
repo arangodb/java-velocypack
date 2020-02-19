@@ -20,27 +20,20 @@
 
 package com.arangodb.velocypack.internal;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.arangodb.velocypack.VPackAnnotationFieldFilter;
 import com.arangodb.velocypack.VPackAnnotationFieldNaming;
 import com.arangodb.velocypack.VPackFieldNamingStrategy;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.Type;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author Mark Vollmary
@@ -78,9 +71,9 @@ public class VPackCache {
 			return deserialize;
 		}
 
-		public abstract void set(Object obj, Object value) throws IllegalAccessException;
+		public abstract void set(Object obj, Object value) throws ReflectiveOperationException;
 
-		public abstract Object get(Object obj) throws IllegalAccessException;
+		public abstract Object get(Object obj) throws ReflectiveOperationException;
 	}
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(VPackCache.class);
@@ -116,10 +109,55 @@ public class VPackCache {
 			while (tmp != null && tmp != Object.class) {
 				final Field[] declaredFields = tmp.getDeclaredFields();
 				for (final Field field : declaredFields) {
-					if (!field.isSynthetic() && !Modifier.isStatic(field.getModifiers())
-							&& !Modifier.isTransient(field.getModifiers())) {
+					if (!field.isSynthetic() && !Modifier.isStatic(field.getModifiers()) && !Modifier
+							.isTransient(field.getModifiers())) {
 						field.setAccessible(true);
 						final FieldInfo fieldInfo = createFieldInfo(field);
+						if (fieldInfo.serialize || fieldInfo.deserialize) {
+							fields.put(fieldInfo.getFieldName(), fieldInfo);
+						}
+					}
+				}
+				tmp = tmp.getSuperclass();
+			}
+			fields = sort(fields.entrySet());
+			cache.put(entityClass, fields);
+		}
+		return fields;
+	}
+
+	private boolean matchSetter(final Method method) {
+		// check name
+		if (!method.getName().startsWith("set"))
+			return false;
+
+		int modifiers = method.getModifiers();
+
+		// check modifiers
+		if (method.isSynthetic() || Modifier.isStatic(modifiers) || Modifier.isTransient(modifiers))
+			return false;
+
+		// check public
+		if (!Modifier.isPublic(modifiers))
+			return false;
+
+		// check parameters
+		if (method.getGenericParameterTypes().length != 1)
+			return false;
+
+		return true;
+	}
+
+	public Map<String, FieldInfo> getBuiderSetters(final Type entityClass) {
+		Map<String, FieldInfo> fields = cache.get(entityClass);
+		if (fields == null) {
+			fields = new HashMap<>();
+			Class<?> tmp = (Class<?>) entityClass;
+			while (tmp != null && tmp != Object.class) {
+				final Method[] declaredMethods = tmp.getDeclaredMethods();
+				for (final Method method : declaredMethods) {
+					if (matchSetter(method)) {
+						final FieldInfo fieldInfo = createSetterInfo(method);
 						if (fieldInfo.serialize || fieldInfo.deserialize) {
 							fields.put(fieldInfo.getFieldName(), fieldInfo);
 						}
@@ -193,6 +231,60 @@ public class VPackCache {
 			@Override
 			public Object get(final Object obj) throws IllegalAccessException {
 				return field.get(obj);
+			}
+		};
+	}
+
+	@SuppressWarnings("unchecked")
+	private FieldInfo createSetterInfo(final Method setter) {
+		String setterName = setter.getName();
+		String fieldName = setterName.substring(3, 4).toLowerCase() + setterName.substring(4);
+
+		boolean found = false;
+		for (final Entry<Class<? extends Annotation>, VPackAnnotationFieldNaming<? extends Annotation>> entry : annotationFieldNaming
+				.entrySet()) {
+			final Annotation annotation = setter.getAnnotation(entry.getKey());
+			if (annotation != null) {
+				fieldName = ((VPackAnnotationFieldNaming<Annotation>) entry.getValue()).name(annotation);
+				if (found) {
+					LOGGER.warn(String.format(
+							"Found additional annotation %s for field %s. Override previous annotation informations.",
+							entry.getKey().getSimpleName(), setter.getName()));
+				}
+				found = true;
+			}
+		}
+		boolean serialize = true;
+		boolean deserialize = true;
+		found = false;
+		for (final Entry<Class<? extends Annotation>, VPackAnnotationFieldFilter<? extends Annotation>> entry : annotationFilter
+				.entrySet()) {
+			final Annotation annotation = setter.getAnnotation(entry.getKey());
+			if (annotation != null) {
+				final VPackAnnotationFieldFilter<Annotation> filter = (VPackAnnotationFieldFilter<Annotation>) entry
+						.getValue();
+				serialize = filter.serialize(annotation);
+				deserialize = filter.deserialize(annotation);
+				if (found) {
+					LOGGER.warn(String.format(
+							"Found additional annotation %s for field %s. Override previous annotation informations.",
+							entry.getKey().getSimpleName(), setter.getName()));
+				}
+				found = true;
+			}
+		}
+
+		final Class<?> clazz = setter.getParameterTypes()[0];
+		final Type type = (clazz == Object.class) ? Object.class : setter.getGenericParameterTypes()[0];
+		return new FieldInfo(type, fieldName, serialize, deserialize) {
+			@Override
+			public void set(final Object obj, final Object value) throws ReflectiveOperationException {
+				setter.invoke(obj, value);
+			}
+
+			@Override
+			public Object get(final Object obj) {
+				throw new UnsupportedOperationException();
 			}
 		};
 	}
