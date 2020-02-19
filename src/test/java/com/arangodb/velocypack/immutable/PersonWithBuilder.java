@@ -22,6 +22,7 @@ package com.arangodb.velocypack.immutable;
 
 import com.arangodb.velocypack.annotations.Expose;
 import com.arangodb.velocypack.annotations.SerializedName;
+import com.arangodb.velocypack.annotations.VPackPOJOBuilder;
 
 import java.util.Objects;
 
@@ -33,10 +34,6 @@ public class PersonWithBuilder {
 	@SerializedName("name")
 	private String fullName;
 	private Integer age;
-
-	public static Builder builder() {
-		return new Builder();
-	}
 
 	private PersonWithBuilder(String fullName, Integer age) {
 		this.fullName = fullName;
@@ -71,12 +68,13 @@ public class PersonWithBuilder {
 		return "PersonWithBuilder{" + "fullName='" + fullName + '\'' + ", age=" + age + '}';
 	}
 
+	@VPackPOJOBuilder(withPrefix = "set")
 	public static final class Builder {
 
 		private String fullName;
 		private Integer age;
 
-		private Builder() {
+		public Builder() {
 		}
 
 		@SerializedName("name")

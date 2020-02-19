@@ -433,6 +433,17 @@ public class VPack {
         }
     }
 
+    // TODO: move to a separate file, together with a cache manager
+    private static class BuilderClassInfo {
+        public final Class<?> clazz;
+        public final VPackPOJOBuilder.Value annotation;
+
+        public BuilderClassInfo(Class<?> clazz, VPackPOJOBuilder.Value annotation) {
+            this.clazz = clazz;
+            this.annotation = annotation;
+        }
+    }
+
     // TODO: cache
     private BuilderMethodInfo getBuilderMethodInfo(Type type) {
         if (!(type instanceof Class<?>))
@@ -457,6 +468,22 @@ public class VPack {
         return null;
     }
 
+    // TODO: cache
+    private BuilderClassInfo getInnerBuilderInfo(Type type) {
+        if (!(type instanceof Class<?>))
+            return null;
+
+        Class<?> clazz = (Class<?>) type;
+        for (final Class<?> innerClass : clazz.getDeclaredClasses()) {
+            for (final Annotation annotation : innerClass.getDeclaredAnnotations()) {
+                if (annotation instanceof VPackPOJOBuilder)
+                    return new BuilderClassInfo(innerClass, new VPackPOJOBuilder.Value((VPackPOJOBuilder) annotation));
+            }
+        }
+
+        return null;
+    }
+
     private Method getBuildMethod(Class<?> clazz, String name) throws NoSuchMethodException {
         Method build = clazz.getDeclaredMethod(name);
         if (Modifier.isStatic(build.getModifiers()))
@@ -470,6 +497,7 @@ public class VPack {
         final T entity;
         final VPackDeserializer<?> deserializer = getDeserializer(fieldName, type);
         final BuilderMethodInfo builderMethodInfo = getBuilderMethodInfo(type);
+        final BuilderClassInfo innerBuilderInfo = getInnerBuilderInfo(type);
         if (deserializer != null) {
             if (VPackDeserializerParameterizedType.class.isAssignableFrom(deserializer.getClass())
                     && ParameterizedType.class.isAssignableFrom(type.getClass())) {
@@ -484,6 +512,11 @@ public class VPack {
             Object builder = builderMethodInfo.method.invoke(null);
             deserializeBuilder(builder, vpack, builderMethodInfo.annotation);
             Method build = getBuildMethod(builder.getClass(), builderMethodInfo.annotation.buildMethodName);
+            entity = (T) build.invoke(builder);
+        } else if (innerBuilderInfo != null) {
+            Object builder = innerBuilderInfo.clazz.newInstance();
+            deserializeBuilder(builder, vpack, innerBuilderInfo.annotation);
+            Method build = getBuildMethod(builder.getClass(), innerBuilderInfo.annotation.buildMethodName);
             entity = (T) build.invoke(builder);
         } else {
             entity = createInstance(type);
