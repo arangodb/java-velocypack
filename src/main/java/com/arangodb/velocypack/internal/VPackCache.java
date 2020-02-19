@@ -126,9 +126,9 @@ public class VPackCache {
 		return fields;
 	}
 
-	private boolean matchSetter(final Method method) {
+	private boolean matchSetter(final Method method, String withPrefix) {
 		// check name
-		if (!method.getName().startsWith("set"))
+		if (!method.getName().startsWith(withPrefix))
 			return false;
 
 		int modifiers = method.getModifiers();
@@ -148,7 +148,7 @@ public class VPackCache {
 		return true;
 	}
 
-	public Map<String, FieldInfo> getBuiderSetters(final Type entityClass) {
+	public Map<String, FieldInfo> getBuiderSetters(final Type entityClass, String withPrefix) {
 		Map<String, FieldInfo> fields = cache.get(entityClass);
 		if (fields == null) {
 			fields = new HashMap<>();
@@ -156,8 +156,8 @@ public class VPackCache {
 			while (tmp != null && tmp != Object.class) {
 				final Method[] declaredMethods = tmp.getDeclaredMethods();
 				for (final Method method : declaredMethods) {
-					if (matchSetter(method)) {
-						final FieldInfo fieldInfo = createSetterInfo(method);
+					if (matchSetter(method, withPrefix)) {
+						final FieldInfo fieldInfo = createSetterInfo(method, withPrefix);
 						if (fieldInfo.serialize || fieldInfo.deserialize) {
 							fields.put(fieldInfo.getFieldName(), fieldInfo);
 						}
@@ -236,9 +236,11 @@ public class VPackCache {
 	}
 
 	@SuppressWarnings("unchecked")
-	private FieldInfo createSetterInfo(final Method setter) {
+	private FieldInfo createSetterInfo(final Method setter, String withPrefix) {
+		int prefixLength = withPrefix.length();
 		String setterName = setter.getName();
-		String fieldName = setterName.substring(3, 4).toLowerCase() + setterName.substring(4);
+		String fieldName = setterName.substring(prefixLength, prefixLength + 1).toLowerCase() + setterName
+				.substring(prefixLength + 1);
 
 		boolean found = false;
 		for (final Entry<Class<? extends Annotation>, VPackAnnotationFieldNaming<? extends Annotation>> entry : annotationFieldNaming

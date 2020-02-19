@@ -23,6 +23,7 @@ package com.arangodb.velocypack;
 import com.arangodb.velocypack.VPackBuilder.BuilderOptions;
 import com.arangodb.velocypack.annotations.Expose;
 import com.arangodb.velocypack.annotations.SerializedName;
+import com.arangodb.velocypack.annotations.VPackPOJOBuilder;
 import com.arangodb.velocypack.exception.VPackException;
 import com.arangodb.velocypack.exception.VPackParserException;
 import com.arangodb.velocypack.internal.*;
@@ -421,26 +422,43 @@ public class VPack {
         return deserializer;
     }
 
-    private Method getBuilderMethod(Type type) {
+    // TODO: move to a separate file, together with a cache manager
+    private static class BuilderMethodInfo {
+        public final Method method;
+        public final VPackPOJOBuilder.Value annotation;
+
+        public BuilderMethodInfo(Method method, VPackPOJOBuilder.Value annotation) {
+            this.method = method;
+            this.annotation = annotation;
+        }
+    }
+
+    // TODO: cache
+    private BuilderMethodInfo getBuilderMethodInfo(Type type) {
         if (!(type instanceof Class<?>))
             return null;
 
         Class<?> clazz = (Class<?>) type;
-        Method builder;
+        for (final Method method : clazz.getDeclaredMethods()) {
+            for (final Annotation annotation : method.getDeclaredAnnotations()) {
+                if (annotation instanceof VPackPOJOBuilder)
+                    return new BuilderMethodInfo(method, new VPackPOJOBuilder.Value((VPackPOJOBuilder) annotation));
+            }
+        }
+
         try {
-            builder = clazz.getDeclaredMethod("builder");
+            Method builder = clazz.getDeclaredMethod("builder");
+            if (Modifier.isStatic(builder.getModifiers()))
+                return new BuilderMethodInfo(builder, new VPackPOJOBuilder.Value());
         } catch (NoSuchMethodException e) {
             return null;
         }
 
-        if (Modifier.isStatic(builder.getModifiers()))
-            return builder;
-        else
-            return null;
+        return null;
     }
 
-    private Method getBuild(Class<?> clazz) throws NoSuchMethodException {
-        Method build = clazz.getDeclaredMethod("build");
+    private Method getBuildMethod(Class<?> clazz, String name) throws NoSuchMethodException {
+        Method build = clazz.getDeclaredMethod(name);
         if (Modifier.isStatic(build.getModifiers()))
             throw new NoSuchMethodException("Cannot find build() method!");
         return build;
@@ -451,7 +469,7 @@ public class VPack {
             throws ReflectiveOperationException, VPackException {
         final T entity;
         final VPackDeserializer<?> deserializer = getDeserializer(fieldName, type);
-        final Method builderMethod = getBuilderMethod(type);
+        final BuilderMethodInfo builderMethodInfo = getBuilderMethodInfo(type);
         if (deserializer != null) {
             if (VPackDeserializerParameterizedType.class.isAssignableFrom(deserializer.getClass())
                     && ParameterizedType.class.isAssignableFrom(type.getClass())) {
@@ -462,10 +480,10 @@ public class VPack {
             }
         } else if (type == Object.class) {
             entity = (T) getValue(parent, vpack, getType(vpack), fieldName);
-        } else if (builderMethod != null) {
-            Object builder = builderMethod.invoke(null);
-            deserializeBuilder(builder, vpack);
-            Method build = getBuild(builder.getClass());
+        } else if (builderMethodInfo != null) {
+            Object builder = builderMethodInfo.method.invoke(null);
+            deserializeBuilder(builder, vpack, builderMethodInfo.annotation);
+            Method build = getBuildMethod(builder.getClass(), builderMethodInfo.annotation.buildMethodName);
             entity = (T) build.invoke(builder);
         } else {
             entity = createInstance(type);
@@ -535,9 +553,10 @@ public class VPack {
         }
     }
 
-    private void deserializeBuilder(final Object builder, final VPackSlice vpack)
+    private void deserializeBuilder(
+            final Object builder, final VPackSlice vpack, VPackPOJOBuilder.Value annotation)
             throws ReflectiveOperationException, VPackException {
-        final Map<String, FieldInfo> setters = cache.getBuiderSetters(builder.getClass());
+        final Map<String, FieldInfo> setters = cache.getBuiderSetters(builder.getClass(), annotation.withPrefix);
         for (final Iterator<Entry<String, VPackSlice>> iterator = vpack.objectIterator(); iterator.hasNext(); ) {
             final Entry<String, VPackSlice> next = iterator.next();
             final FieldInfo fieldInfo = setters.get(next.getKey());

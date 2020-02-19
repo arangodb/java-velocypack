@@ -36,7 +36,7 @@ public class ImmutablesTest {
 	@Test
 	public void serdePerson() {
 		VPack vpack = new VPack.Builder().build();
-		Person original = Person.builder().setName("name").setAge(99).build();
+		Person original = Person.builderFunction().withName("name").withAge(99).buildIt();
 		System.out.println(original);
 		VPackSlice serialized = vpack.serialize(original);
 		System.out.println(serialized);

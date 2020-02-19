@@ -20,16 +20,20 @@
 
 package com.arangodb.velocypack.immutable;
 
+import com.arangodb.velocypack.annotations.VPackPOJOBuilder;
 import org.immutables.value.Value;
 
 /**
  * @author Michele Rastelli
  */
 @Value.Immutable
-@Value.Style(init = "set*")
+@Value.Style(init = "with*",
+			 build = "buildIt")
 public abstract class Person {
 
-	public static ImmutablePerson.Builder builder() {
+	@VPackPOJOBuilder(buildMethodName = "buildIt",
+					  withPrefix = "with")
+	public static ImmutablePerson.Builder builderFunction() {
 		return ImmutablePerson.builder();
 	}
 
