@@ -38,7 +38,7 @@ public class PersonWithBuilder {
 		return new Builder();
 	}
 
-	public PersonWithBuilder(String fullName, Integer age) {
+	private PersonWithBuilder(String fullName, Integer age) {
 		this.fullName = fullName;
 		this.age = age;
 	}
