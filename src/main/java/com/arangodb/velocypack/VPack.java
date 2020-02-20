@@ -23,11 +23,11 @@ package com.arangodb.velocypack;
 import com.arangodb.velocypack.VPackBuilder.BuilderOptions;
 import com.arangodb.velocypack.annotations.Expose;
 import com.arangodb.velocypack.annotations.SerializedName;
-import com.arangodb.velocypack.annotations.VPackDeserialize;
 import com.arangodb.velocypack.annotations.VPackPOJOBuilder;
 import com.arangodb.velocypack.exception.VPackException;
 import com.arangodb.velocypack.exception.VPackParserException;
 import com.arangodb.velocypack.internal.*;
+import com.arangodb.velocypack.internal.VPackBuilderUtils.BuilderInfo;
 import com.arangodb.velocypack.internal.VPackCache.FieldInfo;
 
 import java.lang.annotation.Annotation;
@@ -63,6 +63,7 @@ public class VPack {
     private final VPackDeserializationContext deserializationContext;
     private final boolean serializeNullValues;
     private final String typeKey;
+    private final VPackBuilderUtils builderUtils;
 
     public static class Builder implements VPackSetupContext<Builder> {
         private final Map<Type, VPackSerializer<?>> serializers;
@@ -354,6 +355,7 @@ public class VPack {
         this.keyMapAdapters = keyMapAdapters;
         this.typeKey = typeKey;
 
+        builderUtils = new VPackBuilderUtils();
         cache = new VPackCache(fieldNamingStrategy, annotationFieldFilter, annotationFieldNaming);
         serializationContext = new VPackSerializationContext() {
             @Override
@@ -423,126 +425,6 @@ public class VPack {
         return deserializer;
     }
 
-    // TODO: move to a separate file, together with a cache manager
-    private abstract class BuilderInfo {
-
-        public final VPackPOJOBuilder.Value annotation;
-
-        public BuilderInfo(VPackPOJOBuilder.Value annotation) {
-            this.annotation = annotation;
-        }
-
-        abstract Object createBuilder() throws ReflectiveOperationException;
-
-    }
-
-    // TODO: cache
-    private BuilderInfo getBuilderInfo(Type type, AnnotatedElement referencingElement) {
-
-        BuilderInfo referencingElementInfo = getReferencingElementInfo(referencingElement);
-        if (referencingElementInfo != null)
-            return referencingElementInfo;
-
-        BuilderInfo deserializeClassInfo = getDeserializeClassInfo(type);
-        if (deserializeClassInfo != null)
-            return deserializeClassInfo;
-
-        BuilderInfo builderMethodInfo = getBuilderMethodInfo(type);
-        if (builderMethodInfo != null)
-            return builderMethodInfo;
-
-        BuilderInfo innerBuilderInfo = getInnerBuilderInfo(type);
-        if (innerBuilderInfo != null)
-            return innerBuilderInfo;
-
-        return null;
-    }
-
-    // TODO: cache
-    private BuilderInfo getBuilderMethodInfo(Type type) {
-        if (!(type instanceof Class<?>))
-            return null;
-
-        Class<?> clazz = (Class<?>) type;
-        for (final Method method : clazz.getDeclaredMethods()) {
-            for (final Annotation annotation : method.getDeclaredAnnotations()) {
-                if (annotation instanceof VPackPOJOBuilder) {
-                    return new BuilderInfo(new VPackPOJOBuilder.Value((VPackPOJOBuilder) annotation)) {
-                        @Override
-                        public Object createBuilder() throws ReflectiveOperationException {
-                            return method.invoke(null);
-                        }
-                    };
-                }
-            }
-        }
-
-        return null;
-    }
-
-    // TODO: cache
-    private BuilderInfo getInnerBuilderInfo(Type type) {
-        if (!(type instanceof Class<?>))
-            return null;
-
-        Class<?> clazz = (Class<?>) type;
-        for (final Class<?> innerClass : clazz.getDeclaredClasses()) {
-            for (final Annotation annotation : innerClass.getDeclaredAnnotations()) {
-                if (annotation instanceof VPackPOJOBuilder) {
-                    return new BuilderInfo(new VPackPOJOBuilder.Value((VPackPOJOBuilder) annotation)) {
-                        @Override
-                        public Object createBuilder() throws ReflectiveOperationException {
-                            return innerClass.newInstance();
-                        }
-                    };
-                }
-            }
-        }
-
-        return null;
-    }
-
-    // TODO: cache
-    private BuilderInfo getDeserializeClassInfo(Type type) {
-        if (!(type instanceof Class<?>))
-            return null;
-
-        Class<?> clazz = (Class<?>) type;
-        for (final Annotation annotation : clazz.getDeclaredAnnotations()) {
-            if (annotation instanceof VPackDeserialize) {
-                final VPackDeserialize vPackDeserialize = (VPackDeserialize) annotation;
-                return new BuilderInfo(new VPackPOJOBuilder.Value(vPackDeserialize.builderConfig())) {
-                    @Override
-                    Object createBuilder() throws ReflectiveOperationException {
-                        return vPackDeserialize.builder().newInstance();
-                    }
-                };
-            }
-        }
-
-        return null;
-    }
-
-    // TODO: cache
-    private BuilderInfo getReferencingElementInfo(AnnotatedElement ref) {
-        if (ref == null)
-            return null;
-
-        for (final Annotation annotation : ref.getDeclaredAnnotations()) {
-            if (annotation instanceof VPackDeserialize) {
-                final VPackDeserialize vPackDeserialize = (VPackDeserialize) annotation;
-                return new BuilderInfo(new VPackPOJOBuilder.Value(vPackDeserialize.builderConfig())) {
-                    @Override
-                    Object createBuilder() throws ReflectiveOperationException {
-                        return vPackDeserialize.builder().newInstance();
-                    }
-                };
-            }
-        }
-
-        return null;
-    }
-
     private Method getBuildMethod(Class<?> clazz, String name) throws NoSuchMethodException {
         Method build = clazz.getDeclaredMethod(name);
         if (Modifier.isStatic(build.getModifiers()))
@@ -564,9 +446,8 @@ public class VPack {
             final AnnotatedElement referencingElement) throws ReflectiveOperationException, VPackException {
         final T entity;
 
-        // FIXME: cache by type
         final VPackDeserializer<?> deserializer = getDeserializer(fieldName, type);
-        final BuilderInfo builderInfo = getBuilderInfo(type, referencingElement);
+        final BuilderInfo builderInfo = builderUtils.getBuilderInfo(type, referencingElement);
 
         if (builderInfo != null) {
             Object builder = builderInfo.createBuilder();

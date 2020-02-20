@@ -29,6 +29,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 
 /**
+ * Note: all tests are repeated 3 times to check the behavior when hitting the cache {@link com.arangodb.velocypack.internal.VPackCache}
  * @author Michele Rastelli
  */
 public class ImmutablesTest {
@@ -36,56 +37,65 @@ public class ImmutablesTest {
 	@Test
 	public void serdePerson() {
 		VPack vpack = new VPack.Builder().build();
-		Person original = Person.builderFunction().withName("name").withAge(99).buildIt();
-		System.out.println(original);
-		VPackSlice serialized = vpack.serialize(original);
-		System.out.println(serialized);
-		Person deserialized = vpack.deserialize(serialized, Person.class);
-		System.out.println(deserialized);
-		assertThat(deserialized, is(original));
+		for (int i = 0; i < 3; i++) {
+			Person original = Person.builderFunction().withName("name").withAge(99).buildIt();
+			System.out.println(original);
+			VPackSlice serialized = vpack.serialize(original);
+			System.out.println(serialized);
+			Person deserialized = vpack.deserialize(serialized, Person.class);
+			System.out.println(deserialized);
+			assertThat(deserialized, is(original));
+		}
 	}
 
 	@Test
 	public void serdePersonWithBuilder() {
 		VPack vpack = new VPack.Builder().build();
-		PersonWithInnerBuilder original = new PersonWithInnerBuilder.Builder().setFullName("name").setAge(99)
-				.setFriend(new ImmutablePersonWithoutAnnotations.Builder().withName("friend").withAge(88).buildIt())
-				.build();
-		System.out.println(original);
-		VPackSlice serialized = vpack.serialize(original);
-		System.out.println(serialized);
-		PersonWithInnerBuilder deserialized = vpack.deserialize(serialized, PersonWithInnerBuilder.class);
-		System.out.println(deserialized);
-		assertThat(deserialized.getFullName(), is(original.getFullName()));
-		assertThat(deserialized.getAge(), is(nullValue()));
+		for (int i = 0; i < 3; i++) {
+			PersonWithInnerBuilder original = new PersonWithInnerBuilder.Builder().setFullName("name").setAge(99)
+					.setFriend(new ImmutablePersonWithoutAnnotations.Builder().withName("friend").withAge(88).buildIt())
+					.build();
+			System.out.println(original);
+			VPackSlice serialized = vpack.serialize(original);
+			System.out.println(serialized);
+			PersonWithInnerBuilder deserialized = vpack.deserialize(serialized, PersonWithInnerBuilder.class);
+			System.out.println(deserialized);
+			assertThat(deserialized.getFullName(), is(original.getFullName()));
+			assertThat(deserialized.getAge(), is(nullValue()));
+		}
 	}
 
 	@Test
 	public void serdePersonWithExternalBuilder() {
 		VPack vpack = new VPack.Builder().build();
-		PersonWithExternalBuilder original = new ImmutablePersonWithExternalBuilder.Builder().withName("name")
-				.withAge(99).buildIt();
-		System.out.println(original);
-		VPackSlice serialized = vpack.serialize(original);
-		System.out.println(serialized);
-		PersonWithExternalBuilder deserialized = vpack.deserialize(serialized, PersonWithExternalBuilder.class);
-		System.out.println(deserialized);
-		assertThat(deserialized, is(original));
+		for (int i = 0; i < 3; i++) {
+			PersonWithExternalBuilder original = new ImmutablePersonWithExternalBuilder.Builder().withName("name")
+					.withAge(99).buildIt();
+			System.out.println(original);
+			VPackSlice serialized = vpack.serialize(original);
+			System.out.println(serialized);
+			PersonWithExternalBuilder deserialized = vpack.deserialize(serialized, PersonWithExternalBuilder.class);
+			System.out.println(deserialized);
+			assertThat(deserialized, is(original));
+		}
 	}
 
 	@Test
 	public void personBean() {
 		VPack vpack = new VPack.Builder().build();
-		PersonBean original = new PersonBean();
-		original.setName("name");
-		original.setAge(77);
-		original.setFriend(new ImmutablePersonWithoutAnnotations.Builder().withName("friend").withAge(66).buildIt());
-		System.out.println(original);
-		VPackSlice serialized = vpack.serialize(original);
-		System.out.println(serialized);
-		PersonBean deserialized = vpack.deserialize(serialized, PersonBean.class);
-		System.out.println(deserialized);
-		assertThat(deserialized, is(original));
+		for (int i = 0; i < 3; i++) {
+			PersonBean original = new PersonBean();
+			original.setName("name");
+			original.setAge(77);
+			original.setFriend(
+					new ImmutablePersonWithoutAnnotations.Builder().withName("friend").withAge(66).buildIt());
+			System.out.println(original);
+			VPackSlice serialized = vpack.serialize(original);
+			System.out.println(serialized);
+			PersonBean deserialized = vpack.deserialize(serialized, PersonBean.class);
+			System.out.println(deserialized);
+			assertThat(deserialized, is(original));
+		}
 	}
 
 }
