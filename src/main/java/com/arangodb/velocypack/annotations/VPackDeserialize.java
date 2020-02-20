@@ -28,29 +28,17 @@ import java.lang.annotation.Target;
 /**
  * @author Michele Rastelli
  */
+@Target({
+				ElementType.METHOD, // TODO
+				ElementType.FIELD,  // TODO
+				ElementType.TYPE,
+				ElementType.PARAMETER // TODO
+})
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ ElementType.TYPE, ElementType.METHOD })
-public @interface VPackPOJOBuilder {
+public @interface VPackDeserialize {
 
-	String DEFAULT_BUILD_METHOD_NAME = "build";
-	String DEFAULT_WITH_PREFIX = "";
+	Class<?> builder();
 
-	String buildMethodName() default DEFAULT_BUILD_METHOD_NAME;
-
-	String withPrefix() default DEFAULT_WITH_PREFIX;
-
-	class Value {
-		public final String buildMethodName;
-		public final String withPrefix;
-
-		public Value(VPackPOJOBuilder annotation) {
-			this(annotation.buildMethodName(), annotation.withPrefix());
-		}
-
-		public Value(String buildMethodName, String withPrefix) {
-			this.buildMethodName = buildMethodName;
-			this.withPrefix = withPrefix;
-		}
-	}
+	VPackPOJOBuilder builderConfig() default @VPackPOJOBuilder();
 
 }

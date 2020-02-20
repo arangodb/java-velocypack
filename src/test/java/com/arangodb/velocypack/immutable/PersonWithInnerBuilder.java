@@ -29,13 +29,13 @@ import java.util.Objects;
 /**
  * @author Michele Rastelli
  */
-public class PersonWithBuilder {
+public class PersonWithInnerBuilder {
 
 	@SerializedName("name")
 	private String fullName;
 	private Integer age;
 
-	private PersonWithBuilder(String fullName, Integer age) {
+	private PersonWithInnerBuilder(String fullName, Integer age) {
 		this.fullName = fullName;
 		this.age = age;
 	}
@@ -54,7 +54,7 @@ public class PersonWithBuilder {
 			return true;
 		if (o == null || getClass() != o.getClass())
 			return false;
-		PersonWithBuilder that = (PersonWithBuilder) o;
+		PersonWithInnerBuilder that = (PersonWithInnerBuilder) o;
 		return Objects.equals(fullName, that.fullName) && Objects.equals(age, that.age);
 	}
 
@@ -89,8 +89,8 @@ public class PersonWithBuilder {
 			return this;
 		}
 
-		public PersonWithBuilder build() {
-			return new PersonWithBuilder(fullName, age);
+		public PersonWithInnerBuilder build() {
+			return new PersonWithInnerBuilder(fullName, age);
 		}
 	}
 }

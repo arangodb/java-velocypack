@@ -48,14 +48,27 @@ public class ImmutablesTest {
 	@Test
 	public void serdePersonWithBuilder() {
 		VPack vpack = new VPack.Builder().build();
-		PersonWithBuilder original = new PersonWithBuilder.Builder().setFullName("name").setAge(99).build();
+		PersonWithInnerBuilder original = new PersonWithInnerBuilder.Builder().setFullName("name").setAge(99).build();
 		System.out.println(original);
 		VPackSlice serialized = vpack.serialize(original);
 		System.out.println(serialized);
-		PersonWithBuilder deserialized = vpack.deserialize(serialized, PersonWithBuilder.class);
+		PersonWithInnerBuilder deserialized = vpack.deserialize(serialized, PersonWithInnerBuilder.class);
 		System.out.println(deserialized);
 		assertThat(deserialized.getFullName(), is(original.getFullName()));
 		assertThat(deserialized.getAge(), is(nullValue()));
+	}
+
+	@Test
+	public void serdePersonWithExternalBuilder() {
+		VPack vpack = new VPack.Builder().build();
+		PersonWithExternalBuilder original = new ImmutablePersonWithExternalBuilder.Builder().withName("name")
+				.withAge(99).buildIt();
+		System.out.println(original);
+		VPackSlice serialized = vpack.serialize(original);
+		System.out.println(serialized);
+		PersonWithExternalBuilder deserialized = vpack.deserialize(serialized, PersonWithExternalBuilder.class);
+		System.out.println(deserialized);
+		assertThat(deserialized, is(original));
 	}
 
 }
