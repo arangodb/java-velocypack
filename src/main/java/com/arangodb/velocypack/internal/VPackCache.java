@@ -27,10 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.Type;
+import java.lang.reflect.*;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
@@ -42,17 +39,28 @@ import java.util.concurrent.ConcurrentHashMap;
 public class VPackCache {
 
 	public abstract static class FieldInfo {
+		private final AnnotatedElement referencingElement;
 		private final Type type;
 		private final String fieldName;
 		private final boolean serialize;
 		private final boolean deserialize;
 
-		private FieldInfo(final Type type, final String fieldName, final boolean serialize, final boolean deserialize) {
+		private FieldInfo(
+				final AnnotatedElement referencingElement,
+				final Type type,
+				final String fieldName,
+				final boolean serialize,
+				final boolean deserialize) {
 			super();
+			this.referencingElement = referencingElement;
 			this.type = type;
 			this.fieldName = fieldName;
 			this.serialize = serialize;
 			this.deserialize = deserialize;
+		}
+
+		public AnnotatedElement getReferencingElement() {
+			return referencingElement;
 		}
 
 		public Type getType() {
@@ -214,15 +222,15 @@ public class VPackCache {
 				deserialize = filter.deserialize(annotation);
 				if (found) {
 					LOGGER.warn(String.format(
-						"Found additional annotation %s for field %s. Override previous annotation informations.",
-						entry.getKey().getSimpleName(), field.getName()));
+							"Found additional annotation %s for field %s. Override previous annotation informations.",
+							entry.getKey().getSimpleName(), field.getName()));
 				}
 				found = true;
 			}
 		}
 		final Class<?> clazz = field.getType();
 		final Type type = (clazz == Object.class) ? Object.class : field.getGenericType();
-		return new FieldInfo(type, fieldName, serialize, deserialize) {
+		return new FieldInfo(field, type, fieldName, serialize, deserialize) {
 			@Override
 			public void set(final Object obj, final Object value) throws IllegalAccessException {
 				field.set(obj, value);
@@ -278,7 +286,7 @@ public class VPackCache {
 
 		final Class<?> clazz = setter.getParameterTypes()[0];
 		final Type type = (clazz == Object.class) ? Object.class : setter.getGenericParameterTypes()[0];
-		return new FieldInfo(type, fieldName, serialize, deserialize) {
+		return new FieldInfo(setter, type, fieldName, serialize, deserialize) {
 			@Override
 			public void set(final Object obj, final Object value) throws ReflectiveOperationException {
 				setter.invoke(obj, value);

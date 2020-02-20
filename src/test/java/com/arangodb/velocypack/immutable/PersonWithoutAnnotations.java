@@ -18,27 +18,20 @@
  * Copyright holder is ArangoDB GmbH, Cologne, Germany
  */
 
-package com.arangodb.velocypack.annotations;
+package com.arangodb.velocypack.immutable;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import org.immutables.value.Value;
 
 /**
  * @author Michele Rastelli
  */
-@Target({
-				ElementType.METHOD,
-				ElementType.FIELD,
-				ElementType.TYPE,
-				ElementType.PARAMETER // TODO
-})
-@Retention(RetentionPolicy.RUNTIME)
-public @interface VPackDeserialize {
+@Value.Immutable
+@Value.Style(init = "with*",
+			 build = "buildIt",
+			 builder = "new")
+public abstract class PersonWithoutAnnotations {
 
-	Class<?> builder();
+	abstract String getName();
 
-	VPackPOJOBuilder builderConfig() default @VPackPOJOBuilder();
-
+	abstract int getAge();
 }

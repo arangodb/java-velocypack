@@ -437,7 +437,12 @@ public class VPack {
     }
 
     // TODO: cache
-    private BuilderInfo getBuilderInfo(Type type) {
+    private BuilderInfo getBuilderInfo(Type type, AnnotatedElement referencingElement) {
+
+        BuilderInfo referencingElementInfo = getReferencingElementInfo(referencingElement);
+        if (referencingElementInfo != null)
+            return referencingElementInfo;
+
         BuilderInfo deserializeClassInfo = getDeserializeClassInfo(type);
         if (deserializeClassInfo != null)
             return deserializeClassInfo;
@@ -518,6 +523,26 @@ public class VPack {
         return null;
     }
 
+    // TODO: cache
+    private BuilderInfo getReferencingElementInfo(AnnotatedElement ref) {
+        if (ref == null)
+            return null;
+
+        for (final Annotation annotation : ref.getDeclaredAnnotations()) {
+            if (annotation instanceof VPackDeserialize) {
+                final VPackDeserialize vPackDeserialize = (VPackDeserialize) annotation;
+                return new BuilderInfo(new VPackPOJOBuilder.Value(vPackDeserialize.builderConfig())) {
+                    @Override
+                    Object createBuilder() throws ReflectiveOperationException {
+                        return vPackDeserialize.builder().newInstance();
+                    }
+                };
+            }
+        }
+
+        return null;
+    }
+
     private Method getBuildMethod(Class<?> clazz, String name) throws NoSuchMethodException {
         Method build = clazz.getDeclaredMethod(name);
         if (Modifier.isStatic(build.getModifiers()))
@@ -528,11 +553,20 @@ public class VPack {
     private <T> T deserializeObject(
             final VPackSlice parent, final VPackSlice vpack, final Type type, final String fieldName)
             throws ReflectiveOperationException, VPackException {
+        return deserializeObject(parent, vpack, type, fieldName, null);
+    }
+
+    private <T> T deserializeObject(
+            final VPackSlice parent,
+            final VPackSlice vpack,
+            final Type type,
+            final String fieldName,
+            final AnnotatedElement referencingElement) throws ReflectiveOperationException, VPackException {
         final T entity;
 
         // FIXME: cache by type
         final VPackDeserializer<?> deserializer = getDeserializer(fieldName, type);
-        final BuilderInfo builderInfo = getBuilderInfo(type);
+        final BuilderInfo builderInfo = getBuilderInfo(type, referencingElement);
 
         if (builderInfo != null) {
             Object builder = builderInfo.createBuilder();
@@ -540,8 +574,7 @@ public class VPack {
             Method build = getBuildMethod(builder.getClass(), builderInfo.annotation.buildMethodName);
             entity = (T) build.invoke(builder);
         } else if (deserializer != null) {
-            if (VPackDeserializerParameterizedType.class.isAssignableFrom(deserializer.getClass())
-                    && ParameterizedType.class.isAssignableFrom(type.getClass())) {
+            if (VPackDeserializerParameterizedType.class.isAssignableFrom(deserializer.getClass()) && ParameterizedType.class.isAssignableFrom(type.getClass())) {
                 entity = ((VPackDeserializerParameterizedType<T>) deserializer)
                         .deserialize(parent, vpack, deserializationContext, (ParameterizedType) type);
             } else {
@@ -634,7 +667,8 @@ public class VPack {
             final VPackSlice parent, final VPackSlice vpack, final Object entity, final FieldInfo fieldInfo)
             throws ReflectiveOperationException, VPackException {
         if (!vpack.isNone()) {
-            final Object value = getValue(parent, vpack, fieldInfo.getType(), fieldInfo.getFieldName());
+            final Object value = getValue(parent, vpack, fieldInfo.getType(), fieldInfo.getFieldName(),
+                    fieldInfo.getReferencingElement());
             fieldInfo.set(entity, value);
         }
     }
@@ -642,6 +676,15 @@ public class VPack {
     private <T> Object getValue(
             final VPackSlice parent, final VPackSlice vpack, final Type type, final String fieldName)
             throws ReflectiveOperationException, VPackException {
+        return getValue(parent, vpack, type, fieldName, null);
+    }
+
+    private <T> Object getValue(
+            final VPackSlice parent,
+            final VPackSlice vpack,
+            final Type type,
+            final String fieldName,
+            final AnnotatedElement referencingElement) throws ReflectiveOperationException, VPackException {
         final Object value;
         final Type realType = determineType(vpack, type);
         if (vpack.isNull()) {
@@ -678,12 +721,12 @@ public class VPack {
                     final Type[] parameterizedTypes = pType.getActualTypeArguments();
                     value = deserializeMap(parent, vpack, realType, parameterizedTypes[0], parameterizedTypes[1]);
                 } else {
-                    value = deserializeObject(parent, vpack, realType, fieldName);
+                    value = deserializeObject(parent, vpack, realType, fieldName, referencingElement);
                 }
             } else if (realType instanceof WildcardType) {
                 final WildcardType wType = (WildcardType) realType;
                 final Type rawType = wType.getUpperBounds()[0];
-                value = deserializeObject(parent, vpack, rawType, fieldName);
+                value = deserializeObject(parent, vpack, rawType, fieldName, referencingElement);
             } else if (realType instanceof GenericArrayType) {
                 throw new VPackParserException(new IllegalArgumentException("Generic arrays are not supported!"));
             } else if (Collection.class.isAssignableFrom((Class<?>) realType)) {
@@ -695,7 +738,7 @@ public class VPack {
             } else if (((Class) realType).isEnum()) {
                 value = Enum.valueOf((Class<? extends Enum>) realType, vpack.getAsString());
             } else {
-                value = deserializeObject(parent, vpack, realType, fieldName);
+                value = deserializeObject(parent, vpack, realType, fieldName, referencingElement);
             }
         }
         return value;
