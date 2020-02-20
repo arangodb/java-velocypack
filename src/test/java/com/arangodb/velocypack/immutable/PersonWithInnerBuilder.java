@@ -35,7 +35,6 @@ public class PersonWithInnerBuilder {
 	@SerializedName("name")
 	private String fullName;
 	private Integer age;
-
 	private PersonWithoutAnnotations friend;
 
 	public PersonWithInnerBuilder(

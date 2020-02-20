@@ -73,4 +73,19 @@ public class ImmutablesTest {
 		assertThat(deserialized, is(original));
 	}
 
+	@Test
+	public void personBean() {
+		VPack vpack = new VPack.Builder().build();
+		PersonBean original = new PersonBean();
+		original.setName("name");
+		original.setAge(77);
+		original.setFriend(new ImmutablePersonWithoutAnnotations.Builder().withName("friend").withAge(66).buildIt());
+		System.out.println(original);
+		VPackSlice serialized = vpack.serialize(original);
+		System.out.println(serialized);
+		PersonBean deserialized = vpack.deserialize(serialized, PersonBean.class);
+		System.out.println(deserialized);
+		assertThat(deserialized, is(original));
+	}
+
 }
