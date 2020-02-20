@@ -29,6 +29,7 @@ import com.arangodb.velocypack.exception.VPackParserException;
 import com.arangodb.velocypack.internal.*;
 import com.arangodb.velocypack.internal.VPackBuilderUtils.BuilderInfo;
 import com.arangodb.velocypack.internal.VPackCache.FieldInfo;
+import com.arangodb.velocypack.internal.VPackFactoryMethodUtils.FactoryMethodInfo;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
@@ -64,6 +65,7 @@ public class VPack {
     private final boolean serializeNullValues;
     private final String typeKey;
     private final VPackBuilderUtils builderUtils;
+    private final VPackFactoryMethodUtils factoryMethodUtils;
 
     public static class Builder implements VPackSetupContext<Builder> {
         private final Map<Type, VPackSerializer<?>> serializers;
@@ -356,6 +358,7 @@ public class VPack {
         this.typeKey = typeKey;
 
         builderUtils = new VPackBuilderUtils();
+        factoryMethodUtils = new VPackFactoryMethodUtils();
         cache = new VPackCache(fieldNamingStrategy, annotationFieldFilter, annotationFieldNaming);
         serializationContext = new VPackSerializationContext() {
             @Override
@@ -448,14 +451,18 @@ public class VPack {
 
         final VPackDeserializer<?> deserializer = getDeserializer(fieldName, type);
         final BuilderInfo builderInfo = builderUtils.getBuilderInfo(type, referencingElement);
+        final FactoryMethodInfo factoryMethodInfo = factoryMethodUtils.getFactoryMethodInfo(type);
 
         if (builderInfo != null) {
             Object builder = builderInfo.createBuilder();
             deserializeBuilder(builder, vpack, builderInfo.annotation);
             Method build = getBuildMethod(builder.getClass(), builderInfo.annotation.buildMethodName);
             entity = (T) build.invoke(builder);
+        } else if (factoryMethodInfo != null) {
+            entity = (T) deserializeFactoryMethod(factoryMethodInfo.factoryMethod, vpack);
         } else if (deserializer != null) {
-            if (VPackDeserializerParameterizedType.class.isAssignableFrom(deserializer.getClass()) && ParameterizedType.class.isAssignableFrom(type.getClass())) {
+            if (VPackDeserializerParameterizedType.class.isAssignableFrom(deserializer.getClass())
+                    && ParameterizedType.class.isAssignableFrom(type.getClass())) {
                 entity = ((VPackDeserializerParameterizedType<T>) deserializer)
                         .deserialize(parent, vpack, deserializationContext, (ParameterizedType) type);
             } else {
@@ -529,6 +536,28 @@ public class VPack {
                 deserializeField(vpack, next.getValue(), entity, fieldInfo);
             }
         }
+    }
+
+    private Object deserializeFactoryMethod(final Method factoryMethod, final VPackSlice vpack)
+            throws ReflectiveOperationException, VPackException {
+        LinkedHashMap<String, VPackCache.ParameterInfo> parameters = cache.getParameters(factoryMethod);
+        Map<String, Object> parameterValuesMap = new HashMap<>();
+
+        for (final Iterator<Entry<String, VPackSlice>> iterator = vpack.objectIterator(); iterator.hasNext(); ) {
+            final Entry<String, VPackSlice> next = iterator.next();
+            final VPackCache.ParameterInfo parameterInfo = parameters.get(next.getKey());
+            parameterValuesMap.put(parameterInfo.name,
+                    getValue(vpack, next.getValue(), parameterInfo.type, parameterInfo.name,
+                            parameterInfo.referencingElement));
+        }
+
+        Object[] parameterValues = new Object[parameters.size()];
+        int i = 0;
+        for (String key : parameters.keySet()) {
+            parameterValues[i++] = parameterValuesMap.get(key);
+        }
+
+        return factoryMethod.invoke(null, parameterValues);
     }
 
     private void deserializeBuilder(

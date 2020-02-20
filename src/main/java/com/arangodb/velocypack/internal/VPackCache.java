@@ -134,6 +134,29 @@ public class VPackCache {
 		return fields;
 	}
 
+	// TODO: mv to a separate file
+	public static class ParameterInfo {
+		public final AnnotatedElement referencingElement;
+		public final Type type;
+		public final String name;
+
+		public ParameterInfo(AnnotatedElement referencingElement, Type type, String name) {
+			this.referencingElement = referencingElement;
+			this.type = type;
+			this.name = name;
+		}
+	}
+
+	// TODO: add cache
+	public LinkedHashMap<String, ParameterInfo> getParameters(final Method factoryMethod) {
+		LinkedHashMap<String, ParameterInfo> fields = new LinkedHashMap<>();
+		for (Parameter parameter : factoryMethod.getParameters()) {
+			final ParameterInfo parameterInfo = createParameterInfo(parameter);
+			fields.put(parameterInfo.name, parameterInfo);
+		}
+		return fields;
+	}
+
 	private boolean matchSetter(final Method method, String withSetterPrefix) {
 		// check name
 		if (!method.getName().startsWith(withSetterPrefix))
@@ -203,8 +226,8 @@ public class VPackCache {
 				fieldName = ((VPackAnnotationFieldNaming<Annotation>) entry.getValue()).name(annotation);
 				if (found) {
 					LOGGER.warn(String.format(
-						"Found additional annotation %s for field %s. Override previous annotation informations.",
-						entry.getKey().getSimpleName(), field.getName()));
+							"Found additional annotation %s for field %s. Override previous annotation informations.",
+							entry.getKey().getSimpleName(), field.getName()));
 				}
 				found = true;
 			}
@@ -241,6 +264,21 @@ public class VPackCache {
 				return field.get(obj);
 			}
 		};
+	}
+
+	@SuppressWarnings("unchecked")
+	private ParameterInfo createParameterInfo(final Parameter parameter) {
+		String fieldName = parameter.getName();
+		for (final Entry<Class<? extends Annotation>, VPackAnnotationFieldNaming<? extends Annotation>> entry : annotationFieldNaming
+				.entrySet()) {
+			final Annotation annotation = parameter.getAnnotation(entry.getKey());
+			if (annotation != null) {
+				fieldName = ((VPackAnnotationFieldNaming<Annotation>) entry.getValue()).name(annotation);
+			}
+		}
+		final Class<?> clazz = parameter.getType();
+		final Type type = (clazz == Object.class) ? Object.class : parameter.getParameterizedType();
+		return new ParameterInfo(parameter, type, fieldName);
 	}
 
 	@SuppressWarnings("unchecked")
