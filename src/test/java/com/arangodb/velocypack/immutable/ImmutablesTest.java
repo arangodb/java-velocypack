@@ -98,4 +98,19 @@ public class ImmutablesTest {
 		}
 	}
 
+	@Test
+	public void lombokBuilder() {
+		VPack vpack = new VPack.Builder().build();
+		for (int i = 0; i < 3; i++) {
+			LombokPerson.LombokPersonBuilder b = new LombokPerson.LombokPersonBuilder();
+			LombokPerson original = LombokPerson.builder().age(5).name("lombok").build();
+			System.out.println(original);
+			VPackSlice serialized = vpack.serialize(original);
+			System.out.println(serialized);
+			LombokPerson deserialized = vpack.deserialize(serialized, LombokPerson.class);
+			System.out.println(deserialized);
+			assertThat(deserialized, is(original));
+		}
+	}
+
 }
