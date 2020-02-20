@@ -33,7 +33,7 @@ import org.immutables.value.Value;
 			 builder = "new")
 @VPackDeserialize(builder = ImmutablePersonWithExternalBuilder.Builder.class,
 				  builderConfig = @VPackPOJOBuilder(buildMethodName = "buildIt",
-													withPrefix = "with"))
+													withSetterPrefix = "with"))
 public abstract class PersonWithExternalBuilder {
 
 	abstract String getName();

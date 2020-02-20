@@ -37,19 +37,19 @@ public @interface VPackPOJOBuilder {
 
 	String buildMethodName() default DEFAULT_BUILD_METHOD_NAME;
 
-	String withPrefix() default DEFAULT_WITH_PREFIX;
+	String withSetterPrefix() default DEFAULT_WITH_PREFIX;
 
 	class Value {
 		public final String buildMethodName;
-		public final String withPrefix;
+		public final String withSetterPrefix;
 
 		public Value(VPackPOJOBuilder annotation) {
-			this(annotation.buildMethodName(), annotation.withPrefix());
+			this(annotation.buildMethodName(), annotation.withSetterPrefix());
 		}
 
-		public Value(String buildMethodName, String withPrefix) {
+		public Value(String buildMethodName, String withSetterPrefix) {
 			this.buildMethodName = buildMethodName;
-			this.withPrefix = withPrefix;
+			this.withSetterPrefix = withSetterPrefix;
 		}
 	}
 

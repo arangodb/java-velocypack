@@ -77,7 +77,7 @@ public class PersonWithInnerBuilder {
 		return "PersonWithInnerBuilder{" + "fullName='" + fullName + '\'' + ", age=" + age + ", friend=" + friend + '}';
 	}
 
-	@VPackPOJOBuilder(withPrefix = "set")
+	@VPackPOJOBuilder(withSetterPrefix = "set")
 	public static final class Builder {
 
 		private String fullName;
@@ -101,7 +101,7 @@ public class PersonWithInnerBuilder {
 
 		@VPackDeserialize(builder = ImmutablePersonWithoutAnnotations.Builder.class,
 						  builderConfig = @VPackPOJOBuilder(buildMethodName = "buildIt",
-															withPrefix = "with"))
+															withSetterPrefix = "with"))
 		public final Builder setFriend(PersonWithoutAnnotations friend) {
 			this.friend = friend;
 			return this;

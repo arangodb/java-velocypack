@@ -534,7 +534,7 @@ public class VPack {
     private void deserializeBuilder(
             final Object builder, final VPackSlice vpack, VPackPOJOBuilder.Value annotation)
             throws ReflectiveOperationException, VPackException {
-        final Map<String, FieldInfo> setters = cache.getBuiderSetters(builder.getClass(), annotation.withPrefix);
+        final Map<String, FieldInfo> setters = cache.getBuiderSetters(builder.getClass(), annotation.withSetterPrefix);
         for (final Iterator<Entry<String, VPackSlice>> iterator = vpack.objectIterator(); iterator.hasNext(); ) {
             final Entry<String, VPackSlice> next = iterator.next();
             final FieldInfo fieldInfo = setters.get(next.getKey());

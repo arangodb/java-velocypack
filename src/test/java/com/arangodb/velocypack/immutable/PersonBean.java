@@ -34,7 +34,7 @@ public class PersonBean {
 	private int age;
 	@VPackDeserialize(builder = ImmutablePersonWithoutAnnotations.Builder.class,
 					  builderConfig = @VPackPOJOBuilder(buildMethodName = "buildIt",
-														withPrefix = "with"))
+														withSetterPrefix = "with"))
 	private PersonWithoutAnnotations friend;
 
 	public PersonBean() {

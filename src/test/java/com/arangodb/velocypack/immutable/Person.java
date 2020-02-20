@@ -32,7 +32,7 @@ import org.immutables.value.Value;
 public abstract class Person {
 
 	@VPackPOJOBuilder(buildMethodName = "buildIt",
-					  withPrefix = "with")
+					  withSetterPrefix = "with")
 	public static ImmutablePerson.Builder builderFunction() {
 		return ImmutablePerson.builder();
 	}
