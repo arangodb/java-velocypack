@@ -23,10 +23,7 @@ package com.arangodb.velocypack.internal;
 import com.arangodb.velocypack.annotations.VPackCreator;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Executable;
-import java.lang.reflect.Method;
-import java.lang.reflect.Type;
+import java.lang.reflect.*;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -35,6 +32,18 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class VPackCreatorMethodUtils {
 	private final Map<Type, VPackCreatorMethodInfo> cache;
+
+	public static class ParameterInfo {
+		public final AnnotatedElement referencingElement;
+		public final Type type;
+		public final String name;
+
+		public ParameterInfo(AnnotatedElement referencingElement, Type type, String name) {
+			this.referencingElement = referencingElement;
+			this.type = type;
+			this.name = name;
+		}
+	}
 
 	public interface VPackCreatorMethodInfo {
 		Executable getExecutable();

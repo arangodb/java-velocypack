@@ -29,6 +29,7 @@ import com.arangodb.velocypack.exception.VPackParserException;
 import com.arangodb.velocypack.internal.*;
 import com.arangodb.velocypack.internal.VPackBuilderUtils.BuilderInfo;
 import com.arangodb.velocypack.internal.VPackCache.FieldInfo;
+import com.arangodb.velocypack.internal.VPackCreatorMethodUtils.ParameterInfo;
 import com.arangodb.velocypack.internal.VPackCreatorMethodUtils.VPackCreatorMethodInfo;
 
 import java.lang.annotation.Annotation;
@@ -540,13 +541,12 @@ public class VPack {
 
     private Object deserializeFactoryMethod(final VPackCreatorMethodInfo factoryMethodInfo, final VPackSlice vpack)
             throws ReflectiveOperationException, VPackException {
-        LinkedHashMap<String, VPackCache.ParameterInfo> parameters = cache
-                .getParameters(factoryMethodInfo.getExecutable());
+        LinkedHashMap<String, ParameterInfo> parameters = cache.getParameters(factoryMethodInfo.getExecutable());
         Map<String, Object> parameterValuesMap = new HashMap<>();
 
         for (final Iterator<Entry<String, VPackSlice>> iterator = vpack.objectIterator(); iterator.hasNext(); ) {
             final Entry<String, VPackSlice> next = iterator.next();
-            final VPackCache.ParameterInfo parameterInfo = parameters.get(next.getKey());
+            final ParameterInfo parameterInfo = parameters.get(next.getKey());
             parameterValuesMap.put(parameterInfo.name,
                     getValue(vpack, next.getValue(), parameterInfo.type, parameterInfo.name,
                             parameterInfo.referencingElement));

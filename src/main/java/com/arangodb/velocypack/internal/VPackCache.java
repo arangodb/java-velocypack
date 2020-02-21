@@ -23,6 +23,7 @@ package com.arangodb.velocypack.internal;
 import com.arangodb.velocypack.VPackAnnotationFieldFilter;
 import com.arangodb.velocypack.VPackAnnotationFieldNaming;
 import com.arangodb.velocypack.VPackFieldNamingStrategy;
+import com.arangodb.velocypack.internal.VPackCreatorMethodUtils.ParameterInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -132,19 +133,6 @@ public class VPackCache {
 			cache.put(entityClass, fields);
 		}
 		return fields;
-	}
-
-	// TODO: mv to a separate file
-	public static class ParameterInfo {
-		public final AnnotatedElement referencingElement;
-		public final Type type;
-		public final String name;
-
-		public ParameterInfo(AnnotatedElement referencingElement, Type type, String name) {
-			this.referencingElement = referencingElement;
-			this.type = type;
-			this.name = name;
-		}
 	}
 
 	// TODO: add cache
