@@ -88,17 +88,20 @@ public class VPackCache {
 	private static final Logger LOGGER = LoggerFactory.getLogger(VPackCache.class);
 
 	private final Map<Type, Map<String, FieldInfo>> cache;
+	private final Map<Executable, LinkedHashMap<String, ParameterInfo>> parameterCreatorCache;
 	private final Comparator<Entry<String, FieldInfo>> fieldComparator;
 	private final VPackFieldNamingStrategy fieldNamingStrategy;
 
 	private final Map<Class<? extends Annotation>, VPackAnnotationFieldFilter<? extends Annotation>> annotationFilter;
 	private final Map<Class<? extends Annotation>, VPackAnnotationFieldNaming<? extends Annotation>> annotationFieldNaming;
 
-	public VPackCache(final VPackFieldNamingStrategy fieldNamingStrategy,
-		final Map<Class<? extends Annotation>, VPackAnnotationFieldFilter<? extends Annotation>> annotationFieldFilter,
-		final Map<Class<? extends Annotation>, VPackAnnotationFieldNaming<? extends Annotation>> annotationFieldNaming) {
+	public VPackCache(
+			final VPackFieldNamingStrategy fieldNamingStrategy,
+			final Map<Class<? extends Annotation>, VPackAnnotationFieldFilter<? extends Annotation>> annotationFieldFilter,
+			final Map<Class<? extends Annotation>, VPackAnnotationFieldNaming<? extends Annotation>> annotationFieldNaming) {
 		super();
 		cache = new ConcurrentHashMap<>();
+		parameterCreatorCache = new ConcurrentHashMap<>();
 		fieldComparator = new Comparator<Map.Entry<String, FieldInfo>>() {
 			@Override
 			public int compare(final Entry<String, FieldInfo> o1, final Entry<String, FieldInfo> o2) {
@@ -135,13 +138,19 @@ public class VPackCache {
 		return fields;
 	}
 
-	// TODO: add cache
 	public LinkedHashMap<String, ParameterInfo> getParameters(final Executable factoryMethod) {
+		LinkedHashMap<String, ParameterInfo> fromCache = parameterCreatorCache.get(factoryMethod);
+		if (fromCache != null) {
+			return fromCache;
+		}
+
 		LinkedHashMap<String, ParameterInfo> fields = new LinkedHashMap<>();
 		for (Parameter parameter : factoryMethod.getParameters()) {
 			final ParameterInfo parameterInfo = createParameterInfo(parameter);
 			fields.put(parameterInfo.name, parameterInfo);
 		}
+
+		parameterCreatorCache.put(factoryMethod, fields);
 		return fields;
 	}
 
