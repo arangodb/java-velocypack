@@ -365,6 +365,20 @@ public class Person {
 }
 ```
 
+
+# Kotlin data classes
+
+Deserialization of Kotlin data classes is supported annotating the method with `@VPackCreator` and annotating each of 
+its parameters with `@SerializedName("name")`, eg:
+
+```kotlin
+data class Person @VPackCreator constructor(
+        @SerializedName("name") val name: String,
+        @SerializedName("age") val age: Int
+)
+```
+
+
 # Learn more
 
 - [ArangoDB](https://www.arangodb.com/)

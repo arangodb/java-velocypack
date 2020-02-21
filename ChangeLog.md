@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 - All-Arguments constructor deserialization
 - Static Factory Method deserialization
 - Builder deserialization
+- Support for Kotlin data classes
 
 ## [2.1.1] - 2020-01-20
 
