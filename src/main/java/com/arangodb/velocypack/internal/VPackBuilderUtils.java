@@ -114,7 +114,7 @@ public class VPackBuilderUtils {
 				additionalBuilderInfo = getBuilderInfo(builderClass);
 			}
 			if (additionalBuilderInfo != null) {
-				builderInfo.annotation = additionalBuilderInfo.annotation;
+				builderInfo = additionalBuilderInfo;
 			}
 		}
 

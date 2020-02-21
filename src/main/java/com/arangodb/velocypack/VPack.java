@@ -29,7 +29,7 @@ import com.arangodb.velocypack.exception.VPackParserException;
 import com.arangodb.velocypack.internal.*;
 import com.arangodb.velocypack.internal.VPackBuilderUtils.BuilderInfo;
 import com.arangodb.velocypack.internal.VPackCache.FieldInfo;
-import com.arangodb.velocypack.internal.VPackFactoryMethodUtils.VPackCreatorMethodInfo;
+import com.arangodb.velocypack.internal.VPackCreatorMethodUtils.VPackCreatorMethodInfo;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
@@ -65,7 +65,7 @@ public class VPack {
     private final boolean serializeNullValues;
     private final String typeKey;
     private final VPackBuilderUtils builderUtils;
-    private final VPackFactoryMethodUtils factoryMethodUtils;
+    private final VPackCreatorMethodUtils vPackCreatorMethodUtils;
 
     public static class Builder implements VPackSetupContext<Builder> {
         private final Map<Type, VPackSerializer<?>> serializers;
@@ -358,7 +358,7 @@ public class VPack {
         this.typeKey = typeKey;
 
         builderUtils = new VPackBuilderUtils();
-        factoryMethodUtils = new VPackFactoryMethodUtils();
+        vPackCreatorMethodUtils = new VPackCreatorMethodUtils();
         cache = new VPackCache(fieldNamingStrategy, annotationFieldFilter, annotationFieldNaming);
         serializationContext = new VPackSerializationContext() {
             @Override
@@ -451,9 +451,7 @@ public class VPack {
 
         final VPackDeserializer<?> deserializer = getDeserializer(fieldName, type);
         final BuilderInfo builderInfo = builderUtils.getBuilderInfo(type, referencingElement);
-        final VPackCreatorMethodInfo factoryMethodInfo = factoryMethodUtils.getFactoryMethodInfo(type);
-
-        System.out.println(type.getTypeName());
+        final VPackCreatorMethodInfo factoryMethodInfo = vPackCreatorMethodUtils.getCreatorMethodInfo(type);
 
         if (builderInfo != null) {
             Object builder = builderInfo.createBuilder();

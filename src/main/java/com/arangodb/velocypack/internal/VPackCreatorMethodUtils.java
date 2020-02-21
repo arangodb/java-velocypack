@@ -33,7 +33,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * @author Michele Rastelli
  */
-public class VPackFactoryMethodUtils {
+public class VPackCreatorMethodUtils {
 	private final Map<Type, VPackCreatorMethodInfo> cache;
 
 	public interface VPackCreatorMethodInfo {
@@ -78,11 +78,11 @@ public class VPackFactoryMethodUtils {
 		}
 	}
 
-	public VPackFactoryMethodUtils() {
+	public VPackCreatorMethodUtils() {
 		cache = new ConcurrentHashMap<>();
 	}
 
-	public VPackCreatorMethodInfo getFactoryMethodInfo(Type type) {
+	public VPackCreatorMethodInfo getCreatorMethodInfo(Type type) {
 		if (!(type instanceof Class<?>))
 			return null;
 
