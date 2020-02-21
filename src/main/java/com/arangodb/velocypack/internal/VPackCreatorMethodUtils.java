@@ -94,7 +94,9 @@ public class VPackCreatorMethodUtils {
 		for (final Method method : clazz.getDeclaredMethods()) {
 			for (final Annotation annotation : method.getDeclaredAnnotations()) {
 				if (annotation instanceof VPackCreator) {
-					return new FactoryMethodInfo(method);
+					FactoryMethodInfo info = new FactoryMethodInfo(method);
+					cache.put(type, info);
+					return info;
 				}
 			}
 		}
@@ -102,7 +104,9 @@ public class VPackCreatorMethodUtils {
 		for (final Constructor<?> constructor : clazz.getDeclaredConstructors()) {
 			for (final Annotation annotation : constructor.getDeclaredAnnotations()) {
 				if (annotation instanceof VPackCreator) {
-					return new AllArgsConstructorInfo(constructor);
+					AllArgsConstructorInfo info = new AllArgsConstructorInfo(constructor);
+					cache.put(type, info);
+					return info;
 				}
 			}
 		}
