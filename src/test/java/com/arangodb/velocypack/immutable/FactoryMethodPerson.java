@@ -22,8 +22,6 @@ package com.arangodb.velocypack.immutable;
 
 import com.arangodb.velocypack.annotations.SerializedName;
 import com.arangodb.velocypack.annotations.VPackCreator;
-import com.arangodb.velocypack.annotations.VPackDeserialize;
-import com.arangodb.velocypack.annotations.VPackPOJOBuilder;
 
 import java.util.Objects;
 
@@ -33,10 +31,27 @@ import java.util.Objects;
 public class FactoryMethodPerson {
 
 	private final String name;
-
 	private final int age;
+	private final LombokPerson lombokPerson;
+	private final PersonBean personBean;
+	private final PersonWithAnnotatedExternalBuilder personWithAnnotatedExternalBuilder;
+	@SerializedName("person-with-inner-builder")
+	private final PersonWithInnerBuilder personWithInnerBuilder;
 
-	private final PersonWithoutAnnotations friend;
+	public FactoryMethodPerson(
+			String name,
+			int age,
+			LombokPerson lombokPerson,
+			PersonBean personBean,
+			PersonWithAnnotatedExternalBuilder personWithAnnotatedExternalBuilder,
+			PersonWithInnerBuilder personWithInnerBuilder) {
+		this.name = name;
+		this.age = age;
+		this.lombokPerson = lombokPerson;
+		this.personBean = personBean;
+		this.personWithAnnotatedExternalBuilder = personWithAnnotatedExternalBuilder;
+		this.personWithInnerBuilder = personWithInnerBuilder;
+	}
 
 	@VPackCreator
 	public static FactoryMethodPerson of(
@@ -44,18 +59,18 @@ public class FactoryMethodPerson {
 					String name,
 			@SerializedName("age")
 					int age,
-			@VPackDeserialize(builder = ImmutablePersonWithoutAnnotations.Builder.class,
-							  builderConfig = @VPackPOJOBuilder(buildMethodName = "buildIt",
-																withSetterPrefix = "with"))
-			@SerializedName("friend")
-					PersonWithoutAnnotations friend) {
-		return new FactoryMethodPerson(name, age, friend);
-	}
+			@SerializedName("lombokPerson")
+					LombokPerson lombokPerson,
+			@SerializedName("personBean")
+					PersonBean personBean,
+			@SerializedName("personWithAnnotatedExternalBuilder")
+					PersonWithAnnotatedExternalBuilder personWithAnnotatedExternalBuilder,
+			@SerializedName("person-with-inner-builder")
+					PersonWithInnerBuilder personWithInnerBuilder
 
-	private FactoryMethodPerson(String name, int age, PersonWithoutAnnotations friend) {
-		this.name = name;
-		this.age = age;
-		this.friend = friend;
+	) {
+		return new FactoryMethodPerson(name, age, lombokPerson, personBean, personWithAnnotatedExternalBuilder,
+				personWithInnerBuilder);
 	}
 
 	public String getName() {
@@ -66,8 +81,20 @@ public class FactoryMethodPerson {
 		return age;
 	}
 
-	public PersonWithoutAnnotations getFriend() {
-		return friend;
+	public LombokPerson getLombokPerson() {
+		return lombokPerson;
+	}
+
+	public PersonBean getPersonBean() {
+		return personBean;
+	}
+
+	public PersonWithAnnotatedExternalBuilder getPersonWithAnnotatedExternalBuilder() {
+		return personWithAnnotatedExternalBuilder;
+	}
+
+	public PersonWithInnerBuilder getPersonWithInnerBuilder() {
+		return personWithInnerBuilder;
 	}
 
 	@Override
@@ -77,16 +104,22 @@ public class FactoryMethodPerson {
 		if (o == null || getClass() != o.getClass())
 			return false;
 		FactoryMethodPerson that = (FactoryMethodPerson) o;
-		return age == that.age && Objects.equals(name, that.name) && Objects.equals(friend, that.friend);
+		return age == that.age && Objects.equals(name, that.name) && Objects.equals(lombokPerson, that.lombokPerson)
+				&& Objects.equals(personBean, that.personBean) && Objects
+				.equals(personWithAnnotatedExternalBuilder, that.personWithAnnotatedExternalBuilder) && Objects
+				.equals(personWithInnerBuilder, that.personWithInnerBuilder);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(name, age, friend);
+		return Objects
+				.hash(name, age, lombokPerson, personBean, personWithAnnotatedExternalBuilder, personWithInnerBuilder);
 	}
 
 	@Override
 	public String toString() {
-		return "FactoryMethodPerson{" + "name='" + name + '\'' + ", age=" + age + ", friend=" + friend + '}';
+		return "FactoryMethodPerson{" + "name='" + name + '\'' + ", age=" + age + ", lombokPerson=" + lombokPerson
+				+ ", personBean=" + personBean + ", personWithAnnotatedExternalBuilder="
+				+ personWithAnnotatedExternalBuilder + ", personWithInnerBuilder=" + personWithInnerBuilder + '}';
 	}
 }

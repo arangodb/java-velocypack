@@ -113,11 +113,34 @@ public class ImmutablesTest {
 	}
 
 	@Test
+	public void annotatedExternalBuilder() {
+		VPack vpack = new VPack.Builder().build();
+		for (int i = 0; i < 3; i++) {
+			PersonWithAnnotatedExternalBuilder original = new AnnotatedExternalBuilder()
+					.withName("PersonWithAnnotatedExternalBuilder").withAge(2).buildIt();
+			System.out.println(original);
+			VPackSlice serialized = vpack.serialize(original);
+			System.out.println(serialized);
+			PersonWithAnnotatedExternalBuilder deserialized = vpack
+					.deserialize(serialized, PersonWithAnnotatedExternalBuilder.class);
+			System.out.println(deserialized);
+			assertThat(deserialized, is(original));
+		}
+	}
+
+	@Test
 	public void allArgsConstructor() {
 		VPack vpack = new VPack.Builder().build();
 		for (int i = 0; i < 3; i++) {
-			FactoryMethodPerson original = FactoryMethodPerson.of("name", 99,
-					new ImmutablePersonWithoutAnnotations.Builder().withName("friend").withAge(55).buildIt());
+			PersonBean personBean = new PersonBean();
+			personBean.setName("personBean");
+			personBean.setAge(9);
+			personBean.setFriend(new ImmutablePersonWithoutAnnotations.Builder().withName("bla").withAge(0).buildIt());
+			FactoryMethodPerson original = FactoryMethodPerson
+					.of("name", 99, LombokPerson.builder().name("lombok").age(99).build(), personBean,
+							new AnnotatedExternalBuilder().withName("PersonWithAnnotatedExternalBuilder").withAge(2)
+									.buildIt(),
+							new PersonWithInnerBuilder.Builder().setFullName("innerBuilder").build());
 			System.out.println(original);
 			VPackSlice serialized = vpack.serialize(original);
 			System.out.println(serialized);

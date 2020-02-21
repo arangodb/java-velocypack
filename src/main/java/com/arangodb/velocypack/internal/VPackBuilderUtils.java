@@ -39,9 +39,12 @@ public class VPackBuilderUtils {
 
 	public abstract static class BuilderInfo {
 
-		public final VPackPOJOBuilder.Value annotation;
+		public Class<?> builderClass;
 
-		public BuilderInfo(VPackPOJOBuilder.Value annotation) {
+		public VPackPOJOBuilder.Value annotation;
+
+		public BuilderInfo(Class<?> builderClass, VPackPOJOBuilder.Value annotation) {
+			this.builderClass = builderClass;
 			this.annotation = annotation;
 		}
 
@@ -86,31 +89,41 @@ public class VPackBuilderUtils {
 		if (fromCache != null)
 			return fromCache;
 
-		BuilderInfo referencingElementInfo = getReferencingElementInfo(referencingElement);
-		if (referencingElementInfo != null) {
-			cache.put(key, referencingElementInfo);
-			return referencingElementInfo;
+		BuilderInfo builderInfo;
+
+		builderInfo = getReferencingElementInfo(referencingElement);
+		if (builderInfo == null) {
+			builderInfo = getDeserializeClassInfo(type);
+		}
+		if (builderInfo == null) {
+			builderInfo = getBuilderMethodInfo(type);
+		}
+		if (builderInfo == null) {
+			builderInfo = getInnerBuilderInfo(type);
 		}
 
-		BuilderInfo deserializeClassInfo = getDeserializeClassInfo(type);
-		if (deserializeClassInfo != null) {
-			cache.put(key, deserializeClassInfo);
-			return deserializeClassInfo;
+		if (builderInfo == null) {
+			return null;
 		}
 
-		BuilderInfo builderMethodInfo = getBuilderMethodInfo(type);
-		if (builderMethodInfo != null) {
-			cache.put(key, builderMethodInfo);
-			return builderMethodInfo;
+		// search builder info in class referenced by @VPackDeserialize.builder
+		if (builderInfo.annotation == null) {
+			Class<?> builderClass = builderInfo.builderClass;
+			BuilderInfo additionalBuilderInfo = getBuilderMethodInfo(builderClass);
+			if (additionalBuilderInfo == null) {
+				additionalBuilderInfo = getBuilderInfo(builderClass);
+			}
+			if (additionalBuilderInfo != null) {
+				builderInfo.annotation = additionalBuilderInfo.annotation;
+			}
 		}
 
-		BuilderInfo innerBuilderInfo = getInnerBuilderInfo(type);
-		if (innerBuilderInfo != null) {
-			cache.put(key, innerBuilderInfo);
-			return innerBuilderInfo;
+		if (builderInfo.annotation == null) {
+			builderInfo.annotation = new VPackPOJOBuilder.Value();
 		}
 
-		return null;
+		cache.put(key, builderInfo);
+		return builderInfo;
 	}
 
 	private BuilderInfo getBuilderMethodInfo(Type type) {
@@ -121,7 +134,7 @@ public class VPackBuilderUtils {
 		for (final Method method : clazz.getDeclaredMethods()) {
 			for (final Annotation annotation : method.getDeclaredAnnotations()) {
 				if (annotation instanceof VPackPOJOBuilder) {
-					return new BuilderInfo(new VPackPOJOBuilder.Value((VPackPOJOBuilder) annotation)) {
+					return new BuilderInfo(method.getReturnType(), mapVPackPOJOBuilder((VPackPOJOBuilder) annotation)) {
 						@Override
 						public Object createBuilder() throws ReflectiveOperationException {
 							return method.invoke(null);
@@ -142,13 +155,32 @@ public class VPackBuilderUtils {
 		for (final Class<?> innerClass : clazz.getDeclaredClasses()) {
 			for (final Annotation annotation : innerClass.getDeclaredAnnotations()) {
 				if (annotation instanceof VPackPOJOBuilder) {
-					return new BuilderInfo(new VPackPOJOBuilder.Value((VPackPOJOBuilder) annotation)) {
+					return new BuilderInfo(innerClass, mapVPackPOJOBuilder((VPackPOJOBuilder) annotation)) {
 						@Override
 						public Object createBuilder() throws ReflectiveOperationException {
 							return innerClass.newInstance();
 						}
 					};
 				}
+			}
+		}
+
+		return null;
+	}
+
+	private BuilderInfo getBuilderInfo(Type type) {
+		if (!(type instanceof Class<?>))
+			return null;
+
+		Class<?> clazz = (Class<?>) type;
+		for (final Annotation annotation : clazz.getDeclaredAnnotations()) {
+			if (annotation instanceof VPackPOJOBuilder) {
+				return new BuilderInfo(clazz, mapVPackPOJOBuilder((VPackPOJOBuilder) annotation)) {
+					@Override
+					public Object createBuilder() throws ReflectiveOperationException {
+						return clazz.newInstance();
+					}
+				};
 			}
 		}
 
@@ -163,7 +195,8 @@ public class VPackBuilderUtils {
 		for (final Annotation annotation : clazz.getDeclaredAnnotations()) {
 			if (annotation instanceof VPackDeserialize) {
 				final VPackDeserialize vPackDeserialize = (VPackDeserialize) annotation;
-				return new BuilderInfo(new VPackPOJOBuilder.Value(vPackDeserialize.builderConfig())) {
+				return new BuilderInfo(vPackDeserialize.builder(),
+						mapVPackPOJOBuilder(vPackDeserialize.builderConfig())) {
 					@Override
 					public Object createBuilder() throws ReflectiveOperationException {
 						return vPackDeserialize.builder().newInstance();
@@ -182,7 +215,8 @@ public class VPackBuilderUtils {
 		for (final Annotation annotation : ref.getDeclaredAnnotations()) {
 			if (annotation instanceof VPackDeserialize) {
 				final VPackDeserialize vPackDeserialize = (VPackDeserialize) annotation;
-				return new BuilderInfo(new VPackPOJOBuilder.Value(vPackDeserialize.builderConfig())) {
+				return new BuilderInfo(vPackDeserialize.builder(),
+						mapVPackPOJOBuilder(vPackDeserialize.builderConfig())) {
 					@Override
 					public Object createBuilder() throws ReflectiveOperationException {
 						return vPackDeserialize.builder().newInstance();
@@ -192,5 +226,14 @@ public class VPackBuilderUtils {
 		}
 
 		return null;
+	}
+
+	private VPackPOJOBuilder.Value mapVPackPOJOBuilder(VPackPOJOBuilder annotation) {
+		if (annotation.withSetterPrefix().equals(VPackDeserialize.UNDEFINED_WITH_PREFIX) && annotation.buildMethodName()
+				.equals(VPackDeserialize.UNDEFINED_BUILD_METHOD_NAME)) {
+			return null;
+		}
+
+		return new VPackPOJOBuilder.Value(annotation);
 	}
 }

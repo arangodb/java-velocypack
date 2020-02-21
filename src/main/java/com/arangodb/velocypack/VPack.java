@@ -431,7 +431,7 @@ public class VPack {
     private Method getBuildMethod(Class<?> clazz, String name) throws NoSuchMethodException {
         Method build = clazz.getDeclaredMethod(name);
         if (Modifier.isStatic(build.getModifiers()))
-            throw new NoSuchMethodException("Cannot find build() method!");
+            throw new NoSuchMethodException("Cannot find build method: " + clazz.getName() + "." + name + "() ");
         return build;
     }
 
@@ -452,6 +452,8 @@ public class VPack {
         final VPackDeserializer<?> deserializer = getDeserializer(fieldName, type);
         final BuilderInfo builderInfo = builderUtils.getBuilderInfo(type, referencingElement);
         final FactoryMethodInfo factoryMethodInfo = factoryMethodUtils.getFactoryMethodInfo(type);
+
+        System.out.println(type.getTypeName());
 
         if (builderInfo != null) {
             Object builder = builderInfo.createBuilder();

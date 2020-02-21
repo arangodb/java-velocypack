@@ -28,17 +28,16 @@ import java.lang.annotation.Target;
 /**
  * @author Michele Rastelli
  */
-@Target({
-				ElementType.METHOD,
-				ElementType.FIELD,
-				ElementType.TYPE,
-				ElementType.PARAMETER // TODO
-})
+@Target({ ElementType.METHOD, ElementType.FIELD, ElementType.TYPE, ElementType.PARAMETER })
 @Retention(RetentionPolicy.RUNTIME)
 public @interface VPackDeserialize {
 
+	String UNDEFINED_BUILD_METHOD_NAME = "__UNDEFINED_BUILD_METHOD_NAME__";
+	String UNDEFINED_WITH_PREFIX = "__UNDEFINED_WITH_PREFIX__";
+
 	Class<?> builder();
 
-	VPackPOJOBuilder builderConfig() default @VPackPOJOBuilder();
+	VPackPOJOBuilder builderConfig() default @VPackPOJOBuilder(buildMethodName = UNDEFINED_BUILD_METHOD_NAME,
+															   withSetterPrefix = UNDEFINED_WITH_PREFIX);
 
 }
