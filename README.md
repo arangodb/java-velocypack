@@ -164,7 +164,9 @@ Both `VPack` and `VPackParser` allow registering of modules which can offer cust
 
 ## POJOs
 
-The class `VPack` can serialize/deserialize POJOs. They need at least a constructor without parameter.
+The class `VPack` can serialize/deserialize POJOs. They need at least a constructor without parameter. Also [Builder deserialization](#builder-deserialization),
+[All-Arguments-Constructor deserialization](#all-arguments-constructor-deserialization) and [Static Factory Method deserialization](#static-factory-method-deserialization) are supported. 
+
 
 ```Java
   public class MyObject {
@@ -250,7 +252,8 @@ To ignore fields at serialization/deserialization, use the annotation `Expose`
     }).build();
 ```
 
-# Builders support
+
+# Builder deserialization
 
 Deserialization using builders is supported using the following annotations:
 
@@ -299,6 +302,7 @@ This annotation can target:
 - `setter`: allows specifying the builder for the setter argument
 - `field`: allows specifying the builder for the field
 - `class`: allows specifying the builder for the class
+- `parameter`: allows specifying the builder for a constructor (or factory method) parameter
 
 Example:
 ```java
@@ -310,6 +314,56 @@ public class MyClass {
 } 
 ```
 
+
+# All-Arguments-Constructor deserialization
+
+Deserialization using All-Arguments-Constructor is supported annotating the constructor with `@VPackCreator` and 
+annotating each of its parameters with `@SerializedName("name")`, eg:
+
+```java
+public class Person {
+	private final String name;
+	private final int age;
+
+	@VPackCreator
+	public Person(
+			@SerializedName("name") String name,
+			@SerializedName("age") int age
+    ) {
+        this.name = name;
+        this.age = age;
+    }
+    // ...
+}
+```
+
+
+# Static Factory Method deserialization
+
+Deserialization using Static Factory Method is supported annotating the method with `@VPackCreator` and 
+annotating each of its parameters with `@SerializedName("name")`, eg:
+
+```java
+public class Person {
+	private final String name;
+	private final int age;
+
+	private Person(String name, int age) {
+        this.name = name;
+        this.age = age;
+    }
+
+	@VPackCreator
+	public static Person of(
+			@SerializedName("name") String name,
+			@SerializedName("age") int age
+    ) {
+        return new Person(name, age);
+    }
+
+    // ...
+}
+```
 
 # Learn more
 
