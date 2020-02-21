@@ -23,6 +23,8 @@ package com.arangodb.velocypack.internal;
 import com.arangodb.velocypack.annotations.VPackCreator;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Executable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.Map;
@@ -32,13 +34,47 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author Michele Rastelli
  */
 public class VPackFactoryMethodUtils {
-	private final Map<Type, FactoryMethodInfo> cache;
+	private final Map<Type, VPackCreatorMethodInfo> cache;
 
-	public class FactoryMethodInfo {
-		public final Method factoryMethod;
+	public interface VPackCreatorMethodInfo {
+		Executable getExecutable();
+
+		Object create(Object... args) throws ReflectiveOperationException;
+	}
+
+	private class FactoryMethodInfo implements VPackCreatorMethodInfo {
+		private final Method factoryMethod;
 
 		public FactoryMethodInfo(final Method factoryMethod) {
 			this.factoryMethod = factoryMethod;
+		}
+
+		@Override
+		public Executable getExecutable() {
+			return factoryMethod;
+		}
+
+		@Override
+		public Object create(Object... args) throws ReflectiveOperationException {
+			return factoryMethod.invoke(null, args);
+		}
+	}
+
+	private class AllArgsConstructorInfo implements VPackCreatorMethodInfo {
+		private final Constructor constructor;
+
+		public AllArgsConstructorInfo(final Constructor constructor) {
+			this.constructor = constructor;
+		}
+
+		@Override
+		public Executable getExecutable() {
+			return constructor;
+		}
+
+		@Override
+		public Object create(Object... args) throws ReflectiveOperationException {
+			return constructor.newInstance(args);
 		}
 	}
 
@@ -46,11 +82,11 @@ public class VPackFactoryMethodUtils {
 		cache = new ConcurrentHashMap<>();
 	}
 
-	public FactoryMethodInfo getFactoryMethodInfo(Type type) {
+	public VPackCreatorMethodInfo getFactoryMethodInfo(Type type) {
 		if (!(type instanceof Class<?>))
 			return null;
 
-		FactoryMethodInfo fromCache = cache.get(type);
+		VPackCreatorMethodInfo fromCache = cache.get(type);
 		if (fromCache != null)
 			return fromCache;
 
@@ -59,6 +95,14 @@ public class VPackFactoryMethodUtils {
 			for (final Annotation annotation : method.getDeclaredAnnotations()) {
 				if (annotation instanceof VPackCreator) {
 					return new FactoryMethodInfo(method);
+				}
+			}
+		}
+
+		for (final Constructor<?> constructor : clazz.getDeclaredConstructors()) {
+			for (final Annotation annotation : constructor.getDeclaredAnnotations()) {
+				if (annotation instanceof VPackCreator) {
+					return new AllArgsConstructorInfo(constructor);
 				}
 			}
 		}

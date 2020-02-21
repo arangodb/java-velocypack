@@ -148,7 +148,7 @@ public class VPackCache {
 	}
 
 	// TODO: add cache
-	public LinkedHashMap<String, ParameterInfo> getParameters(final Method factoryMethod) {
+	public LinkedHashMap<String, ParameterInfo> getParameters(final Executable factoryMethod) {
 		LinkedHashMap<String, ParameterInfo> fields = new LinkedHashMap<>();
 		for (Parameter parameter : factoryMethod.getParameters()) {
 			final ParameterInfo parameterInfo = createParameterInfo(parameter);

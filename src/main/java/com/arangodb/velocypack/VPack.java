@@ -29,7 +29,7 @@ import com.arangodb.velocypack.exception.VPackParserException;
 import com.arangodb.velocypack.internal.*;
 import com.arangodb.velocypack.internal.VPackBuilderUtils.BuilderInfo;
 import com.arangodb.velocypack.internal.VPackCache.FieldInfo;
-import com.arangodb.velocypack.internal.VPackFactoryMethodUtils.FactoryMethodInfo;
+import com.arangodb.velocypack.internal.VPackFactoryMethodUtils.VPackCreatorMethodInfo;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
@@ -451,7 +451,7 @@ public class VPack {
 
         final VPackDeserializer<?> deserializer = getDeserializer(fieldName, type);
         final BuilderInfo builderInfo = builderUtils.getBuilderInfo(type, referencingElement);
-        final FactoryMethodInfo factoryMethodInfo = factoryMethodUtils.getFactoryMethodInfo(type);
+        final VPackCreatorMethodInfo factoryMethodInfo = factoryMethodUtils.getFactoryMethodInfo(type);
 
         System.out.println(type.getTypeName());
 
@@ -461,7 +461,7 @@ public class VPack {
             Method build = getBuildMethod(builder.getClass(), builderInfo.annotation.buildMethodName);
             entity = (T) build.invoke(builder);
         } else if (factoryMethodInfo != null) {
-            entity = (T) deserializeFactoryMethod(factoryMethodInfo.factoryMethod, vpack);
+            entity = (T) deserializeFactoryMethod(factoryMethodInfo, vpack);
         } else if (deserializer != null) {
             if (VPackDeserializerParameterizedType.class.isAssignableFrom(deserializer.getClass())
                     && ParameterizedType.class.isAssignableFrom(type.getClass())) {
@@ -540,9 +540,10 @@ public class VPack {
         }
     }
 
-    private Object deserializeFactoryMethod(final Method factoryMethod, final VPackSlice vpack)
+    private Object deserializeFactoryMethod(final VPackCreatorMethodInfo factoryMethodInfo, final VPackSlice vpack)
             throws ReflectiveOperationException, VPackException {
-        LinkedHashMap<String, VPackCache.ParameterInfo> parameters = cache.getParameters(factoryMethod);
+        LinkedHashMap<String, VPackCache.ParameterInfo> parameters = cache
+                .getParameters(factoryMethodInfo.getExecutable());
         Map<String, Object> parameterValuesMap = new HashMap<>();
 
         for (final Iterator<Entry<String, VPackSlice>> iterator = vpack.objectIterator(); iterator.hasNext(); ) {
@@ -559,7 +560,7 @@ public class VPack {
             parameterValues[i++] = parameterValuesMap.get(key);
         }
 
-        return factoryMethod.invoke(null, parameterValues);
+        return factoryMethodInfo.create(parameterValues);
     }
 
     private void deserializeBuilder(
