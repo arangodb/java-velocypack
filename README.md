@@ -368,7 +368,7 @@ public class Person {
 
 # Kotlin data classes
 
-Deserialization of Kotlin data classes is supported annotating the method with `@VPackCreator` and annotating each of 
+Deserialization of Kotlin data classes is supported annotating the constructor with `@VPackCreator` and annotating each of 
 its parameters with `@SerializedName("name")`, eg:
 
 ```kotlin
@@ -376,6 +376,19 @@ data class Person @VPackCreator constructor(
         @SerializedName("name") val name: String,
         @SerializedName("age") val age: Int
 )
+```
+
+
+# Scala case classes
+
+Deserialization of Scala case classes is supported annotating the constructor with `@VPackCreator` and annotating each of 
+its parameters with `@SerializedName("name")`, eg:
+
+```scala
+case class CasePerson @VPackCreator()(
+                                       @SerializedName("name") val name: String,
+                                       @SerializedName("age") val age: Int
+                                     )
 ```
 
 
