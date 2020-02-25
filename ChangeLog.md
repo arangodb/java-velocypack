@@ -6,10 +6,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 
 ## [Unreleased]
 
+- raised the minimum JVM source and target version to 8
 - All-Arguments constructor deserialization
 - Static Factory Method deserialization
+- Support for Kotlin data classes and Scala case classes
 - Builder deserialization
-- Support for Kotlin data classes
 
 ## [2.1.1] - 2020-01-20
 
