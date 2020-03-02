@@ -72,6 +72,13 @@ public class VPackSlice implements Serializable {
 		return vpack;
 	}
 
+	/**
+	 * @return VPackSlice buffer without trailing zeros
+	 */
+	public byte[] toByteArray() {
+		return Arrays.copyOf(vpack, getByteSize());
+	}
+
 	public int getStart() {
 		return start;
 	}
