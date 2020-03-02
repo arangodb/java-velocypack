@@ -43,6 +43,10 @@ public @interface VPackPOJOBuilder {
 		public final String buildMethodName;
 		public final String withSetterPrefix;
 
+		public Value() {
+			this(DEFAULT_BUILD_METHOD_NAME, DEFAULT_WITH_PREFIX);
+		}
+
 		public Value(VPackPOJOBuilder annotation) {
 			this(annotation.buildMethodName(), annotation.withSetterPrefix());
 		}

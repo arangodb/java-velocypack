@@ -23,6 +23,7 @@ package com.arangodb.velocypack.internal;
 import com.arangodb.velocypack.VPackAnnotationFieldFilter;
 import com.arangodb.velocypack.VPackAnnotationFieldNaming;
 import com.arangodb.velocypack.VPackFieldNamingStrategy;
+import com.arangodb.velocypack.internal.VPackCreatorMethodUtils.ParameterInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -87,17 +88,20 @@ public class VPackCache {
 	private static final Logger LOGGER = LoggerFactory.getLogger(VPackCache.class);
 
 	private final Map<Type, Map<String, FieldInfo>> cache;
+	private final Map<Executable, LinkedHashMap<String, ParameterInfo>> parameterCreatorCache;
 	private final Comparator<Entry<String, FieldInfo>> fieldComparator;
 	private final VPackFieldNamingStrategy fieldNamingStrategy;
 
 	private final Map<Class<? extends Annotation>, VPackAnnotationFieldFilter<? extends Annotation>> annotationFilter;
 	private final Map<Class<? extends Annotation>, VPackAnnotationFieldNaming<? extends Annotation>> annotationFieldNaming;
 
-	public VPackCache(final VPackFieldNamingStrategy fieldNamingStrategy,
-		final Map<Class<? extends Annotation>, VPackAnnotationFieldFilter<? extends Annotation>> annotationFieldFilter,
-		final Map<Class<? extends Annotation>, VPackAnnotationFieldNaming<? extends Annotation>> annotationFieldNaming) {
+	public VPackCache(
+			final VPackFieldNamingStrategy fieldNamingStrategy,
+			final Map<Class<? extends Annotation>, VPackAnnotationFieldFilter<? extends Annotation>> annotationFieldFilter,
+			final Map<Class<? extends Annotation>, VPackAnnotationFieldNaming<? extends Annotation>> annotationFieldNaming) {
 		super();
 		cache = new ConcurrentHashMap<>();
+		parameterCreatorCache = new ConcurrentHashMap<>();
 		fieldComparator = new Comparator<Map.Entry<String, FieldInfo>>() {
 			@Override
 			public int compare(final Entry<String, FieldInfo> o1, final Entry<String, FieldInfo> o2) {
@@ -131,6 +135,22 @@ public class VPackCache {
 			fields = sort(fields.entrySet());
 			cache.put(entityClass, fields);
 		}
+		return fields;
+	}
+
+	public LinkedHashMap<String, ParameterInfo> getParameters(final Executable factoryMethod) {
+		LinkedHashMap<String, ParameterInfo> fromCache = parameterCreatorCache.get(factoryMethod);
+		if (fromCache != null) {
+			return fromCache;
+		}
+
+		LinkedHashMap<String, ParameterInfo> fields = new LinkedHashMap<>();
+		for (Parameter parameter : factoryMethod.getParameters()) {
+			final ParameterInfo parameterInfo = createParameterInfo(parameter);
+			fields.put(parameterInfo.name, parameterInfo);
+		}
+
+		parameterCreatorCache.put(factoryMethod, fields);
 		return fields;
 	}
 
@@ -203,8 +223,8 @@ public class VPackCache {
 				fieldName = ((VPackAnnotationFieldNaming<Annotation>) entry.getValue()).name(annotation);
 				if (found) {
 					LOGGER.warn(String.format(
-						"Found additional annotation %s for field %s. Override previous annotation informations.",
-						entry.getKey().getSimpleName(), field.getName()));
+							"Found additional annotation %s for field %s. Override previous annotation informations.",
+							entry.getKey().getSimpleName(), field.getName()));
 				}
 				found = true;
 			}
@@ -241,6 +261,21 @@ public class VPackCache {
 				return field.get(obj);
 			}
 		};
+	}
+
+	@SuppressWarnings("unchecked")
+	private ParameterInfo createParameterInfo(final Parameter parameter) {
+		String fieldName = parameter.getName();
+		for (final Entry<Class<? extends Annotation>, VPackAnnotationFieldNaming<? extends Annotation>> entry : annotationFieldNaming
+				.entrySet()) {
+			final Annotation annotation = parameter.getAnnotation(entry.getKey());
+			if (annotation != null) {
+				fieldName = ((VPackAnnotationFieldNaming<Annotation>) entry.getValue()).name(annotation);
+			}
+		}
+		final Class<?> clazz = parameter.getType();
+		final Type type = (clazz == Object.class) ? Object.class : parameter.getParameterizedType();
+		return new ParameterInfo(parameter, type, fieldName);
 	}
 
 	@SuppressWarnings("unchecked")
