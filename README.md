@@ -250,6 +250,67 @@ To ignore fields at serialization/deserialization, use the annotation `Expose`
     }).build();
 ```
 
+# Builders support
+
+Deserialization using builders is supported using the following annotations:
+
+## @VPackPOJOBuilder
+
+It allows specifying the builder setters and build method. It has the following fields:
+
+- `buildMethodName: String`: the build method to call on the builder object after having set all the attributes
+- `withSetterPrefix: String`: the prefix of the builder setters
+
+This annotation can target:
+- the builder class having a public no-arg constructor, eg:
+```java
+@VPackPOJOBuilder(buildMethodName = "build", withSetterPrefix = "set")
+public class Builder {
+    public Builder() {
+        // ...
+    }
+
+    public MyClass build() {
+        // ...
+    }
+
+    // ...
+}
+```
+- a public static factory method which returns the builder, eg:
+```java
+public class MyClass {
+    @VPackPOJOBuilder(buildMethodName = "build", withSetterPrefix = "with")
+    public static Builder<MyClass> builder() {
+        //...
+     }
+    // ...
+}
+```
+
+## @VPackDeserialize
+
+It allows to specify the builder class that will be used during the deserialization. It has the following fields:
+- `builder: Class<?>`: builder class to use
+- `builderConfig: VPackPOJOBuilder`: it allows specifying the builder setters and build method, useful in case the 
+builder code is auto generated and you cannot add `@VPackPOJOBuilder` to it.
+
+This annotation can target:
+- `setter`: allows specifying the builder for the setter argument
+- `field`: allows specifying the builder for the field
+- `class`: allows specifying the builder for the class
+
+Example:
+```java
+@VPackDeserialize(builder = MyClassBuilder.class,
+				  builderConfig = @VPackPOJOBuilder(buildMethodName = "build",
+													withSetterPrefix = "with"))
+public class MyClass {
+    // ...
+} 
+```
+
+
 # Learn more
 
 - [ArangoDB](https://www.arangodb.com/)
