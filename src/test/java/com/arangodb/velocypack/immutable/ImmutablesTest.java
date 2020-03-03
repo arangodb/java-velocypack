@@ -24,6 +24,8 @@ import com.arangodb.velocypack.VPack;
 import com.arangodb.velocypack.VPackSlice;
 import org.junit.Test;
 
+import java.util.Arrays;
+
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
@@ -38,7 +40,11 @@ public class ImmutablesTest {
 	public void serdePerson() {
 		VPack vpack = new VPack.Builder().build();
 		for (int i = 0; i < 3; i++) {
-			Person original = Person.builderFunction().withName("name").withAge(99).buildIt();
+			Person original = Person.builderFunction()
+					.withName("name")
+					.withAge(99)
+					.withSecondNames(Arrays.asList("aaa", "bbb", "ccc"))
+					.buildIt();
 			System.out.println(original);
 			VPackSlice serialized = vpack.serialize(original);
 			System.out.println(serialized);

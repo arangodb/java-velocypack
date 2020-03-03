@@ -35,6 +35,12 @@ public class VPackInstanceCreators {
 		super();
 	}
 
+	public static final VPackInstanceCreator<Iterable> ITERABLE = new VPackInstanceCreator<Iterable>() {
+		@Override
+		public Iterable createInstance() {
+			return new ArrayList();
+		}
+	};
 	public static final VPackInstanceCreator<Collection> COLLECTION = new VPackInstanceCreator<Collection>() {
 		@Override
 		public Collection createInstance() {

@@ -100,6 +100,7 @@ public class VPack {
             keyMapAdapters = new HashMap<>();
             typeKey = null;
 
+            instanceCreators.put(Iterable.class, VPackInstanceCreators.ITERABLE);
             instanceCreators.put(Collection.class, VPackInstanceCreators.COLLECTION);
             instanceCreators.put(List.class, VPackInstanceCreators.LIST);
             instanceCreators.put(Set.class, VPackInstanceCreators.SET);
@@ -499,7 +500,7 @@ public class VPack {
         } else if (vpack.isBoolean()) {
             type = Boolean.class;
         } else if (vpack.isArray()) {
-            type = Collection.class;
+            type = Iterable.class;
         } else if (vpack.isDate()) {
             type = Date.class;
         } else if (vpack.isDouble()) {
@@ -626,8 +627,8 @@ public class VPack {
             } else if (realType instanceof ParameterizedType) {
                 final ParameterizedType pType = (ParameterizedType) realType;
                 final Type rawType = pType.getRawType();
-                if (Collection.class.isAssignableFrom((Class<?>) rawType)) {
-                    value = deserializeCollection(parent, vpack, realType, pType.getActualTypeArguments()[0]);
+                if (Iterable.class.isAssignableFrom((Class<?>) rawType)) {
+                    value = deserializeIterable(parent, vpack, realType, pType.getActualTypeArguments()[0]);
                 } else if (Map.class.isAssignableFrom((Class<?>) rawType)) {
                     final Type[] parameterizedTypes = pType.getActualTypeArguments();
                     value = deserializeMap(parent, vpack, realType, parameterizedTypes[0], parameterizedTypes[1]);
@@ -640,8 +641,8 @@ public class VPack {
                 value = deserializeObject(parent, vpack, rawType, fieldName, referencingElement);
             } else if (realType instanceof GenericArrayType) {
                 throw new VPackParserException(new IllegalArgumentException("Generic arrays are not supported!"));
-            } else if (Collection.class.isAssignableFrom((Class<?>) realType)) {
-                value = deserializeCollection(parent, vpack, realType, Object.class);
+            } else if (Iterable.class.isAssignableFrom((Class<?>) realType)) {
+                value = deserializeIterable(parent, vpack, realType, Object.class);
             } else if (Map.class.isAssignableFrom((Class<?>) realType)) {
                 value = deserializeMap(parent, vpack, realType, String.class, Object.class);
             } else if (((Class) realType).isArray()) {
@@ -666,7 +667,7 @@ public class VPack {
         return value;
     }
 
-    private <T, C> Object deserializeCollection(
+    private <T, C> Object deserializeIterable(
             final VPackSlice parent, final VPackSlice vpack, final Type type, final Type contentType)
             throws ReflectiveOperationException, VPackException {
         final Collection value = createInstance(type);

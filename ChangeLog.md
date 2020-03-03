@@ -6,6 +6,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 
 ## [Unreleased]
 
+- deserialization support for java.lang.Iterable
 - raised the minimum JVM source and target version to 8
 - All-Arguments constructor deserialization
 - Static Factory Method deserialization

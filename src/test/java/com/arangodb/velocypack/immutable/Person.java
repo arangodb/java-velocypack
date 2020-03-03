@@ -23,6 +23,8 @@ package com.arangodb.velocypack.immutable;
 import com.arangodb.velocypack.annotations.VPackPOJOBuilder;
 import org.immutables.value.Value;
 
+import java.util.Set;
+
 /**
  * @author Michele Rastelli
  */
@@ -40,4 +42,7 @@ public abstract class Person {
 	abstract String getName();
 
 	abstract int getAge();
+
+	abstract Set<String> getSecondNames();
+
 }
