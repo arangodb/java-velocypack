@@ -25,6 +25,7 @@ import com.arangodb.velocypack.VPackSlice;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.Collections;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -44,6 +45,10 @@ public class ImmutablesTest {
 					.withName("name")
 					.withAge(99)
 					.withSecondNames(Arrays.asList("aaa", "bbb", "ccc"))
+					.withAddresses(Arrays.asList(
+							Collections.singletonMap("home", "Avocado Street 14"),
+							Collections.singletonMap("work", "Java Street 14")
+					))
 					.buildIt();
 			System.out.println(original);
 			VPackSlice serialized = vpack.serialize(original);

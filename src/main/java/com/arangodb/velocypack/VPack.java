@@ -638,7 +638,13 @@ public class VPack {
             } else if (realType instanceof WildcardType) {
                 final WildcardType wType = (WildcardType) realType;
                 final Type rawType = wType.getUpperBounds()[0];
-                value = deserializeObject(parent, vpack, rawType, fieldName, referencingElement);
+                value = getValue(
+                        parent,
+                        vpack,
+                        rawType,
+                        fieldName,
+                        referencingElement
+                );
             } else if (realType instanceof GenericArrayType) {
                 throw new VPackParserException(new IllegalArgumentException("Generic arrays are not supported!"));
             } else if (Iterable.class.isAssignableFrom((Class<?>) realType)) {
@@ -910,6 +916,10 @@ public class VPack {
                 } else {
                     serializeObject(name, value, builder, additionalFields);
                 }
+            } else if (type instanceof WildcardType) {
+                final WildcardType wType = (WildcardType) type;
+                final Type rawType = wType.getUpperBounds()[0];
+                addValue(name, rawType, value, builder, fieldInfo, additionalFields);
             } else if (type instanceof Class && Iterable.class.isAssignableFrom((Class<?>) type)) {
                 serializeIterable(name, value, builder, null);
             } else if (type instanceof Class && Map.class.isAssignableFrom((Class<?>) type)) {

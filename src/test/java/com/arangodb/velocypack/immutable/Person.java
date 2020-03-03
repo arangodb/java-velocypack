@@ -23,6 +23,8 @@ package com.arangodb.velocypack.immutable;
 import com.arangodb.velocypack.annotations.VPackPOJOBuilder;
 import org.immutables.value.Value;
 
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -44,5 +46,7 @@ public abstract class Person {
 	abstract int getAge();
 
 	abstract Set<String> getSecondNames();
+
+	abstract List<Map<String, String>> getAddresses();
 
 }
