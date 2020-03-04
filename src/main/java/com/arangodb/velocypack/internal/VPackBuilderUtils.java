@@ -24,9 +24,7 @@ import com.arangodb.velocypack.annotations.VPackDeserialize;
 import com.arangodb.velocypack.annotations.VPackPOJOBuilder;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.AnnotatedElement;
-import java.lang.reflect.Method;
-import java.lang.reflect.Type;
+import java.lang.reflect.*;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -84,7 +82,18 @@ public class VPackBuilderUtils {
 	}
 
 	public BuilderInfo getBuilderInfo(Type type, AnnotatedElement referencingElement) {
-		final CacheKey key = new CacheKey(type, referencingElement);
+		if (type instanceof ParameterizedType)
+			return getBuilderInfo(((ParameterizedType) type).getRawType(), referencingElement);
+
+		if (type instanceof WildcardType)
+			return getBuilderInfo(((WildcardType) type).getUpperBounds()[0], referencingElement);
+
+		if (!(type instanceof Class<?>))
+			return null;
+
+		final Class<?> clazz = (Class<?>) type;
+
+		final CacheKey key = new CacheKey(clazz, referencingElement);
 		BuilderInfo fromCache = cache.get(key);
 		if (fromCache != null)
 			return fromCache;
@@ -93,13 +102,13 @@ public class VPackBuilderUtils {
 
 		builderInfo = getReferencingElementInfo(referencingElement);
 		if (builderInfo == null) {
-			builderInfo = getDeserializeClassInfo(type);
+			builderInfo = getDeserializeClassInfo(clazz);
 		}
 		if (builderInfo == null) {
-			builderInfo = getBuilderMethodInfo(type);
+			builderInfo = getBuilderMethodInfo(clazz);
 		}
 		if (builderInfo == null) {
-			builderInfo = getInnerBuilderInfo(type);
+			builderInfo = getInnerBuilderInfo(clazz);
 		}
 
 		if (builderInfo == null) {
@@ -126,11 +135,7 @@ public class VPackBuilderUtils {
 		return builderInfo;
 	}
 
-	private BuilderInfo getBuilderMethodInfo(Type type) {
-		if (!(type instanceof Class<?>))
-			return null;
-
-		Class<?> clazz = (Class<?>) type;
+	private BuilderInfo getBuilderMethodInfo(final Class<?> clazz) {
 		for (final Method method : clazz.getDeclaredMethods()) {
 			for (final Annotation annotation : method.getDeclaredAnnotations()) {
 				if (annotation instanceof VPackPOJOBuilder) {
@@ -147,11 +152,7 @@ public class VPackBuilderUtils {
 		return null;
 	}
 
-	private BuilderInfo getInnerBuilderInfo(Type type) {
-		if (!(type instanceof Class<?>))
-			return null;
-
-		Class<?> clazz = (Class<?>) type;
+	private BuilderInfo getInnerBuilderInfo(final Class<?> clazz) {
 		for (final Class<?> innerClass : clazz.getDeclaredClasses()) {
 			for (final Annotation annotation : innerClass.getDeclaredAnnotations()) {
 				if (annotation instanceof VPackPOJOBuilder) {
@@ -168,11 +169,7 @@ public class VPackBuilderUtils {
 		return null;
 	}
 
-	private BuilderInfo getBuilderInfo(Type type) {
-		if (!(type instanceof Class<?>))
-			return null;
-
-		Class<?> clazz = (Class<?>) type;
+	private BuilderInfo getBuilderInfo(final Class<?> clazz) {
 		for (final Annotation annotation : clazz.getDeclaredAnnotations()) {
 			if (annotation instanceof VPackPOJOBuilder) {
 				return new BuilderInfo(clazz, mapVPackPOJOBuilder((VPackPOJOBuilder) annotation)) {
@@ -187,11 +184,7 @@ public class VPackBuilderUtils {
 		return null;
 	}
 
-	private BuilderInfo getDeserializeClassInfo(Type type) {
-		if (!(type instanceof Class<?>))
-			return null;
-
-		Class<?> clazz = (Class<?>) type;
+	private BuilderInfo getDeserializeClassInfo(final Class<?> clazz) {
 		for (final Annotation annotation : clazz.getDeclaredAnnotations()) {
 			if (annotation instanceof VPackDeserialize) {
 				final VPackDeserialize vPackDeserialize = (VPackDeserialize) annotation;
