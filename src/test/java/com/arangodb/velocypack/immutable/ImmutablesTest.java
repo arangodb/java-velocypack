@@ -182,4 +182,33 @@ public class ImmutablesTest {
 		}
 	}
 
+	@Test
+	public void covariantCollection() {
+		VPack vpack = new VPack.Builder().build();
+		for (int i = 0; i < 3; i++) {
+			PersonWithFriends original = PersonWithFriends.builder()
+					.name("name")
+					.age(987)
+					.friends(Collections.singletonList(
+							Person.builderFunction()
+									.withName("name")
+									.withAge(99)
+									.withSecondNames(Arrays.asList("aaa", "bbb", "ccc"))
+									.withAddresses(Arrays.asList(
+											Collections.singletonMap("home", "Avocado Street 14"),
+											Collections.singletonMap("work", "Java Street 14")
+									))
+									.buildIt()
+					))
+					.build();
+
+			System.out.println(original);
+			VPackSlice serialized = vpack.serialize(original);
+			System.out.println(serialized);
+			PersonWithFriends deserialized = vpack.deserialize(serialized, PersonWithFriends.class);
+			System.out.println(deserialized);
+			assertThat(deserialized, is(original));
+		}
+	}
+
 }

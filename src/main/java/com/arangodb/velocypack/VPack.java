@@ -929,7 +929,7 @@ public class VPack {
 				serializeArray(name, value, builder, elemType);
             } else if (type instanceof Class && ((Class) type).isEnum()) {
                 builder.add(name, ((Enum) value).name());
-            } else if (type != value.getClass()) {
+            } else if (shouldAddTypeHint(type, value, fieldInfo)) {
                 addValue(name, value.getClass(), value, builder, fieldInfo,
                         Collections.<String, Object>singletonMap(typeKey, value.getClass().getName()));
             } else {
@@ -938,14 +938,33 @@ public class VPack {
         }
     }
 
-	private void serializeArray(final String name, final Object value, final VPackBuilder builder, final Type type)
+    private boolean shouldAddTypeHint(
+            final Type type,
+            final Object value,
+            final FieldInfo fieldInfo
+    ) {
+        final AnnotatedElement referencingElement = fieldInfo != null ? fieldInfo.getReferencingElement() : null;
+        final BuilderInfo builderInfo = builderUtils.getBuilderInfo(type, referencingElement);
+        if (builderInfo != null) {
+            return false;
+        }
+
+        final VPackCreatorMethodInfo factoryMethodInfo = vPackCreatorMethodUtils.getCreatorMethodInfo(type);
+        if (factoryMethodInfo != null) {
+            return false;
+        }
+
+        return type != value.getClass();
+    }
+
+    private void serializeArray(final String name, final Object value, final VPackBuilder builder, final Type type)
             throws ReflectiveOperationException, VPackException {
         builder.add(name, ValueType.ARRAY);
         for (int i = 0; i < Array.getLength(value); i++) {
             final Object element = Array.get(value, i);
             if (element != null) {
-				final Type t = type != null ? type : element.getClass();
-				addValue(null, t, element, builder, null, Collections.<String, Object> emptyMap());
+                final Type t = type != null ? type : element.getClass();
+                addValue(null, t, element, builder, null, Collections.<String, Object>emptyMap());
             } else {
                 builder.add(ValueType.NULL);
             }
