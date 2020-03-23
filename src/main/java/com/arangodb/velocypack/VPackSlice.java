@@ -783,7 +783,7 @@ public class VPackSlice implements Serializable {
 		return new VPackSlice(vpack, start + getNthOffset(index));
 	}
 
-	private VPackSlice getNth(final int index) {
+	public VPackSlice getNth(final int index) {
 		return new VPackSlice(vpack, start + getNthOffset(index));
 	}
 

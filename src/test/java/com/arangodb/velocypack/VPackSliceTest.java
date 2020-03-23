@@ -873,7 +873,7 @@ public class VPackSliceTest {
 	}
 
 	@Test
-	public void arrayIterator() throws VPackException {
+	public void arrayIteratorOnCompactArray() throws VPackException {
 		final Collection<String> expected = Arrays.asList("a", "b", "c", "d", "e", "f");
 		final VPackSlice slice = new VPackSlice(new byte[] { 0x13, 0x0f, 0x41, 0x61, 0x41, 0x62, 0x41, 0x63, 0x41, 0x64,
 				0x41, 0x65, 0x41, 0x66, 0x06 });
@@ -882,6 +882,18 @@ public class VPackSliceTest {
 			final VPackSlice next = iteratorSlice.next();
 			assertThat(next.isString(), is(true));
 			assertThat(next.getAsString(), is(string));
+		}
+	}
+
+	@Test
+	public void arrayIteratorOnArrayWithIndexTable() throws VPackException {
+		final Collection<Integer> expected = Arrays.asList(1, 42, 3);
+		final VPackSlice slice = new VPackSlice(new byte[] { 0x06, 0x0a, 0x03, 0x31, 0x20, 0x2a, 0x33, 0x03, 0x04, 0x06 });
+		final Iterator<VPackSlice> iteratorSlice = slice.arrayIterator();
+		for (final Integer i : expected) {
+			final VPackSlice next = iteratorSlice.next();
+			assertThat(next.isInteger(), is(true));
+			assertThat(next.getAsInt(), is(i));
 		}
 	}
 
