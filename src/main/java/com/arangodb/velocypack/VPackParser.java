@@ -324,8 +324,8 @@ public class VPackParser {
 			throws VPackException {
 		json.append(ARRAY_OPEN);
 		int added = 0;
-		for (int i = 0; i < value.getLength(); i++) {
-			final VPackSlice valueAt = value.get(i);
+		for (final Iterator<VPackSlice> iterator = value.arrayIterator(); iterator.hasNext();) {
+			final VPackSlice valueAt = iterator.next();
 			if (!valueAt.isNull() || includeNullValues) {
 				if (added++ > 0) {
 					json.append(SEPARATOR);
