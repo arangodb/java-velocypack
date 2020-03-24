@@ -35,17 +35,21 @@ public class ArrayIterator extends SliceIterator<VPackSlice> {
 		if (!slice.isArray()) {
 			throw new VPackValueTypeException(ValueType.ARRAY);
 		}
+		if (size > 0) {
+			current = slice.getNth(0).getStart();
+		}
 	}
 
 	@Override
 	public VPackSlice next() {
-		final VPackSlice next;
 		if (hasNext()) {
-			next = slice.get((int) position++);
+			final VPackSlice next = getCurrent();
+			position++;
+			current += next.getByteSize();
+			return next;
 		} else {
 			throw new NoSuchElementException();
 		}
-		return next;
 	}
 
 	@Override

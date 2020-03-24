@@ -667,8 +667,9 @@ public class VPack {
         final int length = vpack.getLength();
         final Class<?> componentType = ((Class<?>) type).getComponentType();
         final Object value = Array.newInstance(componentType, length);
-        for (int i = 0; i < length; i++) {
-            Array.set(value, i, getValue(parent, vpack.get(i), componentType, null));
+        int i = 0;
+        for (final Iterator<VPackSlice> iterator = vpack.arrayIterator(); iterator.hasNext(); ) {
+            Array.set(value, i++, getValue(parent, iterator.next(), componentType, null));
         }
         return value;
     }
