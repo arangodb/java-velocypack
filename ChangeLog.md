@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 
 ## [Unreleased]
 
+## [2.2.1] - 2020-03-25
+
+- improved array iteration performances
+
 ## [2.2.0] - 2020-03-05
 
 - deserialization support for wildcard types
