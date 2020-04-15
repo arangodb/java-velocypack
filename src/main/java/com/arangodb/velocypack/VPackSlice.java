@@ -171,6 +171,10 @@ public class VPackSlice implements Serializable {
 		return isInt() || isUInt() || isSmallInt();
 	}
 
+	public boolean isByte() {
+		return isInteger();
+	}
+
 	public boolean isNumber() {
 		return isInteger() || isDouble();
 	}

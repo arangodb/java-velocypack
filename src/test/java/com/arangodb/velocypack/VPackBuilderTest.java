@@ -20,20 +20,19 @@
 
 package com.arangodb.velocypack;
 
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
-
-import java.math.BigInteger;
-import java.util.Date;
-
-import org.junit.Test;
-
 import com.arangodb.velocypack.exception.VPackBuilderNeedOpenCompoundException;
 import com.arangodb.velocypack.exception.VPackBuilderNumberOutOfRangeException;
 import com.arangodb.velocypack.exception.VPackBuilderUnexpectedValueException;
 import com.arangodb.velocypack.exception.VPackException;
+import org.junit.Test;
+
+import java.math.BigInteger;
+import java.util.Date;
+
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 /**
  * @author Mark Vollmary
@@ -105,6 +104,18 @@ public class VPackBuilderTest {
 		final VPackSlice slice = builder.slice();
 		assertThat(slice.isSmallInt(), is(true));
 		assertThat(slice.getAsInt(), is(value));
+	}
+
+	@Test
+	public void addByte() throws VPackException {
+		final VPackBuilder builder = new VPackBuilder();
+		final Byte value = (byte) 0x11;
+		builder.add(value);
+
+		final VPackSlice slice = builder.slice();
+		System.out.println(slice);
+		assertThat(slice.isByte(), is(true));
+		assertThat(slice.getAsByte(), is(value));
 	}
 
 	@Test
