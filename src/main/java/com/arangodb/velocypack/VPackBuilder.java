@@ -318,6 +318,10 @@ public class VPackBuilder {
 		return addInternal(SHORT, value);
 	}
 
+	public VPackBuilder add(final Byte value) throws VPackBuilderException {
+		return addInternal(BYTE, value);
+	}
+
 	public VPackBuilder add(final BigInteger value) throws VPackBuilderException {
 		return addInternal(BIG_INTEGER, value);
 	}
