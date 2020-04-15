@@ -20,23 +20,19 @@
 
 package com.arangodb.velocypack;
 
+import com.arangodb.velocypack.exception.VPackBuilderException;
+import com.arangodb.velocypack.exception.VPackException;
+import com.arangodb.velocypack.internal.util.DateUtil;
+import com.fasterxml.jackson.core.*;
+import com.fasterxml.jackson.core.io.CharacterEscapes;
+import com.fasterxml.jackson.core.io.SerializedString;
+
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
-
-import com.arangodb.velocypack.exception.VPackBuilderException;
-import com.arangodb.velocypack.exception.VPackException;
-import com.arangodb.velocypack.internal.util.DateUtil;
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.core.SerializableString;
-import com.fasterxml.jackson.core.io.CharacterEscapes;
-import com.fasterxml.jackson.core.io.SerializedString;
 
 /**
  * @author Mark Vollmary
@@ -340,8 +336,15 @@ public class VPackParser {
 		return fromJson(json, false);
 	}
 
+	public VPackSlice fromJson(final String json, final VPackBuilder builder) throws VPackException {
+		return fromJson(json, false, builder);
+	}
+
 	public VPackSlice fromJson(final String json, final boolean includeNullValues) throws VPackException {
-		final VPackBuilder builder = new VPackBuilder();
+		return fromJson(json, includeNullValues, new VPackBuilder());
+	}
+
+	public VPackSlice fromJson(final String json, final boolean includeNullValues, final VPackBuilder builder) throws VPackException {
 		try {
 			parse(json, builder, includeNullValues);
 		} catch (final IOException e) {
@@ -354,8 +357,15 @@ public class VPackParser {
 		return fromJson(jsons, false);
 	}
 
+	public VPackSlice fromJson(final Iterable<String> jsons, final VPackBuilder builder) throws VPackException {
+		return fromJson(jsons, false, builder);
+	}
+
 	public VPackSlice fromJson(final Iterable<String> jsons, final boolean includeNullValues) throws VPackException {
-		final VPackBuilder builder = new VPackBuilder();
+		return fromJson(jsons, includeNullValues, new VPackBuilder());
+	}
+
+	public VPackSlice fromJson(final Iterable<String> jsons, final boolean includeNullValues, final VPackBuilder builder) throws VPackException {
 		try {
 			builder.add(ValueType.ARRAY);
 			for (final String json : jsons) {
