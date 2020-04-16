@@ -481,6 +481,10 @@ public class VPackBuilder {
 		return addInternal(tag, SHORT, value);
 	}
 
+	public VPackBuilder addTagged(final long tag, final Byte value) throws VPackBuilderException {
+		return addInternal(tag, BYTE, value);
+	}
+
 	public VPackBuilder addTagged(final long tag, final BigInteger value) throws VPackBuilderException {
 		return addInternal(tag, BIG_INTEGER, value);
 	}
