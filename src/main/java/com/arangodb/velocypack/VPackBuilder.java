@@ -1017,7 +1017,7 @@ public class VPackBuilder {
 			// 8 bytes long
 			buffer[tos] = (byte) (isArray ? 0x13 : 0x14);
 			final int targetPos = (int) (1 + bLen);
-			if (size - 1 > (tos + 9)) {
+			if (size - 1 >= (tos + 9)) {
 				for (int i = tos + targetPos; i < tos + 9; i++) {
 					remove(tos + targetPos);
 				}
