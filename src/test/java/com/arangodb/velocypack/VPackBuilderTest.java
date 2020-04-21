@@ -393,8 +393,30 @@ public class VPackBuilderTest {
 	}
 
 	@Test
+	public void unindexedSingletonArray() throws VPackException {
+		final long[] expected = {1};
+		final VPackBuilder builder = new VPackBuilder();
+		builder.getOptions().setBuildUnindexedArrays(true);
+		builder.add(ValueType.ARRAY, false);
+		for (final long l : expected) {
+			builder.add(l);
+		}
+		builder.close();
+
+		final VPackSlice slice = builder.slice();
+		assertThat(slice.isArray(), is(true));
+		assertThat(slice.getLength(), is(1));
+		for (int i = 0; i < expected.length; i++) {
+			final VPackSlice at = slice.get(i);
+			assertThat(at.isInteger(), is(true));
+			assertThat(at.getAsLong(), is(expected[i]));
+		}
+	}
+
+
+	@Test
 	public void indexedArray() throws VPackException {
-		final long[] values = { 1, 2, 3 };
+		final long[] values = {1, 2, 3};
 		final VPackBuilder builder = new VPackBuilder();
 		builder.add(ValueType.ARRAY);
 		for (final long l : values) {
