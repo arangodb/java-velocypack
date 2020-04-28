@@ -1,0 +1,5 @@
+com.arangodb.velocypack
+com.arangodb.velocypack.annotations
+com.arangodb.velocypack.exception
+com.arangodb.velocypack.internal
+com.arangodb.velocypack.internal.util
