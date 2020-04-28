@@ -396,4 +396,4 @@ case class CasePerson @VPackCreator()(
 
 - [ArangoDB](https://www.arangodb.com/)
 - [ChangeLog](ChangeLog.md)
-- [JavaDoc](http://arangodb.github.io/java-velocypack/javadoc-1_4)
+- [JavaDoc](http://arangodb.github.io/java-velocypack/)
