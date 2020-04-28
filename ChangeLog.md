@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 
 ## [Unreleased]
 
+- bugfix serialization unindexed singleton arrays
+- added `add(Byte)`, `is(Byte)`, `getAsByte()` to VPackBuilder and VPackSlice
+- use custom VPackBuilder in VPackParser
+
 ## [2.2.1] - 2020-03-25
 
 - improved array iteration performances
