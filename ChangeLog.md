@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 
 ## [Unreleased]
 
+## [2.3.1] - 2020-05-05
+
+- shaded jackson dependency
+
 ## [2.3.0] - 2020-04-28
 
 - bugfix serialization unindexed singleton arrays
