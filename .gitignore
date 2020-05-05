@@ -8,3 +8,4 @@
 /.gradle
 /bin
 /build
+dependency-reduced-pom.xml

@@ -58,6 +58,42 @@
 	<build>
 		<plugins>
 			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<version>3.2.1</version>
+				<configuration>
+					<createSourcesJar>true</createSourcesJar>
+					<shadeSourcesContent>true</shadeSourcesContent>
+					<artifactSet>
+						<includes>
+							<include>com.fasterxml.jackson.core:jackson-core</include>
+						</includes>
+					</artifactSet>
+					<relocations>
+						<relocation>
+							<pattern>com.fasterxml.jackson</pattern>
+							<shadedPattern>com.arangodb.velocypack.deps.com.fasterxml.jackson</shadedPattern>
+						</relocation>
+					</relocations>
+					<transformers>
+						<transformer
+								implementation="org.apache.maven.plugins.shade.resource.DontIncludeResourceTransformer">
+							<resources>
+								<resource>META-INF/services/com.fasterxml.jackson.core.JsonFactory</resource>
+							</resources>
+						</transformer>
+					</transformers>
+				</configuration>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
 				<groupId>org.sonatype.plugins</groupId>
 				<artifactId>nexus-staging-maven-plugin</artifactId>
 				<version>1.6.5</version>
@@ -196,7 +232,7 @@
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-core</artifactId>
-			<version>2.9.10</version>
+			<version>2.11.0</version>
 		</dependency>
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
