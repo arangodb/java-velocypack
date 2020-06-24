@@ -717,6 +717,7 @@ public class VPackSerializeDeserializeTest {
 	protected static class TestEntityBigNumber {
 		private BigInteger bi = BigInteger.valueOf(1L);
 		private BigDecimal bd = BigDecimal.valueOf(1.5);
+		private BigDecimal bdi = BigDecimal.valueOf(1);
 
 		public BigInteger getBi() {
 			return bi;
@@ -732,6 +733,14 @@ public class VPackSerializeDeserializeTest {
 
 		public void setBd(final BigDecimal bd) {
 			this.bd = bd;
+		}
+
+		public BigDecimal getBdi() {
+			return bdi;
+		}
+
+		public void setBdi(final BigDecimal bdi) {
+			this.bdi = bdi;
 		}
 	}
 
@@ -750,6 +759,11 @@ public class VPackSerializeDeserializeTest {
 			assertThat(bd.isString(), is(true));
 			assertThat(bd.getAsBigDecimal(), is(BigDecimal.valueOf(1.5)));
 		}
+		{
+			final VPackSlice bdi = vpack.get("bdi");
+			assertThat(bdi.isString(), is(true));
+			assertThat(bdi.getAsBigDecimal(), is(BigDecimal.valueOf(1)));
+		}
 	}
 
 	@Test
@@ -759,6 +773,7 @@ public class VPackSerializeDeserializeTest {
 			builder.add(ValueType.OBJECT);
 			builder.add("bi", BigInteger.valueOf(2));
 			builder.add("bd", BigDecimal.valueOf(3.75));
+			builder.add("bdi", BigDecimal.valueOf(3));
 			builder.close();
 		}
 		final VPackSlice vpack = builder.slice();
@@ -766,6 +781,7 @@ public class VPackSerializeDeserializeTest {
 		assertThat(entity, is(notNullValue()));
 		assertThat(entity.bi, is(BigInteger.valueOf(2)));
 		assertThat(entity.bd, is(BigDecimal.valueOf(3.75)));
+		assertThat(entity.bdi, is(BigDecimal.valueOf(3)));
 	}
 
 	@Test
@@ -775,6 +791,20 @@ public class VPackSerializeDeserializeTest {
 		assertThat(fromDouble, is(fromString));
 		assertThat(new VPackBuilder().add(fromDouble).slice().getAsBigDecimal(), is(fromDouble));
 		assertThat(new VPackBuilder().add(fromString).slice().getAsBigDecimal(), is(fromDouble));
+	}
+
+	@Test
+	public void deserializeIntAsBigDecimal() {
+		final int integer = Integer.MAX_VALUE;
+		final BigDecimal fromInt = BigDecimal.valueOf(integer);
+		assertThat(new VPackBuilder().add(integer).slice().getAsBigDecimal(), is(fromInt));
+	}
+
+	@Test
+	public void deserializeLongAsBigDecimal() {
+		final long lng = Long.MAX_VALUE;
+		final BigDecimal fromLng = BigDecimal.valueOf(lng);
+		assertThat(new VPackBuilder().add(lng).slice().getAsBigDecimal(), is(fromLng));
 	}
 
 	protected static class TestEntityArray {

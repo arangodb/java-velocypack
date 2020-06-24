@@ -289,6 +289,10 @@ public class VPackSlice implements Serializable {
 			return new BigDecimal(getAsString());
 		} else if (isDouble()) {
 			return BigDecimal.valueOf(getAsDouble());
+		} else if (isSmallInt() || isInt()) {
+			return BigDecimal.valueOf(getAsLong());
+		} else if (isUInt()) {
+			return new BigDecimal(NumberUtil.toBigInteger(vpack, start + 1, length()));
 		} else {
 			throw new VPackValueTypeException(ValueType.STRING, ValueType.DOUBLE);
 		}
