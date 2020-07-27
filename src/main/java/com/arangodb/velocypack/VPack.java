@@ -323,7 +323,8 @@ public class VPack {
          * @param typeKey Name of the field with type information
          * @return {@link VPack.Builder}
          */
-        public Builder typeKey(final String typeKey) {
+        @Override
+        public VPack.Builder typeKey(final String typeKey) {
             this.typeKey = typeKey;
             return this;
         }
@@ -334,7 +335,8 @@ public class VPack {
          * @param useTypeHints (default: {@code true})
          * @return {@link VPack.Builder}
          */
-        public Builder useTypeHints(final boolean useTypeHints) {
+        @Override
+        public VPack.Builder useTypeHints(final boolean useTypeHints) {
             this.useTypeHints = useTypeHints;
             return this;
         }
