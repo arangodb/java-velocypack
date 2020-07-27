@@ -46,13 +46,36 @@ public class VPackWithoutTypeHintTest {
 		this.useTypeHints = useTypeHints;
 	}
 
+	public static class NestedArray {
+		public String[] value;
+	}
+
+	@Test
+	public void nestedArrayWithoutTypeInformation() {
+		NestedArray input = new NestedArray();
+		input.value = new String[]{"a", "b", "c"};
+
+		final VPack vpack = new VPack.Builder().useTypeHints(useTypeHints).build();
+		final VPackSlice slice = vpack.serialize(input);
+
+		assertThat(slice.isObject(), is(true));
+		assertThat(slice.get("value").isArray(), is(true));
+		if (!useTypeHints)
+			assertThat(slice.get("_class").isNone(), is(true));
+
+		NestedArray output = vpack.deserialize(slice, NestedArray.class);
+		assertThat(output.value, instanceOf(String[].class));
+
+		assertThat(output.value, equalTo(input.value));
+	}
+
 	public static class NestedIterable {
 		public Iterable<String> value;
 	}
 
 	@Test
 	public void nestedIterableWithoutTypeInformation() {
-		NestedCollection input = new NestedCollection();
+		NestedIterable input = new NestedIterable();
 		input.value = Arrays.asList("a", "b", "c");
 
 		final VPack vpack = new VPack.Builder().useTypeHints(useTypeHints).build();
@@ -167,6 +190,44 @@ public class VPackWithoutTypeHintTest {
 
 	public static class NestedGeneric<T> {
 		public T value;
+	}
+
+	@Test
+	public void nestedGenericOfArrayWithoutTypeInformation() {
+		NestedGeneric<String[]> input = new NestedGeneric<>();
+		input.value = new String[]{"a", "b", "c"};
+
+		final VPack vpack = new VPack.Builder().useTypeHints(useTypeHints).build();
+		final VPackSlice slice = vpack.serialize(input);
+
+		assertThat(slice.isObject(), is(true));
+		assertThat(slice.get("value").isArray(), is(true));
+		if (!useTypeHints)
+			assertThat(slice.get("_class").isNone(), is(true));
+
+		NestedGeneric<?> output = vpack.deserialize(slice, NestedGeneric.class);
+		assertThat(output.value, instanceOf(List.class));
+
+		assertThat(output.value, equalTo(Arrays.asList(input.value)));
+	}
+
+	@Test
+	public void nestedGenericOfIterableWithoutTypeInformation() {
+		NestedGeneric<Iterable<String>> input = new NestedGeneric<>();
+		input.value = Arrays.asList("a", "b", "c");
+
+		final VPack vpack = new VPack.Builder().useTypeHints(useTypeHints).build();
+		final VPackSlice slice = vpack.serialize(input);
+
+		assertThat(slice.isObject(), is(true));
+		assertThat(slice.get("value").isArray(), is(true));
+		if (!useTypeHints)
+			assertThat(slice.get("_class").isNone(), is(true));
+
+		NestedGeneric<?> output = vpack.deserialize(slice, NestedGeneric.class);
+		assertThat(output.value, instanceOf(List.class));
+
+		assertThat(output.value, equalTo(input.value));
 	}
 
 	@Test
