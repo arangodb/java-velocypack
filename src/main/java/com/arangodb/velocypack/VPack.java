@@ -952,6 +952,12 @@ public class VPack {
             } else if (shouldAddTypeHint(type, value, fieldInfo)) {
                 addValue(name, value.getClass(), value, builder, fieldInfo,
                         Collections.<String, Object>singletonMap(typeKey, value.getClass().getName()));
+            } else if (value instanceof Iterable) {
+                serializeIterable(name, value, builder, null);
+            } else if (value instanceof Map) {
+                serializeMap(name, value, builder, String.class, additionalFields);
+            } else if (value.getClass().isArray()) {
+                serializeArray(name, value, builder, null);
             } else {
                 serializeObject(name, value, builder, additionalFields);
             }
