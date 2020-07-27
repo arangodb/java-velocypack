@@ -165,6 +165,24 @@ public class VPackWithoutTypeHintTest {
 	}
 
 	@Test
+	public void nestedObjectArrayWithoutTypeInformation() {
+		NestedObject input = new NestedObject();
+		input.value = new String[]{"a", "b", "c"};
+
+		final VPack vpack = new VPack.Builder().useTypeHints(useTypeHints).build();
+		final VPackSlice slice = vpack.serialize(input);
+		assertThat(slice.isObject(), is(true));
+		assertThat(slice.get("value").isArray(), is(true));
+		if (!useTypeHints)
+			assertThat(slice.get("_class").isNone(), is(true));
+
+		NestedObject output = vpack.deserialize(slice, NestedObject.class);
+		assertThat(output.value, instanceOf(List.class));
+
+		assertThat(((List<?>) output.value).toArray(), equalTo(input.value));
+	}
+
+	@Test
 	public void nestedObjectMapWithoutTypeInformation() {
 		Map<String, String> map = new HashMap<>();
 		map.put("a", "b");
