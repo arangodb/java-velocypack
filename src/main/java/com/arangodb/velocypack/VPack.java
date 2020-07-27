@@ -49,7 +49,7 @@ public class VPack {
     private static final String ATTR_KEY = "key";
     private static final String ATTR_VALUE = "value";
     private static final String DEFAULT_TYPE_KEY = "_class";
-    private static final boolean DEFAULT_USE_TYPE_HINT = true;
+    private static final boolean DEFAULT_USE_TYPE_HINTS = true;
 
     private final Map<Type, VPackSerializer<?>> serializers;
     private final Map<Type, VPackSerializer<?>> enclosingSerializers;
@@ -66,7 +66,7 @@ public class VPack {
     private final VPackDeserializationContext deserializationContext;
     private final boolean serializeNullValues;
     private final String typeKey;
-    private final boolean useTypeHint;
+    private final boolean useTypeHints;
     private final VPackBuilderUtils builderUtils;
     private final VPackCreatorMethodUtils vPackCreatorMethodUtils;
 
@@ -85,7 +85,7 @@ public class VPack {
         private final Map<Class<? extends Annotation>, VPackAnnotationFieldNaming<? extends Annotation>> annotationFieldNaming;
         private final Map<Type, VPackKeyMapAdapter<?>> keyMapAdapters;
         private String typeKey;
-        private Boolean useTypeHint;
+        private Boolean useTypeHints;
 
         public Builder() {
             super();
@@ -102,7 +102,7 @@ public class VPack {
             annotationFieldNaming = new HashMap<>();
             keyMapAdapters = new HashMap<>();
             typeKey = null;
-            useTypeHint = null;
+            useTypeHints = null;
 
             instanceCreators.put(Iterable.class, VPackInstanceCreators.ITERABLE);
             instanceCreators.put(Collection.class, VPackInstanceCreators.COLLECTION);
@@ -331,11 +331,11 @@ public class VPack {
         /**
          * Enables storing type information of the serialized object
          *
-         * @param useTypeHint (default: {@code true})
+         * @param useTypeHints (default: {@code true})
          * @return {@link VPack.Builder}
          */
-        public Builder useTypeHint(final boolean useTypeHint) {
-            this.useTypeHint = useTypeHint;
+        public Builder useTypeHints(final boolean useTypeHints) {
+            this.useTypeHints = useTypeHints;
             return this;
         }
 
@@ -348,7 +348,7 @@ public class VPack {
                     new HashMap<>(annotationFieldFilter), new HashMap<>(annotationFieldNaming),
                     keyMapAdapters,
                     typeKey != null ? typeKey : DEFAULT_TYPE_KEY,
-                    useTypeHint != null ? useTypeHint : DEFAULT_USE_TYPE_HINT
+                    useTypeHints != null ? useTypeHints : DEFAULT_USE_TYPE_HINTS
             );
         }
 
@@ -363,7 +363,7 @@ public class VPack {
                   final Map<String, Map<Type, VPackDeserializer<?>>> deserializersByNameWithSelfNullHandle,
                   final Map<Class<? extends Annotation>, VPackAnnotationFieldFilter<? extends Annotation>> annotationFieldFilter,
                   final Map<Class<? extends Annotation>, VPackAnnotationFieldNaming<? extends Annotation>> annotationFieldNaming,
-                  final Map<Type, VPackKeyMapAdapter<?>> keyMapAdapters, final String typeKey, final boolean useTypeHint) {
+                  final Map<Type, VPackKeyMapAdapter<?>> keyMapAdapters, final String typeKey, final boolean useTypeHints) {
         super();
         this.serializers = serializers;
         this.enclosingSerializers = enclosingSerializers;
@@ -376,7 +376,7 @@ public class VPack {
         this.deserializersByNameWithSelfNullHandle = deserializersByNameWithSelfNullHandle;
         this.keyMapAdapters = keyMapAdapters;
         this.typeKey = typeKey;
-        this.useTypeHint = useTypeHint;
+        this.useTypeHints = useTypeHints;
 
         builderUtils = new VPackBuilderUtils();
         vPackCreatorMethodUtils = new VPackCreatorMethodUtils();
@@ -499,7 +499,7 @@ public class VPack {
     }
 
     private Type determineType(final VPackSlice vpack, final Type type) {
-        if (!useTypeHint || !vpack.isObject()) {
+        if (!useTypeHints || !vpack.isObject()) {
             return type;
         }
         final VPackSlice clazz = vpack.get(typeKey);
@@ -963,7 +963,7 @@ public class VPack {
             final Object value,
             final FieldInfo fieldInfo
     ) {
-        if (!useTypeHint) {
+        if (!useTypeHints) {
             return false;
         }
         final AnnotatedElement referencingElement = fieldInfo != null ? fieldInfo.getReferencingElement() : null;

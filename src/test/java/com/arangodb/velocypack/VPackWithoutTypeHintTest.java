@@ -35,15 +35,15 @@ import static org.hamcrest.Matchers.*;
 @RunWith(Parameterized.class)
 public class VPackWithoutTypeHintTest {
 
-	private final boolean useTypeHint;
+	private final boolean useTypeHints;
 
 	@Parameterized.Parameters
 	public static Collection<Boolean> useTypeHint() {
 		return Arrays.asList(true, false);
 	}
 
-	public VPackWithoutTypeHintTest(final boolean useTypeHint) {
-		this.useTypeHint = useTypeHint;
+	public VPackWithoutTypeHintTest(final boolean useTypeHints) {
+		this.useTypeHints = useTypeHints;
 	}
 
 	public static class NestedIterable {
@@ -55,12 +55,12 @@ public class VPackWithoutTypeHintTest {
 		NestedCollection input = new NestedCollection();
 		input.value = Arrays.asList("a", "b", "c");
 
-		final VPack vpack = new VPack.Builder().useTypeHint(useTypeHint).build();
+		final VPack vpack = new VPack.Builder().useTypeHints(useTypeHints).build();
 		final VPackSlice slice = vpack.serialize(input);
 
 		assertThat(slice.isObject(), is(true));
 		assertThat(slice.get("value").isArray(), is(true));
-		if (!useTypeHint)
+		if (!useTypeHints)
 			assertThat(slice.get("_class").isNone(), is(true));
 
 		NestedIterable output = vpack.deserialize(slice, NestedIterable.class);
@@ -78,12 +78,12 @@ public class VPackWithoutTypeHintTest {
 		NestedCollection input = new NestedCollection();
 		input.value = Arrays.asList("a", "b", "c");
 
-		final VPack vpack = new VPack.Builder().useTypeHint(useTypeHint).build();
+		final VPack vpack = new VPack.Builder().useTypeHints(useTypeHints).build();
 		final VPackSlice slice = vpack.serialize(input);
 
 		assertThat(slice.isObject(), is(true));
 		assertThat(slice.get("value").isArray(), is(true));
-		if (!useTypeHint)
+		if (!useTypeHints)
 			assertThat(slice.get("_class").isNone(), is(true));
 
 		NestedCollection output = vpack.deserialize(slice, NestedCollection.class);
@@ -104,12 +104,12 @@ public class VPackWithoutTypeHintTest {
 		NestedMap input = new NestedMap();
 		input.value = map;
 
-		final VPack vpack = new VPack.Builder().useTypeHint(useTypeHint).build();
+		final VPack vpack = new VPack.Builder().useTypeHints(useTypeHints).build();
 		final VPackSlice slice = vpack.serialize(input);
 
 		assertThat(slice.isObject(), is(true));
 		assertThat(slice.get("value").isObject(), is(true));
-		if (!useTypeHint) {
+		if (!useTypeHints) {
 			assertThat(slice.get("_class").isNone(), is(true));
 			assertThat(slice.get("value").get("_class").isNone(), is(true));
 		}
@@ -128,11 +128,11 @@ public class VPackWithoutTypeHintTest {
 		NestedObject input = new NestedObject();
 		input.value = Arrays.asList("a", "b", "c");
 
-		final VPack vpack = new VPack.Builder().useTypeHint(useTypeHint).build();
+		final VPack vpack = new VPack.Builder().useTypeHints(useTypeHints).build();
 		final VPackSlice slice = vpack.serialize(input);
 		assertThat(slice.isObject(), is(true));
 		assertThat(slice.get("value").isArray(), is(true));
-		if (!useTypeHint)
+		if (!useTypeHints)
 			assertThat(slice.get("_class").isNone(), is(true));
 
 		NestedObject output = vpack.deserialize(slice, NestedObject.class);
@@ -149,11 +149,11 @@ public class VPackWithoutTypeHintTest {
 		NestedObject input = new NestedObject();
 		input.value = map;
 
-		final VPack vpack = new VPack.Builder().useTypeHint(useTypeHint).build();
+		final VPack vpack = new VPack.Builder().useTypeHints(useTypeHints).build();
 		final VPackSlice slice = vpack.serialize(input);
 		assertThat(slice.isObject(), is(true));
 		assertThat(slice.get("value").isObject(), is(true));
-		if (!useTypeHint) {
+		if (!useTypeHints) {
 			assertThat(slice.get("_class").isNone(), is(true));
 			assertThat(slice.get("value").get("_class").isNone(), is(true));
 		}
@@ -174,12 +174,12 @@ public class VPackWithoutTypeHintTest {
 		NestedGeneric<Collection<String>> input = new NestedGeneric<>();
 		input.value = Arrays.asList("a", "b", "c");
 
-		final VPack vpack = new VPack.Builder().useTypeHint(useTypeHint).build();
+		final VPack vpack = new VPack.Builder().useTypeHints(useTypeHints).build();
 		final VPackSlice slice = vpack.serialize(input);
 
 		assertThat(slice.isObject(), is(true));
 		assertThat(slice.get("value").isArray(), is(true));
-		if (!useTypeHint)
+		if (!useTypeHints)
 			assertThat(slice.get("_class").isNone(), is(true));
 
 		NestedGeneric<?> output = vpack.deserialize(slice, NestedGeneric.class);
@@ -196,12 +196,12 @@ public class VPackWithoutTypeHintTest {
 		NestedGeneric<Map<String, String>> input = new NestedGeneric<>();
 		input.value = map;
 
-		final VPack vpack = new VPack.Builder().useTypeHint(useTypeHint).build();
+		final VPack vpack = new VPack.Builder().useTypeHints(useTypeHints).build();
 		final VPackSlice slice = vpack.serialize(input);
 
 		assertThat(slice.isObject(), is(true));
 		assertThat(slice.get("value").isObject(), is(true));
-		if (!useTypeHint) {
+		if (!useTypeHints) {
 			assertThat(slice.get("_class").isNone(), is(true));
 			assertThat(slice.get("value").get("_class").isNone(), is(true));
 		}
@@ -221,12 +221,12 @@ public class VPackWithoutTypeHintTest {
 		NestedGeneric<Object> input = new NestedGeneric<>();
 		input.value = map;
 
-		final VPack vpack = new VPack.Builder().useTypeHint(useTypeHint).build();
+		final VPack vpack = new VPack.Builder().useTypeHints(useTypeHints).build();
 		final VPackSlice slice = vpack.serialize(input);
 
 		assertThat(slice.isObject(), is(true));
 		assertThat(slice.get("value").isObject(), is(true));
-		if (!useTypeHint) {
+		if (!useTypeHints) {
 			assertThat(slice.get("_class").isNone(), is(true));
 			assertThat(slice.get("value").get("_class").isNone(), is(true));
 		}
