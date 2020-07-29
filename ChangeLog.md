@@ -6,7 +6,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 
 ## [Unreleased]
 
-- added useTypeHint option to VPack.Builder
+## [2.4.0] - 2020-07-29
+
+- added useTypeHints option to VPack.Builder
 
 ## [2.3.1] - 2020-05-05
 
