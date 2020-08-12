@@ -12,8 +12,6 @@ jobs:
 
   test:
 
-    needs: verify
-
     runs-on: ubuntu-latest
 
     strategy:
