@@ -20,21 +20,20 @@
 
 package com.arangodb.velocypack.internal;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.sql.Timestamp;
-import java.text.ParseException;
-import java.util.Date;
-import java.util.UUID;
-
-import javax.xml.bind.DatatypeConverter;
-
 import com.arangodb.velocypack.VPackDeserializationContext;
 import com.arangodb.velocypack.VPackDeserializer;
 import com.arangodb.velocypack.VPackSlice;
 import com.arangodb.velocypack.exception.VPackException;
 import com.arangodb.velocypack.exception.VPackParserException;
 import com.arangodb.velocypack.internal.util.DateUtil;
+
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.sql.Timestamp;
+import java.text.ParseException;
+import java.util.Base64;
+import java.util.Date;
+import java.util.UUID;
 
 /**
  * @author Mark Vollmary
@@ -227,7 +226,7 @@ public class VPackDeserializers {
 			final VPackSlice parent,
 			final VPackSlice vpack,
 			final VPackDeserializationContext context) throws VPackException {
-			return DatatypeConverter.parseBase64Binary(vpack.getAsString());
+			return Base64.getDecoder().decode(vpack.getAsString());
 		}
 
 	};

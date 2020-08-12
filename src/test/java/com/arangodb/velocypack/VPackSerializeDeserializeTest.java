@@ -20,11 +20,11 @@
 
 package com.arangodb.velocypack;
 
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.nullValue;
-import static org.hamcrest.MatcherAssert.assertThat;
+import com.arangodb.velocypack.VPack.SerializeOptions;
+import com.arangodb.velocypack.annotations.Expose;
+import com.arangodb.velocypack.annotations.SerializedName;
+import com.arangodb.velocypack.exception.VPackException;
+import org.junit.Test;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -35,30 +35,11 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
-import java.util.TimeZone;
-import java.util.UUID;
 
-import javax.xml.bind.DatatypeConverter;
-
-import org.junit.Test;
-
-import com.arangodb.velocypack.VPack.SerializeOptions;
-import com.arangodb.velocypack.annotations.Expose;
-import com.arangodb.velocypack.annotations.SerializedName;
-import com.arangodb.velocypack.exception.VPackException;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
 
 /**
  * @author Mark Vollmary
@@ -3875,12 +3856,12 @@ public class VPackSerializeDeserializeTest {
 		assertThat(vpack, is(notNullValue()));
 		assertThat(vpack.isObject(), is(true));
 		assertThat(vpack.get("foo").isString(), is(true));
-		assertThat(vpack.get("foo").getAsString(), is(DatatypeConverter.printBase64Binary(entity.foo)));
+		assertThat(vpack.get("foo").getAsString(), is(Base64.getEncoder().encodeToString(entity.foo)));
 	}
 
 	@Test
 	public void toBinary() {
-		final String value = DatatypeConverter.printBase64Binary("bar".getBytes());
+		final String value = Base64.getEncoder().encodeToString("bar".getBytes());
 		final VPackSlice vpack = new VPackBuilder().add(ValueType.OBJECT).add("foo", value).close().slice();
 		final BinaryEntity entity = new VPack.Builder().build().deserialize(vpack, BinaryEntity.class);
 		assertThat(entity, is(notNullValue()));
