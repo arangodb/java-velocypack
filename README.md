@@ -1,5 +1,3 @@
-![ArangoDB-Logo](https://docs.arangodb.com/assets/arangodb_logo_2016_inverted.png)
-
 # ArangoDB VelocyPack Java
 
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.arangodb/velocypack/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.arangodb/velocypack)
@@ -15,20 +13,9 @@ To add the dependency to your project with maven, add the following code to your
   <dependency>
     <groupId>com.arangodb</groupId>
     <artifactId>velocypack</artifactId>
-    <version>1.0.13</version>
+    <version>x.y.z</version>
   </dependency>
 </dependencies>
-```
-
-If you want to test with a snapshot version (e.g. 1.0.0-SNAPSHOT), add the staging repository of oss.sonatype.org to your pom.xml:
-
-```XML
-<repositories>
-  <repository>
-    <id>arangodb-snapshots</id>
-    <url>https://oss.sonatype.org/content/groups/staging</url>
-  </repository>
-</repositories>
 ```
 
 ## Compile
