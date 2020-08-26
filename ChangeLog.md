@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 
 ## [Unreleased]
 
+- removed escaping forward slash in `VPackParser`
+
 ## [2.4.1] - 2020-08-14
 
 - fixed base64 encoding for Java version >= 9 

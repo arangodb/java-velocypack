@@ -23,9 +23,10 @@ package com.arangodb.velocypack;
 import com.arangodb.velocypack.exception.VPackBuilderException;
 import com.arangodb.velocypack.exception.VPackException;
 import com.arangodb.velocypack.internal.util.DateUtil;
-import com.fasterxml.jackson.core.*;
-import com.fasterxml.jackson.core.io.CharacterEscapes;
-import com.fasterxml.jackson.core.io.SerializedString;
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonToken;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -452,39 +453,13 @@ public class VPackParser {
 	public static String toJSONString(final String text) {
 		final StringWriter writer = new StringWriter();
 		try {
-			final JsonGenerator generator = new JsonFactory().setCharacterEscapes(new CustomCharacterEscapes())
-					.createGenerator(writer);
+			final JsonGenerator generator = new JsonFactory().createGenerator(writer);
 			generator.writeString(text);
 			generator.close();
 		} catch (final IOException e) {
 			throw new VPackBuilderException(e);
 		}
 		return writer.toString();
-	}
-
-	static class CustomCharacterEscapes extends CharacterEscapes {
-
-		private static final long serialVersionUID = -1774622969327286211L;
-		private static final SerializedString escapeSlash = new SerializedString("\\/");
-		private final int[] _asciiEscapes;
-
-		public CustomCharacterEscapes() {
-			_asciiEscapes = standardAsciiEscapesForJSON();
-			_asciiEscapes['/'] = CharacterEscapes.ESCAPE_CUSTOM;
-		}
-
-		@Override
-		public int[] getEscapeCodesForAscii() {
-			return _asciiEscapes;
-		}
-
-		@Override
-		public SerializableString getEscapeSequence(final int i) {
-			if (i == 47) {
-				return escapeSlash;
-			}
-			return null;
-		}
 	}
 
 }
