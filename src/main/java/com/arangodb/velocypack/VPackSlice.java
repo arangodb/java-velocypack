@@ -600,7 +600,9 @@ public class VPackSlice implements Serializable {
 		}
 		final byte head = head();
 		VPackSlice result;
-		if (head == 0x0a) {
+		if (attribute == null) {
+			result = NONE_SLICE;
+		} else if (head == 0x0a) {
 			// special case, empty object
 			result = NONE_SLICE;
 		} else if (head == 0x14) {
