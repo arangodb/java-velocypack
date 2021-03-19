@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 
 ## [Unreleased]
 
+- fixed start offset of byte array copy in `VPackSlice.toByteArray`
+
 ## [2.5.1] - 2020-12-21
 
 - fixed getting attribute from VPackSlice with `null` key ([spring-data#210](https://github.com/arangodb/spring-data/issues/210))

@@ -25,13 +25,23 @@ import com.arangodb.velocypack.exception.VPackKeyTypeException;
 import com.arangodb.velocypack.exception.VPackNeedAttributeTranslatorException;
 import com.arangodb.velocypack.exception.VPackValueTypeException;
 import com.arangodb.velocypack.internal.VPackAttributeTranslatorImpl;
-import com.arangodb.velocypack.internal.util.*;
+import com.arangodb.velocypack.internal.util.BinaryUtil;
+import com.arangodb.velocypack.internal.util.DateUtil;
+import com.arangodb.velocypack.internal.util.NumberUtil;
+import com.arangodb.velocypack.internal.util.ObjectArrayUtil;
+import com.arangodb.velocypack.internal.util.ValueLengthUtil;
+import com.arangodb.velocypack.internal.util.ValueTypeUtil;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map.Entry;
 
 /**
@@ -76,7 +86,7 @@ public class VPackSlice implements Serializable {
 	 * @return VPackSlice buffer without trailing zeros
 	 */
 	public byte[] toByteArray() {
-		return Arrays.copyOf(vpack, getByteSize());
+		return Arrays.copyOfRange(vpack, start, start + getByteSize());
 	}
 
 	public int getStart() {
