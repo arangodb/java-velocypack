@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 
 ## [Unreleased]
 
+## [2.5.2] - 2021-03-23
+
 - fixed start offset of byte array copy in `VPackSlice.toByteArray`
 
 ## [2.5.1] - 2020-12-21
