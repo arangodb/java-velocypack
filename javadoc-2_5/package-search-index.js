@@ -1,0 +1,1 @@
+packageSearchIndex = [{"l":"All Packages","url":"allpackages-index.html"},{"l":"com.arangodb.velocypack"},{"l":"com.arangodb.velocypack.annotations"},{"l":"com.arangodb.velocypack.exception"},{"l":"com.arangodb.velocypack.internal"},{"l":"com.arangodb.velocypack.internal.util"}]

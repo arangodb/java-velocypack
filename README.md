@@ -5,6 +5,8 @@
 
 # JavaDoc
 
+* [JavaDoc 2.5](http://arangodb.github.io/java-velocypack/javadoc-2_5)
+* [JavaDoc 2.4](http://arangodb.github.io/java-velocypack/javadoc-2_4)
 * [JavaDoc 2.3](http://arangodb.github.io/java-velocypack/javadoc-2_3)
 * [JavaDoc 2.2](http://arangodb.github.io/java-velocypack/javadoc-2_2)
 * [JavaDoc 1.4](http://arangodb.github.io/java-velocypack/javadoc-1_4)
