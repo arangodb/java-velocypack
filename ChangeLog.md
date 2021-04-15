@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 
 ## [Unreleased]
 
+- added `VPackSlice.getSchemaDescription()` to return a printable schema description of the VPack slice
+
 ## [2.5.2] - 2021-03-23
 
 - fixed start offset of byte array copy in `VPackSlice.toByteArray`

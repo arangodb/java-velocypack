@@ -42,6 +42,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
 /**
@@ -899,6 +900,44 @@ public class VPackSlice implements Serializable {
 			return new ObjectIterator(this);
 		} else {
 			throw new VPackValueTypeException(ValueType.OBJECT);
+		}
+	}
+
+	/**
+	 * @return a pretty-printable schema of the VPackSlice, for debug purposes only
+	 */
+	public String getSchemaDescription() {
+		StringBuilder sb = new StringBuilder();
+		doGetSchemaDescription(sb, 0);
+		return sb.toString();
+	}
+
+	private void doGetSchemaDescription(StringBuilder sb, int level) {
+		ValueType type = getType();
+		sb.append(" ");
+		sb.append(type);
+
+		if (type == ValueType.OBJECT) {
+			level++;
+			Iterator<Map.Entry<String, VPackSlice>> it = objectIterator();
+			while (it.hasNext()) {
+				Map.Entry<String, VPackSlice> f = it.next();
+				sb.append("\n");
+				for (int i = 0; i < level; i++) {
+					sb.append(" |----");
+				}
+				sb.append(" ");
+				sb.append(f.getKey());
+				f.getValue().doGetSchemaDescription(sb, level);
+			}
+		} else if (type == ValueType.ARRAY) {
+			// only print the schema of the first element of the array
+			Iterator<VPackSlice> ai = arrayIterator();
+			if (ai.hasNext()) {
+				level++;
+				VPackSlice firstValue = ai.next();
+				firstValue.doGetSchemaDescription(sb, level);
+			}
 		}
 	}
 
