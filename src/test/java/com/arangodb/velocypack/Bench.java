@@ -28,6 +28,7 @@ public class Bench {
     public static class Data {
 
         public final String str;
+        public final VPackSlice slice;
         public final VPackSlice koko = buildKoko();
 
         public Data() {
@@ -40,6 +41,9 @@ public class Bench {
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
+
+            VPackParser parser = new VPackParser.Builder().build();
+            slice = parser.fromJson(str);
         }
 
         public VPackSlice buildKoko() {
@@ -107,8 +111,15 @@ public class Bench {
     @Benchmark
     public void fromJson(Data data, Blackhole bh) {
         VPackParser parser = new VPackParser.Builder().build();
-
         VPackSlice slice = parser.fromJson(data.str);
         bh.consume(slice);
     }
+
+    @Benchmark
+    public void toJson(Data data, Blackhole bh) {
+        VPackParser parser = new VPackParser.Builder().build();
+        String str = parser.toJson(data.slice);
+        bh.consume(str);
+    }
+
 }
