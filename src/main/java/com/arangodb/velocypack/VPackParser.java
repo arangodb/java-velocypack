@@ -49,6 +49,8 @@ public class VPackParser {
 	private static final char SEPARATOR = ',';
 	private static final String NULL = "null";
 	private static final String NON_REPRESENTABLE_TYPE = "(non-representable type)";
+
+	private static final JsonFactory jf = new JsonFactory();
 	private final Map<ValueType, VPackJsonDeserializer> deserializers;
 	private final Map<String, Map<ValueType, VPackJsonDeserializer>> deserializersByName;
 	private final Map<Class<?>, VPackJsonSerializer<?>> serializers;
@@ -278,7 +280,9 @@ public class VPackParser {
 			} else if (value.isBoolean()) {
 				json.append(value.getAsBoolean());
 			} else if (value.isString()) {
-				json.append(toJSONString(value.getAsString()));
+				json.append("\"");
+				json.append(value.getAsString().replace("\"", "\\\""));
+				json.append("\"");
 			} else if (value.isDouble()) {
 				json.append(value.getAsDouble());
 			} else if (value.isInt()) {
@@ -286,17 +290,21 @@ public class VPackParser {
 			} else if (value.isNumber()) {
 				json.append(value.getAsNumber());
 			} else if (value.isDate()) {
-				json.append(toJSONString(DateUtil.format(value.getAsDate())));
+				json.append("\"");
+				json.append(DateUtil.format(value.getAsDate()).replace("\"", "\\\""));
+				json.append("\"");
 			} else if (value.isNull()) {
 				json.append(NULL);
 			} else {
-				json.append(toJSONString(NON_REPRESENTABLE_TYPE));
+				json.append((NON_REPRESENTABLE_TYPE));
 			}
 		}
 	}
 
 	private static void appendField(final String attribute, final StringBuilder json) {
-		json.append(toJSONString(attribute));
+		json.append("\"");
+		json.append(attribute.replace("\"", "\\\""));
+		json.append("\"");
 		json.append(FIELD);
 	}
 
@@ -381,17 +389,17 @@ public class VPackParser {
 
 	private void parse(final String json, final VPackBuilder builder, final boolean includeNullValues)
 			throws IOException {
-		final JsonParser parser = new JsonFactory().createParser(json);
+		final JsonParser parser = jf.createParser(json);
 		String fieldName = null;
 		JsonToken token;
 		while (!parser.isClosed() && (token = parser.nextToken()) != null) {
 			switch (token) {
-			case START_OBJECT:
-			case VALUE_EMBEDDED_OBJECT:
-				builder.add(fieldName, ValueType.OBJECT);
-				fieldName = null;
-				break;
-			case START_ARRAY:
+				case START_OBJECT:
+				case VALUE_EMBEDDED_OBJECT:
+					builder.add(fieldName, ValueType.OBJECT);
+					fieldName = null;
+					break;
+				case START_ARRAY:
 				builder.add(fieldName, ValueType.ARRAY);
 				fieldName = null;
 				break;
@@ -453,7 +461,7 @@ public class VPackParser {
 	public static String toJSONString(final String text) {
 		final StringWriter writer = new StringWriter();
 		try {
-			final JsonGenerator generator = new JsonFactory().createGenerator(writer);
+			final JsonGenerator generator = jf.createGenerator(writer);
 			generator.writeString(text);
 			generator.close();
 		} catch (final IOException e) {
