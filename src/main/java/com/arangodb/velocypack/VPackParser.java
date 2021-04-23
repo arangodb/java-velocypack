@@ -280,9 +280,7 @@ public class VPackParser {
 			} else if (value.isBoolean()) {
 				json.append(value.getAsBoolean());
 			} else if (value.isString()) {
-				json.append("\"");
-				json.append(value.getAsString().replace("\"", "\\\""));
-				json.append("\"");
+				appendJsonString(json, value.getAsString());
 			} else if (value.isDouble()) {
 				json.append(value.getAsDouble());
 			} else if (value.isInt()) {
@@ -290,9 +288,7 @@ public class VPackParser {
 			} else if (value.isNumber()) {
 				json.append(value.getAsNumber());
 			} else if (value.isDate()) {
-				json.append("\"");
-				json.append(DateUtil.format(value.getAsDate()).replace("\"", "\\\""));
-				json.append("\"");
+				appendJsonString(json, DateUtil.format(value.getAsDate()));
 			} else if (value.isNull()) {
 				json.append(NULL);
 			} else {
@@ -302,10 +298,7 @@ public class VPackParser {
 	}
 
 	private static void appendField(final String attribute, final StringBuilder json) {
-		json.append("\"");
-		json.append(attribute.replace("\"", "\\\""));
-		json.append("\"");
-		json.append(FIELD);
+		appendJsonString(json, attribute).append(FIELD);
 	}
 
 	private void parseObject(final VPackSlice value, final StringBuilder json, final boolean includeNullValues)
@@ -456,6 +449,13 @@ public class VPackParser {
 		} else if (Long.class.isAssignableFrom(value.getClass())) {
 			builder.add(fieldName, (Long) value);
 		}
+	}
+
+	private static StringBuilder appendJsonString(final StringBuilder json, final String text) {
+		return json
+				.append("\"")
+				.append(text.replace("\"", "\\\""))
+				.append("\"");
 	}
 
 	public static String toJSONString(final String text) {
