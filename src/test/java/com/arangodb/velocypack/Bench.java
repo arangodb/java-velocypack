@@ -1,5 +1,9 @@
 package com.arangodb.velocypack;
 
+import com.arangodb.jackson.dataformat.velocypack.VPackMapper;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.infra.Blackhole;
 import org.openjdk.jmh.profile.GCProfiler;
@@ -116,9 +120,23 @@ public class Bench {
     }
 
     @Benchmark
+    public void fromJsonJackson(Data data, Blackhole bh) throws JsonProcessingException {
+        JsonNode vpackNode = new ObjectMapper().readTree(data.str);
+        byte[] vpack = new VPackMapper().writeValueAsBytes(vpackNode);
+        bh.consume(vpack);
+    }
+
+    @Benchmark
     public void toJson(Data data, Blackhole bh) {
         VPackParser parser = new VPackParser.Builder().build();
         String str = parser.toJson(data.slice);
+        bh.consume(str);
+    }
+
+    @Benchmark
+    public void toJsonJackson(Data data, Blackhole bh) throws IOException {
+        JsonNode vpackNode = new VPackMapper().readTree(data.slice.toByteArray());
+        String str = new ObjectMapper().writeValueAsString(vpackNode);
         bh.consume(str);
     }
 

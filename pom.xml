@@ -232,7 +232,6 @@
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-core</artifactId>
-			<version>2.11.3</version>
 		</dependency>
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
@@ -276,7 +275,25 @@
 			<version>1.18.14</version>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>com.arangodb</groupId>
+			<artifactId>jackson-dataformat-velocypack</artifactId>
+			<version>2.0.0</version>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>com.fasterxml.jackson</groupId>
+				<artifactId>jackson-bom</artifactId>
+				<version>2.12.3</version>
+				<scope>import</scope>
+				<type>pom</type>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 
 	<scm>
 		<url>https://github.com/arangodb/java-velocypack</url>
