@@ -24,12 +24,10 @@ import com.arangodb.velocypack.exception.VPackBuilderException;
 import com.arangodb.velocypack.exception.VPackException;
 import com.arangodb.velocypack.internal.util.DateUtil;
 import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 
 import java.io.IOException;
-import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -280,7 +278,7 @@ public class VPackParser {
 			} else if (value.isBoolean()) {
 				json.append(value.getAsBoolean());
 			} else if (value.isString()) {
-				appendJsonString(json, value.getAsString());
+                json.append(toJSONString(value.getAsString()));
 			} else if (value.isDouble()) {
 				json.append(value.getAsDouble());
 			} else if (value.isInt()) {
@@ -288,7 +286,7 @@ public class VPackParser {
 			} else if (value.isNumber()) {
 				json.append(value.getAsNumber());
 			} else if (value.isDate()) {
-				appendJsonString(json, DateUtil.format(value.getAsDate()));
+			    json.append(toJSONString(DateUtil.format(value.getAsDate())));
 			} else if (value.isNull()) {
 				json.append(NULL);
 			} else {
@@ -298,7 +296,7 @@ public class VPackParser {
 	}
 
 	private static void appendField(final String attribute, final StringBuilder json) {
-		appendJsonString(json, attribute).append(FIELD);
+	    json.append(toJSONString(attribute)).append(FIELD);
 	}
 
 	private void parseObject(final VPackSlice value, final StringBuilder json, final boolean includeNullValues)
@@ -451,23 +449,65 @@ public class VPackParser {
 		}
 	}
 
-	private static StringBuilder appendJsonString(final StringBuilder json, final String text) {
-		return json
-				.append("\"")
-				.append(text.replace("\"", "\\\""))
-				.append("\"");
-	}
-
+	// adapted from https://github.com/stleary/JSON-java/blob/c0e467c848ac920a04815462c1aa8af1051ba59b/src/main/java/org/json/JSONObject.java#L2005-L2062
 	public static String toJSONString(final String text) {
-		final StringWriter writer = new StringWriter();
-		try {
-			final JsonGenerator generator = jf.createGenerator(writer);
-			generator.writeString(text);
-			generator.close();
-		} catch (final IOException e) {
-			throw new VPackBuilderException(e);
+		if (text == null) {
+			return null;
 		}
-		return writer.toString();
+
+		StringBuilder w = new StringBuilder(text.length());
+
+		char b;
+		char c = 0;
+		String hhhh;
+		int i;
+		int len = text.length();
+
+		w.append('"');
+		for (i = 0; i < len; i += 1) {
+			b = c;
+			c = text.charAt(i);
+			switch (c) {
+				case '\\':
+				case '"':
+					w.append('\\');
+					w.append(c);
+					break;
+				case '/':
+					if (b == '<') {
+						w.append('\\');
+					}
+					w.append(c);
+					break;
+				case '\b':
+					w.append("\\b");
+					break;
+				case '\t':
+					w.append("\\t");
+					break;
+				case '\n':
+					w.append("\\n");
+					break;
+				case '\f':
+					w.append("\\f");
+					break;
+				case '\r':
+					w.append("\\r");
+					break;
+				default:
+					if (c < ' ' || (c >= '\u0080' && c < '\u00a0')
+							|| (c >= '\u2000' && c < '\u2100')) {
+						w.append("\\u");
+						hhhh = Integer.toHexString(c);
+						w.append("0000", 0, 4 - hhhh.length());
+						w.append(hhhh);
+					} else {
+						w.append(c);
+					}
+			}
+		}
+		w.append('"');
+		return w.toString();
 	}
 
 }
