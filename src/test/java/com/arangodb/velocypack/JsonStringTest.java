@@ -2,8 +2,7 @@ package com.arangodb.velocypack;
 
 import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.Value;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.junit.After;
 import org.junit.Test;
 
 import java.util.stream.IntStream;
@@ -11,28 +10,28 @@ import java.util.stream.Stream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.junit.Assume.assumeTrue;
 
-public class ToJsonStringTest {
-    private static Context context;
-    private static Value jsStringify;
-    private static Value jsParse;
-    private static final String stringifyFn = "(function stringify(x){return JSON.stringify(x);})";
-    private static final String parseFn = "(function parse(x){return JSON.parse(x);})";
+public class JsonStringTest {
+    private Context context;
+    private Value jsStringify;
+    private Value jsParse;
+    private final String stringifyFn = "(function stringify(x){return JSON.stringify(x);})";
+    private final String parseFn = "(function parse(x){return JSON.parse(x);})";
 
-    @BeforeClass
-    public static void init() {
-        context = Context.create();
-        jsStringify = context.eval("js", stringifyFn);
-        jsParse = context.eval("js", parseFn);
-    }
-
-    @AfterClass
-    public static void close() {
+    @After
+    public void close() {
         context.close();
     }
 
     @Test
     public void stringToJsonRoundTrip() {
+        assumeTrue("This test requires GraalVM", org.graalvm.home.Version.getCurrent().isRelease());
+
+        context = Context.create();
+        jsStringify = context.eval("js", stringifyFn);
+        jsParse = context.eval("js", parseFn);
+
         VPack vpack = new VPack.Builder().build();
         VPackParser parser = new VPackParser.Builder().build();
         generateInput().forEach(value -> {
