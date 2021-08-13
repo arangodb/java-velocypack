@@ -32,18 +32,16 @@ public class ToJsonStringTest {
     }
 
     @Test
-    public void testValues() {
-        generateInput()
-                .forEach(s -> {
-                    String expected = jsStringify.execute(s).as(String.class);
-                    assertThat(jsParse.execute(expected).as(String.class), is(s));
-                    doTest(s, expected);
-                });
-    }
-
-
-    private void doTest(String value, String expected) {
-        assertThat(VPackParser.toJSONString(value), is(expected));
+    public void stringToJsonRoundTrip() {
+        VPack vpack = new VPack.Builder().build();
+        VPackParser parser = new VPackParser.Builder().build();
+        generateInput().forEach(value -> {
+            String expected = jsStringify.execute(value).as(String.class);
+            assertThat(jsParse.execute(expected).as(String.class), is(value));
+            assertThat(VPackParser.toJSONString(value), is(expected));
+            assertThat(parser.toJson(vpack.serialize(value)), is(expected));
+            assertThat(parser.fromJson(expected).getAsString(), is(value));
+        });
     }
 
     private Stream<String> generateInput() {
