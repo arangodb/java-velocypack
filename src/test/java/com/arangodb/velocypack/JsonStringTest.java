@@ -2,7 +2,6 @@ package com.arangodb.velocypack;
 
 import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.Value;
-import org.junit.After;
 import org.junit.Test;
 
 import java.util.stream.IntStream;
@@ -18,11 +17,6 @@ public class JsonStringTest {
     private Value jsParse;
     private final String stringifyFn = "(function stringify(x){return JSON.stringify(x);})";
     private final String parseFn = "(function parse(x){return JSON.parse(x);})";
-
-    @After
-    public void close() {
-        context.close();
-    }
 
     @Test
     public void stringToJsonRoundTrip() {
@@ -41,6 +35,7 @@ public class JsonStringTest {
             assertThat(parser.toJson(vpack.serialize(value)), is(expected));
             assertThat(parser.fromJson(expected).getAsString(), is(value));
         });
+        context.close();
     }
 
     private Stream<String> generateInput() {
