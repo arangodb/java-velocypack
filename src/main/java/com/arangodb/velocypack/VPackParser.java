@@ -481,7 +481,14 @@ public class VPackParser {
                     w.append("\\r");
                     break;
                 default:
-                    w.append(c);
+                    if (c <= '\u001f') {
+                        w.append("\\u");
+                        String hhhh = Integer.toHexString(c);
+                        w.append("0000", 0, 4 - hhhh.length());
+                        w.append(hhhh);
+                    } else {
+                        w.append(c);
+                    }
             }
         }
         return w.append('"').toString();
