@@ -39,8 +39,9 @@ jobs:
   test-graavm:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@latest
-      - uses: DeLaGuardo/setup-graalvm@4.0
+      - uses: actions/checkout@v2
+      - name: Set up JDK
+        uses: DeLaGuardo/setup-graalvm@4.0
         with:
           graalvm: '21.2.0'
       - name: Info
