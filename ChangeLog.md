@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 
 ## [Unreleased]
 
+## [2.5.4] - 2021-08-24
+
+- fixed escaping in JSON string generation (#29)   
+
 ## [2.5.3] - 2021-04-23
 
 - improved performances of `VPackParser.toJson()`
