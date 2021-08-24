@@ -1,6 +1,9 @@
 package com.arangodb.velocypack;
 
 import com.arangodb.jackson.dataformat.velocypack.VPackMapper;
+import com.arangodb.velocypack.exception.VPackBuilderException;
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -14,6 +17,7 @@ import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 
 import java.io.IOException;
+import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -138,6 +142,30 @@ public class Bench {
         JsonNode vpackNode = new VPackMapper().readTree(data.slice.toByteArray());
         String str = new ObjectMapper().writeValueAsString(vpackNode);
         bh.consume(str);
+    }
+
+    @Benchmark
+    public void toJsonString(Data data, Blackhole bh) {
+        String json = VPackParser.toJSONString(data.str);
+        bh.consume(json);
+    }
+
+    @Benchmark
+    public void toJsonStringJackson(Data data, Blackhole bh) {
+        String json = toJSONStringJackson(data.str);
+        bh.consume(json);
+    }
+
+    private static String toJSONStringJackson(final String text) {
+        final StringWriter writer = new StringWriter();
+        try {
+            final JsonGenerator generator = new JsonFactory().createGenerator(writer);
+            generator.writeString(text);
+            generator.close();
+        } catch (final IOException e) {
+            throw new VPackBuilderException(e);
+        }
+        return writer.toString();
     }
 
 }
