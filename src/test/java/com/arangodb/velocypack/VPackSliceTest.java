@@ -1522,23 +1522,4 @@ public class VPackSliceTest {
 		assertFalse(s.hasTag(50 * size));
 	}
 
-	@Test
-	public void getSchemaDescription() {
-		VPackParser parser = new VPackParser.Builder().build();
-		VPackSlice slice = parser.fromJson("{\n" +
-				"  \"key1\": [\n" +
-				"    {\n" +
-				"      \"arrKey1\": \"foo\",\n" +
-				"      \"arrKey2\": []\n" +
-				"    }\n" +
-				"  ],\n" +
-				"  \"key2\": \"bla\",\n" +
-				"  \"key3\": 11,\n" +
-				"  \"key4\": {\n" +
-				"    \"subKey1\": null,\n" +
-				"    \"subKey2\": false\n" +
-				"  }\n" +
-				"}\n", true);
-		System.out.println(slice.getSchemaDescription());
-	}
 }

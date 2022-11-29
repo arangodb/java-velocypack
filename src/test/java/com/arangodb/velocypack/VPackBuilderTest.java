@@ -113,7 +113,6 @@ public class VPackBuilderTest {
 		builder.add(value);
 
 		final VPackSlice slice = builder.slice();
-		System.out.println(slice);
 		assertThat(slice.isByte(), is(true));
 		assertThat(slice.getAsByte(), is(value));
 	}
