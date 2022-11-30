@@ -4,7 +4,7 @@
 
 	<groupId>com.arangodb</groupId>
 	<artifactId>velocypack</artifactId>
-	<version>2.5.4</version>
+	<version>3.0.0-SNAPSHOT</version>
 	<inceptionYear>2017</inceptionYear>
 	<packaging>jar</packaging>
 
@@ -57,42 +57,6 @@
 
 	<build>
 		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-shade-plugin</artifactId>
-				<version>3.2.1</version>
-				<configuration>
-					<createSourcesJar>true</createSourcesJar>
-					<shadeSourcesContent>true</shadeSourcesContent>
-					<artifactSet>
-						<includes>
-							<include>com.fasterxml.jackson.core:jackson-core</include>
-						</includes>
-					</artifactSet>
-					<relocations>
-						<relocation>
-							<pattern>com.fasterxml.jackson</pattern>
-							<shadedPattern>com.arangodb.velocypack.deps.com.fasterxml.jackson</shadedPattern>
-						</relocation>
-					</relocations>
-					<transformers>
-						<transformer
-								implementation="org.apache.maven.plugins.shade.resource.DontIncludeResourceTransformer">
-							<resources>
-								<resource>META-INF/services/com.fasterxml.jackson.core.JsonFactory</resource>
-							</resources>
-						</transformer>
-					</transformers>
-				</configuration>
-				<executions>
-					<execution>
-						<phase>package</phase>
-						<goals>
-							<goal>shade</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
 			<plugin>
 				<groupId>org.sonatype.plugins</groupId>
 				<artifactId>nexus-staging-maven-plugin</artifactId>
@@ -230,10 +194,6 @@
 			<version>1.7.30</version>
 		</dependency>
 		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-core</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-classic</artifactId>
 			<version>1.2.3</version>
@@ -252,54 +212,12 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.openjdk.jmh</groupId>
-			<artifactId>jmh-core</artifactId>
-			<version>1.26</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.openjdk.jmh</groupId>
-			<artifactId>jmh-generator-annprocess</artifactId>
-			<version>1.26</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.immutables</groupId>
-			<artifactId>value</artifactId>
-			<version>2.8.8</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.projectlombok</groupId>
-			<artifactId>lombok</artifactId>
-			<version>1.18.20</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.arangodb</groupId>
-			<artifactId>jackson-dataformat-velocypack</artifactId>
-			<version>2.0.0</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
 			<groupId>org.graalvm.sdk</groupId>
 			<artifactId>graal-sdk</artifactId>
 			<version>21.2.0</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
-
-	<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<groupId>com.fasterxml.jackson</groupId>
-				<artifactId>jackson-bom</artifactId>
-				<version>2.12.3</version>
-				<scope>import</scope>
-				<type>pom</type>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
 
 	<scm>
 		<url>https://github.com/arangodb/java-velocypack</url>

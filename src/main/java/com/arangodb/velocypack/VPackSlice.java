@@ -942,15 +942,6 @@ public class VPackSlice implements Serializable {
 	}
 
 	@Override
-	public String toString() {
-		try {
-			return new VPackParser.Builder().build().toJson(this, true);
-		} catch (final VPackException e) {
-			return super.toString();
-		}
-	}
-
-	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
