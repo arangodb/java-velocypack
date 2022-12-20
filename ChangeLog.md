@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 
 ## [Unreleased]
 
+- explicit JPMS module name `com.arangodb.velocypack`
+
 ## [3.0.0] - 2022-11-30
 
 - removed all databind capabilities (#31), which are now provided by [jackson-dataformat-velocypack](https://github.com/arangodb/jackson-dataformat-velocypack).
