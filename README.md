@@ -1,6 +1,9 @@
+![ArangoDB-Logo](https://user-images.githubusercontent.com/3998723/207981337-79d49127-48fc-4c7c-9411-8a688edca1dd.png)
+
 # ArangoDB VelocyPack Java
 
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.arangodb/velocypack/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.arangodb/velocypack)
+[![CircleCI](https://dl.circleci.com/status-badge/img/gh/arangodb/java-velocypack/tree/main.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/arangodb/java-velocypack/tree/main)
 
 Java implementation for [VelocyPack](https://github.com/arangodb/velocypack).
 
