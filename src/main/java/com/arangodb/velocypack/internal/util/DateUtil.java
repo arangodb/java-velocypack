@@ -20,10 +20,13 @@
 
 package com.arangodb.velocypack.internal.util;
 
-import java.text.DateFormat;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.TimeZone;
+import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.util.Date;
 
 /**
  * @author Mark Vollmary
@@ -31,14 +34,9 @@ import java.util.TimeZone;
  */
 public class DateUtil {
 
-	private static final ThreadLocal<DateFormat> DATE_FORMAT = new ThreadLocal<DateFormat>() {
-		@Override
-		protected DateFormat initialValue() {
-			final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
-			formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
-			return formatter;
-		}
-	};
+	private final static DateTimeFormatter DATE_FORMATTER = DateTimeFormatter
+			.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+			.withZone(ZoneOffset.UTC);
 
 	private DateUtil() {
 		super();
@@ -60,11 +58,15 @@ public class DateUtil {
 	}
 
 	public static java.util.Date parse(final String source) throws ParseException {
-		return DATE_FORMAT.get().parse(source);
+		try {
+			return new Date(ZonedDateTime.parse(source).toInstant().toEpochMilli());
+		} catch (DateTimeParseException e) {
+			throw new ParseException("Unparseable date: \"" + e.getParsedString() + "\"", e.getErrorIndex());
+		}
 	}
 
 	public static String format(final java.util.Date date) {
-		return DATE_FORMAT.get().format(date);
+		return DATE_FORMATTER.format(ZonedDateTime.ofInstant(Instant.ofEpochMilli(date.getTime()), ZoneOffset.UTC));
 	}
 
 }
