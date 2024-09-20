@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 
 ## [Unreleased]
 
+## [3.1.0] - 2024-09-20
+
+- fixed memory consumption issue in dates serialization
 - explicit JPMS module name `com.arangodb.velocypack`
 
 ## [3.0.0] - 2022-11-30
