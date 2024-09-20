@@ -48,7 +48,7 @@ commands:
     steps:
       - run:
           name: Deploy to Apache Maven Central
-          command: GPG_TTY=$(tty) mvn -s .circleci/maven-release-settings.xml -Dmaven.test.skip=true deploy
+          command: mvn -s .circleci/maven-release-settings.xml -Dmaven.test.skip=true deploy
   release:
     steps:
       - run:
@@ -97,7 +97,7 @@ jobs:
       - store_cache
 
   deploy:
-    executor: 'j21'
+    executor: 'j17'
     steps:
       - timeout
       - checkout
@@ -107,7 +107,7 @@ jobs:
       - store_cache
 
   release:
-    executor: 'j21'
+    executor: 'j17'
     steps:
       - timeout
       - checkout
