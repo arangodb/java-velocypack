@@ -1,6 +1,10 @@
 version: 2.1
 
 commands:
+  setup_docker:
+    steps:
+      - setup_remote_docker:
+          docker_layer_caching: true
   timeout:
     parameters:
       duration:
@@ -82,7 +86,7 @@ jobs:
     steps:
       - timeout
       - checkout
-      - setup_remote_docker
+      - setup_docker
       - load_cache
       - run:
           name: mvn version
