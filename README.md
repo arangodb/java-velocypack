@@ -105,4 +105,4 @@ mvn clean install -DskipTests=true -Dgpg.skip=true -Dmaven.javadoc.skip=true -B
 
 - [ArangoDB](https://www.arangodb.com/)
 - [ChangeLog](ChangeLog.md)
-- [JavaDoc](http://arangodb.github.io/java-velocypack/)
+- [JavaDoc](https://www.javadoc.io/doc/com.arangodb/velocypack/latest/index.html)
