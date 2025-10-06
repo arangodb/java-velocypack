@@ -63,6 +63,9 @@ executors:
   j21:
     docker:
       - image: 'cimg/openjdk:21.0'
+  j25:
+    docker:
+      - image: 'cimg/openjdk:25.0'
 
 jobs:
 
@@ -111,6 +114,7 @@ workflows:
                 - 'j11'
                 - 'j17'
                 - 'j21'
+                - 'j25'
   deploy:
     jobs:
       - deploy:
